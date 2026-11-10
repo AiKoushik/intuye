@@ -1,0 +1,41 @@
+# Sync drop folder (workspace -> PC transfer), never committed
+.sync/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+*.db
+*.sqlite3
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.p8
+*.pem
+secrets/
+
+# Xcode / Swift
+ios/*.xcodeproj/
+ios/build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+.swiftpm/
+.build/
+Package.resolved
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
