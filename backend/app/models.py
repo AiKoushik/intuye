@@ -4,7 +4,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, TypeDecorator, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -22,23 +22,23 @@ def UserFK() -> Mapped[str]:  # noqa: N802
     return mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), index=True)
 
 
-class TZDateTime(DateTime):
-    """DateTime that always comes back timezone-aware (SQLite drops tzinfo)."""
+class TZDateTime(TypeDecorator):
+    """Stores UTC; always returns timezone-aware datetimes (SQLite drops tzinfo)."""
 
+    impl = DateTime(timezone=True)
     cache_ok = True
 
-    def __init__(self) -> None:
-        super().__init__(timezone=True)
+    def process_bind_param(self, value, dialect):
+        if value is not None and value.tzinfo is not None:
+            value = value.astimezone(timezone.utc)
+            if dialect.name == "sqlite":
+                value = value.replace(tzinfo=None)
+        return value
 
-    def result_processor(self, dialect, coltype):  # type: ignore[override]
-        def process(value):
-            if isinstance(value, str):
-                value = datetime.fromisoformat(value)
-            if value is not None and value.tzinfo is None:
-                value = value.replace(tzinfo=timezone.utc)
-            return value
-
-        return process
+    def process_result_value(self, value, dialect):
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value
 
 
 class User(Base):

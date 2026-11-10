@@ -8,7 +8,10 @@ from app import errors
 from app.config import Settings, get_settings
 from app.db import Database
 from app.security.middleware import SecurityMiddleware
+from app.security.apple import AppleIdentityVerifier
+from app.security.app_attest import AppAttestService
 from app.security.ratelimit import RateLimiter
+from app.security.tokens import TokenService
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -27,6 +30,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.db = db
     app.state.ratelimiter = RateLimiter()
+    app.state.tokens = TokenService(settings)
+    app.state.apple = AppleIdentityVerifier(settings)
+    app.state.attest = AppAttestService(settings)
     errors.install(app)
     app.add_middleware(SecurityMiddleware, max_body=settings.max_body_bytes,
                        max_batch_body=settings.max_batch_body_bytes)
