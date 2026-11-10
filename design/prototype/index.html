@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LangCoach prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens/build/tokens.css">
+<style>
+:root {
+  --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+  --es: "New York", ui-serif, "Newsreader", Georgia, serif;
+  --r-card: 20px; --r-ctl: 12px;
+}
+* { box-sizing: border-box; margin: 0; }
+html { background: var(--lc-sunken); color: var(--lc-text-primary); font-family: var(--ui); }
+body { min-height: 100vh; padding: 24px 16px 48px; }
+.top { max-width: 1240px; margin: 0 auto 24px; display: flex; gap: 16px; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+.top h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.top p { color: var(--lc-text-secondary); font-size: 14px; max-width: 60ch; margin-top: 4px; }
+.theme { font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--lc-border-strong); background: var(--lc-surface); color: var(--lc-text-primary); cursor: pointer; }
+.theme:focus-visible, button:focus-visible { outline: 3px solid var(--lc-focus-ring); outline-offset: 2px; }
+.row { display: flex; gap: 28px; overflow-x: auto; padding: 4px 4px 20px; max-width: 1240px; margin: 0 auto; scroll-snap-type: x mandatory; }
+figure { flex: 0 0 auto; scroll-snap-align: start; }
+figcaption { font-size: 13px; color: var(--lc-text-secondary); margin: 0 0 10px 6px; }
+.phone { width: 360px; height: 760px; border-radius: 48px; background: var(--lc-canvas); border: 10px solid #1d1f24; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+@media (max-width: 420px) { .phone { width: calc(100vw - 32px); } }
+.status { height: 44px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 26px; font-size: 14px; font-weight: 600; }
+.island { width: 110px; height: 30px; background: #000; border-radius: 20px; }
+.scroll { flex: 1; overflow-y: auto; padding: 4px 20px 150px; }
+.date { font-size: 13px; color: var(--lc-text-secondary); margin-top: 6px; }
+.title { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 2px 0 18px; }
+.card { background: var(--lc-surface); border: 1px solid var(--lc-hairline); border-radius: var(--r-card); padding: 16px; margin-bottom: 14px; }
+.card h3 { font-size: 17px; font-weight: 600; }
+.meta { font-size: 13px; color: var(--lc-text-secondary); margin-top: 2px; }
+.btn { font: inherit; font-size: 16px; font-weight: 600; border: 0; border-radius: var(--r-ctl); padding: 12px 18px; background: var(--lc-accent-fill); color: var(--lc-on-accent); cursor: pointer; }
+.btn.ghost { background: var(--lc-accent-subtle); color: var(--lc-accent); }
+.btn.wide { width: 100%; margin-top: 14px; }
+.split { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.dots { display: inline-flex; gap: 4px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--lc-accent); }
+.dots i.on { background: var(--lc-accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip { font-family: var(--es); font-size: 17px; padding: 5px 12px; border-radius: 999px; background: var(--lc-sunken); }
+.chip.new { box-shadow: inset 0 -3px 0 var(--lc-highlight); }
+.section { font-size: 13px; color: var(--lc-text-secondary); margin: 22px 4px 8px; }
+
+/* The interlinear line: the signature component */
+.il { display: flex; flex-wrap: wrap; column-gap: 10px; row-gap: 10px; }
+.g { display: flex; flex-direction: column; cursor: pointer; border-radius: 6px; padding: 1px 2px; transition: background-color 180ms ease-out; }
+.g .s { font-size: 15px; color: var(--lc-text-secondary); line-height: 20px; }
+.g .t { font-family: var(--es); font-size: 21px; line-height: 27px; }
+.g.new .t { background: linear-gradient(transparent 62%, var(--lc-highlight) 62%); }
+.g.on { background: var(--lc-highlight); }
+.g.on .s, .g.on .t { color: var(--lc-on-highlight); }
+.g.on.new .t { background: none; }
+.dir { display: inline-block; font-size: 12px; color: var(--lc-accent); background: var(--lc-accent-subtle); border-radius: 999px; padding: 3px 10px; margin-bottom: 10px; }
+.natural { font-size: 13px; color: var(--lc-text-secondary); margin-top: 10px; }
+.answer { font-size: 16px; line-height: 23px; }
+.q { font-size: 14px; color: var(--lc-text-secondary); margin-bottom: 6px; }
+
+.scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 180px; background: linear-gradient(to bottom, transparent, var(--lc-canvas) 30%); pointer-events: none; }
+.accessory { position: absolute; left: 14px; right: 14px; bottom: 92px; height: 48px; border-radius: 24px; display: flex; align-items: center; gap: 10px; padding: 0 16px; font-size: 14px;
+  background: color-mix(in srgb, var(--lc-surface) 82%, transparent); backdrop-filter: blur(20px); border: 1px solid var(--lc-hairline); }
+.live { width: 10px; height: 10px; border-radius: 50%; background: var(--lc-success); }
+.accessory .count { color: var(--lc-text-secondary); margin-left: auto; }
+.tabs { position: absolute; left: 14px; right: 14px; bottom: 22px; height: 62px; border-radius: 31px; display: grid; grid-template-columns: repeat(4, 1fr); align-items: center;
+  background: color-mix(in srgb, var(--lc-surface) 82%, transparent); backdrop-filter: blur(20px); border: 1px solid var(--lc-hairline); }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; color: var(--lc-text-secondary); }
+.tab svg { width: 22px; height: 22px; }
+.tab.on { color: var(--lc-accent); }
+
+.inputbar { position: absolute; left: 14px; right: 14px; bottom: 92px; display: flex; gap: 10px; align-items: center; }
+.field { flex: 1; height: 50px; border-radius: 25px; border: 1px solid var(--lc-border-strong); background: var(--lc-surface); display: flex; align-items: center; padding: 0 18px; color: var(--lc-text-tertiary); font-size: 16px; }
+.mic { width: 64px; height: 64px; border-radius: 50%; border: 0; background: var(--lc-accent-fill); color: var(--lc-on-accent); display: grid; place-items: center; cursor: pointer; box-shadow: 0 0 0 6px var(--lc-accent-subtle); }
+.mic svg { width: 26px; height: 26px; }
+
+.review { display: flex; flex-direction: column; height: 100%; padding: 4px 20px 24px; }
+.progress { height: 4px; border-radius: 2px; background: var(--lc-sunken); margin: 6px 0 18px; overflow: hidden; }
+.progress i { display: block; height: 100%; width: 43%; background: var(--lc-accent); }
+.rcard { flex: 1; background: var(--lc-surface); border: 1px solid var(--lc-hairline); border-radius: 28px; padding: 28px 22px; display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 14px; cursor: pointer; }
+.cue { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; }
+.ctx { color: var(--lc-text-secondary); font-size: 16px; }
+.ctx b { font-weight: 400; border-bottom: 2px solid var(--lc-border-strong); padding: 0 18px; }
+.back { display: none; }
+.rcard.flipped .back { display: block; }
+.rcard.flipped .hint { display: none; }
+.es-xl { font-family: var(--es); font-size: 40px; }
+.reason { font-size: 14px; color: var(--lc-text-secondary); margin-top: 8px; }
+.hint { font-size: 14px; color: var(--lc-accent); }
+.ratings { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; visibility: hidden; }
+.ratings.show { visibility: visible; }
+.rate { font: inherit; font-size: 13px; font-weight: 600; border-radius: 14px; padding: 10px 4px; border: 1.5px solid currentColor; background: var(--lc-surface); display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+.rate svg { width: 18px; height: 18px; }
+.forgot { color: var(--lc-danger); } .hard { color: var(--lc-warning); } .good { color: var(--lc-success); } .easy { color: var(--lc-accent); }
+
+.list .item { padding: 12px 0; border-top: 1px solid var(--lc-hairline); }
+.list .item:first-child { border-top: 0; padding-top: 2px; }
+.rescue { font-family: var(--es); font-size: 18px; padding: 8px 0; }
+
+.chat { display: flex; flex-direction: column; gap: 10px; }
+.bubble { max-width: 82%; padding: 10px 14px; border-radius: 20px; font-size: 16px; line-height: 22px; }
+.coach { align-self: flex-start; background: var(--lc-accent-subtle); font-family: var(--es); font-size: 18px; cursor: pointer; border-bottom-left-radius: 6px; }
+.coach small { display: none; font-family: var(--ui); font-size: 13px; color: var(--lc-text-secondary); margin-top: 4px; }
+.coach.open small { display: block; }
+.you { align-self: flex-end; background: var(--lc-surface); border: 1px solid var(--lc-hairline); border-bottom-right-radius: 6px; }
+.native { font-size: 13px; color: var(--lc-text-secondary); margin-top: 4px; }
+.native em { font-family: var(--es); font-style: normal; font-size: 15px; color: var(--lc-text-primary); }
+.controls { position: absolute; left: 14px; right: 14px; bottom: 92px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.controls .btn { font-size: 14px; padding: 10px 14px; }
+
+.map .item { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-top: 1px solid var(--lc-hairline); }
+.map .item:first-child { border-top: 0; }
+.delta { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--lc-text-secondary); display: flex; align-items: center; gap: 8px; }
+.delta b { color: var(--lc-success); font-weight: 600; }
+.big { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+.stats div { background: var(--lc-sunken); border-radius: 14px; padding: 12px 4px; }
+.stats b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 12px; color: var(--lc-text-secondary); }
+@media (prefers-reduced-motion: reduce) { .g { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>LangCoach prototype</h1>
+    <p>Tap any word in a Spanish line to see its partner. Tap the review card to reveal it, and tap a coach line to see the English.</p>
+  </div>
+  <button class="theme" id="theme" aria-pressed="false">Dark mode</button>
+</header>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-today" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-say" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M8 9.5h8M8 12.5h5"/></symbol>
+  <symbol id="i-scenes" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-progress" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 18 9 12l4 3 8-8M15 7h6v6"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-tilde" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 14c3-4 5-4 8 0s5 4 8 0"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m5 12 4.5 4.5L19 7"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M13 3 5 14h6l-1 7 8-11h-6z"/></symbol>
+</svg>
+
+<main class="row">
+
+<figure><figcaption>Today</figcaption>
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="island"></span><span>100%</span></div>
+  <div class="scroll">
+    <p class="date">Tuesday 10 November</p>
+    <h2 class="title">Good evening, Ahsan</h2>
+    <div class="card">
+      <div class="split"><div><h3>At the dentist</h3><p class="meta">Thursday at 10:00, from your calendar</p></div>
+      <span class="dots" role="img" aria-label="Readiness 2 of 5"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></div>
+      <button class="btn wide">Prep 8 phrases</button>
+    </div>
+    <div class="card">
+      <h3>7 words ready</h3><p class="meta">From what you said this week</p>
+      <div class="chips"><span class="chip new">mente</span><span class="chip">escuchar</span><span class="chip new">cerebro</span><span class="chip">muela</span></div>
+      <button class="btn ghost wide">Start review</button>
+    </div>
+    <p class="section">Recent sentences</p>
+    <div class="card"><div class="il" data-il='[["me gusta","Me gusta"],["escuchar","escuchar"],["este","esto"],["en","en"],["mi","mi"],["mind","mente",1]]'></div></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="accessory" role="status"><span class="live" aria-hidden="true"></span><span>Listening</span><span class="count">14 sentences today</span></div>
+  <nav class="tabs"><span class="tab on"><svg><use href="#i-today"/></svg>Today</span><span class="tab"><svg><use href="#i-say"/></svg>Say</span><span class="tab"><svg><use href="#i-scenes"/></svg>Scenes</span><span class="tab"><svg><use href="#i-progress"/></svg>Progress</span></nav>
+</div></figure>
+
+<figure><figcaption>Say it my way</figcaption>
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="island"></span><span>100%</span></div>
+  <div class="scroll">
+    <h2 class="title" style="margin-top:8px">Say</h2>
+    <div class="card"><span class="dir">English → Spanish</span>
+      <div class="il" data-il='[["me gusta","Me gusta"],["escuchar","escuchar"],["este","esto"],["en","en"],["mi","mi"],["mind","mente",1]]'></div></div>
+    <div class="card"><span class="dir">Spanish → English</span>
+      <div class="il" data-il='[["como","how&apos;s"],["te va","it going?"]]' data-flip="1"></div></div>
+    <div class="card"><span class="dir">English → Spanish</span>
+      <div class="il" data-il='[["I","Yo"],["want","quiero"],["that you","que"],["come","vengas",1],["early","temprano",1]]'></div>
+      <p class="natural">More natural: Quiero que vengas temprano.</p></div>
+    <div class="card"><p class="q">When do I use usted?</p>
+      <p class="answer">With people you'd address formally: strangers older than you, officials, a landlord you don't know well. Use tú with friends, family and people your age.</p></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="inputbar"><div class="field">Say or type anything</div><button class="mic" aria-label="Hold to talk"><svg><use href="#i-mic"/></svg></button></div>
+  <nav class="tabs"><span class="tab"><svg><use href="#i-today"/></svg>Today</span><span class="tab on"><svg><use href="#i-say"/></svg>Say</span><span class="tab"><svg><use href="#i-scenes"/></svg>Scenes</span><span class="tab"><svg><use href="#i-progress"/></svg>Progress</span></nav>
+</div></figure>
+
+<figure><figcaption>Review</figcaption>
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="island"></span><span>100%</span></div>
+  <div class="review">
+    <div class="split"><span class="meta">3 of 7</span><span class="meta">Close</span></div>
+    <div class="progress"><i></i></div>
+    <div class="rcard" id="rcard" role="button" tabindex="0" aria-label="Review card, tap to reveal">
+      <div class="cue">mind</div>
+      <div class="ctx">me gusta escuchar esto en mi <b>&nbsp;</b></div>
+      <div class="hint">Tap to show, or hold the mic and say it</div>
+      <div class="back"><div class="es-xl">la mente</div><div class="reason">You said “mind” 9 times this week</div></div>
+    </div>
+    <div class="ratings" id="ratings">
+      <button class="rate forgot"><svg><use href="#i-x"/></svg>Forgot</button>
+      <button class="rate hard"><svg><use href="#i-tilde"/></svg>Hard</button>
+      <button class="rate good"><svg><use href="#i-check"/></svg>Got it</button>
+      <button class="rate easy"><svg><use href="#i-bolt"/></svg>Easy</button>
+    </div>
+  </div>
+</div></figure>
+
+<figure><figcaption>Scene prep</figcaption>
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="island"></span><span>100%</span></div>
+  <div class="scroll">
+    <p class="date" style="margin-top:8px">Thursday at 10:00, from your calendar</p>
+    <h2 class="title">At the dentist</h2>
+    <div class="card split"><span>How ready do you feel?</span><span class="dots" role="img" aria-label="Readiness 2 of 5"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></div>
+    <p class="section">Key phrases</p>
+    <div class="card list">
+      <div class="item"><div class="il" data-il='[["this tooth","esta muela",1],["hurts me","me duele"]]'></div></div>
+      <div class="item"><div class="il" data-il='[["since","desde"],["yesterday","ayer"]]'></div></div>
+      <div class="item"><div class="il" data-il='[["it hurts","me duele"],["when I eat","cuando como"],["cold things","cosas frías",1]]'></div></div>
+    </div>
+    <p class="section">If you get stuck</p>
+    <div class="card list"><div class="rescue">¿Puede repetirlo, por favor?</div><div class="rescue">Más despacio, por favor.</div><div class="rescue">¿Cómo se dice “filling”?</div></div>
+    <button class="btn wide">Rehearse</button>
+  </div>
+  <nav class="tabs"><span class="tab"><svg><use href="#i-today"/></svg>Today</span><span class="tab"><svg><use href="#i-say"/></svg>Say</span><span class="tab on"><svg><use href="#i-scenes"/></svg>Scenes</span><span class="tab"><svg><use href="#i-progress"/></svg>Progress</span></nav>
+</div></figure>
+
+<figure><figcaption>Rehearse</figcaption>
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="island"></span><span>100%</span></div>
+  <div class="scroll">
+    <div class="split" style="margin:8px 0 16px"><h2 style="font-size:20px">Dentist rehearsal</h2><span class="dir" style="margin:0">Gentle</span></div>
+    <div class="chat">
+      <div class="bubble coach">Buenos días. ¿Qué le pasa?<small>Good morning. What's wrong with you?</small></div>
+      <div class="bubble you">Me duele esta… tooth<div class="native">A native would say <em>Me duele esta muela.</em></div></div>
+      <div class="bubble coach">¿Desde cuándo le duele?<small>Since when does it hurt you?</small></div>
+      <div class="bubble you">Desde ayer.</div>
+      <div class="bubble coach">Vale. ¿Le duele con el frío?<small>OK. Does it hurt you with the cold?</small></div>
+    </div>
+  </div>
+  <div class="scrim"></div>
+  <div class="controls"><button class="btn ghost">Hint</button><button class="mic" aria-label="Hold to talk"><svg><use href="#i-mic"/></svg></button><button class="btn ghost">In English</button></div>
+  <nav class="tabs"><span class="tab"><svg><use href="#i-today"/></svg>Today</span><span class="tab"><svg><use href="#i-say"/></svg>Say</span><span class="tab on"><svg><use href="#i-scenes"/></svg>Scenes</span><span class="tab"><svg><use href="#i-progress"/></svg>Progress</span></nav>
+</div></figure>
+
+<figure><figcaption>Progress</figcaption>
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="island"></span><span>100%</span></div>
+  <div class="scroll">
+    <h2 class="title" style="margin-top:8px">Progress</h2>
+    <div class="card">
+      <h3>English in your Spanish</h3>
+      <div class="split" style="align-items:flex-end; margin-top:6px"><span class="big">41%</span><span class="meta">down from 55% last week</span></div>
+      <svg viewBox="0 0 300 70" width="100%" height="70" role="img" aria-label="Weekly share of English, falling from 72% to 41% over six weeks" style="margin-top:8px">
+        <polyline fill="none" stroke="var(--lc-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="10,12 66,18 122,22 178,30 234,36 290,52"/>
+        <circle cx="290" cy="52" r="4" fill="var(--lc-accent)"/>
+      </svg>
+    </div>
+    <div class="card map">
+      <h3 style="margin-bottom:6px">Confidence by scene</h3>
+      <div class="item"><span>At the dentist</span><span class="delta">2 <svg width="14" height="14"><use href="#i-progress"/></svg> <b>4</b></span></div>
+      <div class="item"><span>Talking about my work</span><span class="delta">1 <svg width="14" height="14"><use href="#i-progress"/></svg> <b>3</b></span></div>
+      <div class="item"><span>Ordering food</span><span class="delta">3 <svg width="14" height="14"><use href="#i-progress"/></svg> <b>4</b></span></div>
+    </div>
+    <div class="card stats"><div><b>126</b><span>words met</span></div><div><b>88</b><span>kept</span></div><div><b>7</b><span>due today</span></div></div>
+  </div>
+  <nav class="tabs"><span class="tab"><svg><use href="#i-today"/></svg>Today</span><span class="tab"><svg><use href="#i-say"/></svg>Say</span><span class="tab"><svg><use href="#i-scenes"/></svg>Scenes</span><span class="tab on"><svg><use href="#i-progress"/></svg>Progress</span></nav>
+</div></figure>
+
+</main>
+<script>
+document.querySelectorAll('.il').forEach(el => {
+  const groups = JSON.parse(el.dataset.il);
+  el.innerHTML = groups.map(([s, t, isNew]) =>
+    `<span class="g${isNew ? ' new' : ''}" role="button" tabindex="0" aria-label="${s}, ${el.dataset.flip ? 'English' : 'Spanish'}: ${t}${isNew ? ', new word' : ''}"><span class="s">${s}</span><span class="t">${t}</span></span>`
+  ).join('');
+  el.addEventListener('click', e => {
+    const g = e.target.closest('.g'); if (!g) return;
+    const was = g.classList.contains('on');
+    el.querySelectorAll('.g').forEach(x => x.classList.remove('on'));
+    if (!was) g.classList.add('on');
+  });
+});
+const rcard = document.getElementById('rcard');
+rcard.addEventListener('click', () => { rcard.classList.add('flipped'); document.getElementById('ratings').classList.add('show'); });
+rcard.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') rcard.click(); });
+document.querySelectorAll('.coach').forEach(b => b.addEventListener('click', () => b.classList.toggle('open')));
+const t = document.getElementById('theme');
+t.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme !== 'dark';
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  t.textContent = dark ? 'Light mode' : 'Dark mode';
+  t.setAttribute('aria-pressed', String(dark));
+});
+</script>
+</body>
+</html>
