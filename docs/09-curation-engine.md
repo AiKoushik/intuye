@@ -21,10 +21,10 @@ For each candidate *i*:
 
 ```
 score_i = 3.0 · scenario_urgency_i      # 1 / (1 + hours_until_scenario / 24), 0 if none
-        + 2.0 · recency_frequency_i     # Σ over mentions of exp(−age_days / 7), capped at 1 after log scaling
+        + (1.2 + 1.8 · recency_frequency_i) if mentioned   # Σ exp(−age_days / 7), log-scaled to ≤ 1; the 1.2 floor keeps your words above any base word
         + 2.0 · struggle_i              # (1 − R_i) if learned, + 0.5 per mispronunciation in 14 days (cap 1)
         + 1.0 · topic_salience_i        # share of the last 7 days' utterances in this item's topic
-        + base_weight(level) · base_i   # 1 for base items, scaled by 1/rank^0.3
+        + 0.4 · base_weight(level) / rank_i^0.3   # base items only; ≤ 1.0, so the base list fills gaps and never leads
         − 5.0 · already_due_or_seen_i   # avoid duplicates with today's reviews
 ```
 

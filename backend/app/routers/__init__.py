@@ -6,9 +6,9 @@ from app.security.app_attest import attested
 
 
 def register(app: FastAPI) -> None:
-    from app.routers import account, attest, auth, coach, utterances
+    from app.routers import account, attest, auth, coach, utterances, words
 
     app.include_router(attest.router)  # attestation endpoints can't require an assertion yet
     guarded = [Depends(attested)]
-    for module in (auth, account, coach, utterances):
+    for module in (auth, account, coach, utterances, words):
         app.include_router(module.router, dependencies=guarded)
