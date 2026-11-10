@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app import errors
+from app.agents.registry import Graphs
+from app.llm.provider import build_llm
 from app.config import Settings, get_settings
 from app.db import Database
 from app.security.middleware import SecurityMiddleware
@@ -33,6 +35,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.tokens = TokenService(settings)
     app.state.apple = AppleIdentityVerifier(settings)
     app.state.attest = AppAttestService(settings)
+    app.state.graphs = Graphs(build_llm(settings))
     errors.install(app)
     app.add_middleware(SecurityMiddleware, max_body=settings.max_body_bytes,
                        max_batch_body=settings.max_batch_body_bytes)
