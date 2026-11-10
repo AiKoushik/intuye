@@ -1,0 +1,45 @@
+{
+  "$comment": "Single source of truth for colour. Families are OKLCH tonal ramps; semantic tokens reference family.step per appearance. Run generate.py after editing.",
+  "steps": {
+    "25":  0.985,
+    "50":  0.965,
+    "100": 0.93,
+    "200": 0.88,
+    "300": 0.80,
+    "400": 0.70,
+    "500": 0.60,
+    "600": 0.50,
+    "700": 0.42,
+    "800": 0.34,
+    "900": 0.25,
+    "950": 0.20,
+    "975": 0.16
+  },
+  "families": {
+    "ink":     { "hue": 262, "chroma": 0.018, "note": "Blue-black writing ink. Neutrals for text, surfaces and borders." },
+    "azulejo": { "hue": 270, "chroma": 0.21,  "note": "Ultramarine of Spanish tilework. The single accent: actions, links, alignment threads." },
+    "azafran": { "hue": 80,  "chroma": 0.165, "note": "Saffron. The highlighter mark on new words; also attention states." },
+    "olivo":   { "hue": 135, "chroma": 0.14,  "note": "Olive. Success and 'Got it'." },
+    "granada": { "hue": 24,  "chroma": 0.19,  "note": "Pomegranate. Errors and 'Forgot'." }
+  },
+  "semantic": {
+    "canvas":          { "light": "ink.25",     "dark": "ink.975",    "lightHC": "#FFFFFF",    "darkHC": "#000000",  "role": "background" },
+    "surface":         { "light": "#FFFFFF",    "dark": "ink.950",    "lightHC": "#FFFFFF",    "darkHC": "ink.975",  "role": "background" },
+    "sunken":          { "light": "ink.50",     "dark": "#0E1015",    "lightHC": "ink.50",     "darkHC": "#000000",  "role": "background" },
+    "textPrimary":     { "light": "ink.950",    "dark": "ink.25",     "lightHC": "#000000",    "darkHC": "#FFFFFF",  "role": "text" },
+    "textSecondary":   { "light": "ink.600",    "dark": "ink.300",    "lightHC": "ink.800",    "darkHC": "ink.100",  "role": "text" },
+    "textTertiary":    { "light": "ink.500",    "dark": "ink.400",    "lightHC": "ink.700",    "darkHC": "ink.200",  "role": "largeText" },
+    "hairline":        { "light": "ink.100",    "dark": "ink.900",    "lightHC": "ink.400",    "darkHC": "ink.500",  "role": "decorative" },
+    "borderStrong":    { "light": "ink.500",    "dark": "ink.600",    "lightHC": "ink.700",    "darkHC": "ink.300",  "role": "ui" },
+    "accent":          { "light": "azulejo.600","dark": "azulejo.300","lightHC": "azulejo.700","darkHC": "azulejo.200","role": "text" },
+    "accentFill":      { "light": "azulejo.600","dark": "azulejo.400","lightHC": "azulejo.700","darkHC": "azulejo.300","role": "background" },
+    "onAccent":        { "light": "#FFFFFF",    "dark": "ink.975",    "lightHC": "#FFFFFF",    "darkHC": "#000000",  "role": "text", "on": "accentFill" },
+    "accentSubtle":    { "light": "azulejo.50", "dark": "azulejo.900","lightHC": "azulejo.100","darkHC": "azulejo.950","role": "background" },
+    "highlight":       { "light": "azafran.200","dark": "azafran.800","lightHC": "azafran.300","darkHC": "azafran.700","role": "background" },
+    "onHighlight":     { "light": "ink.950",    "dark": "ink.25",     "lightHC": "#000000",    "darkHC": "#FFFFFF",  "role": "text", "on": "highlight" },
+    "success":         { "light": "olivo.700",  "dark": "olivo.300",  "lightHC": "olivo.800",  "darkHC": "olivo.200","role": "text" },
+    "warning":         { "light": "azafran.700","dark": "azafran.300","lightHC": "azafran.800","darkHC": "azafran.200","role": "text" },
+    "danger":          { "light": "granada.600","dark": "granada.300","lightHC": "granada.700","darkHC": "granada.200","role": "text" },
+    "focusRing":       { "light": "azulejo.500","dark": "azulejo.300","lightHC": "azulejo.700","darkHC": "azulejo.200","role": "ui" }
+  }
+}
