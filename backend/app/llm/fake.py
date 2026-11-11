@@ -92,6 +92,8 @@ class FakeLLM:
                     _phrase("Open your mouth", "Abra la boca")]
             return s.PrepPackOut(key=key, rescue=rescue, hear=hear)  # type: ignore[return-value]
         if schema is s.CoachTurnOut:
+            if "(scene starts" in user:
+                return s.CoachTurnOut(reply_es="Buenos días. ¿Qué le pasa?", reply_en="Good morning. What's wrong with you?")  # type: ignore[return-value]
             turns = user.count("LEARNER:")
             native = None if any(c in text for c in "áéíóúñ¿") or "duele" in text.lower() else _to_es(text).close
             if turns >= 4:
