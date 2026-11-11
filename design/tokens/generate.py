@@ -4,7 +4,7 @@
 Reads `source.json` (OKLCH tonal ramps + semantic tokens per appearance) and writes:
 
   design/tokens/build/tokens.json         resolved values (OKLCH, Display P3, sRGB hex)
-  design/tokens/build/tokens.css          CSS custom properties (light/dark/high-contrast)
+  design/tokens/build/tokens.css          CSS custom properties (light/dark/high-contrast), also copied to web/
   design/tokens/build/contrast-report.md  WCAG 2.2 contrast for every text/UI pair
   ios/LangCoach/Resources/Assets.xcassets/Colors/*.colorset   Display P3 colour sets
   ios/LangCoach/DesignSystem/ColorTokens.swift                SwiftUI accessors
@@ -256,6 +256,9 @@ def write_css(ramps: dict, tokens: dict) -> None:
         "} }",
     ]
     (BUILD / "tokens.css").write_text("\n".join(css) + "\n")
+    web = ROOT / "web"
+    if web.is_dir():
+        (web / "tokens.css").write_text("\n".join(css) + "\n")  # web test client uses the same tokens
 
 
 def write_report(tokens: dict, rows: list[dict]) -> None:
