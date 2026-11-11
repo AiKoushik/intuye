@@ -8,10 +8,11 @@ struct CapturePill: View {
     var body: some View {
         Button(action: open) {
             HStack(spacing: Space.s) {
-                Circle()
-                    .fill(model.capture.isListening ? LC.Color.success : .clear)
-                    .strokeBorder(model.capture.isListening ? LC.Color.success : LC.Color.borderStrong, lineWidth: 1.5)
-                    .frame(width: 10, height: 10)
+                ZStack {
+                    Circle().fill(model.capture.isListening ? LC.Color.success : .clear)
+                    Circle().strokeBorder(model.capture.isListening ? LC.Color.success : LC.Color.borderStrong, lineWidth: 1.5)
+                }
+                .frame(width: 10, height: 10)
                 Text(model.capture.isListening ? "Listening" : "Capture off").font(.subheadline)
                 Spacer()
                 Text("\(model.capture.sentencesToday) sentences today")
