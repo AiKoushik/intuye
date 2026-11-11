@@ -1,0 +1,8 @@
+# Conda environment for the LangCoach backend. Python packages come from pyproject.toml
+# (installed by scripts/run-backend.* with `pip install -e ".[dev]"`), so there's one source of truth.
+name: langcoach
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip

@@ -18,8 +18,9 @@ def anyio_backend() -> str:
 
 @pytest.fixture
 def settings() -> Settings:
-    return Settings(env="test", database_url="sqlite+aiosqlite:///:memory:", app_attest_mode="off",
-                    llm_provider="fake")
+    # Isolated from backend/.env and local overrides, so a developer's settings never change test results.
+    return Settings(_env_file=None, env="test", database_url="sqlite+aiosqlite:///:memory:", app_attest_mode="off",
+                    llm_provider="fake", dev_login_enabled=False, web_client_dir="", cors_origins="")
 
 
 @pytest.fixture

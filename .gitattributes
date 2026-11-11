@@ -3,3 +3,5 @@
 *.jpg binary
 *.pdf binary
 *.bundle binary
+*.bat text eol=crlf
+*.ps1 text eol=crlf

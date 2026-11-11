@@ -25,15 +25,44 @@ Feature-by-feature status is in [`docs/02-feature-list.md`](docs/02-feature-list
 | `backend/` | API: Sign in with Apple, rotating sessions, App Attest, LangGraph graphs (coach, ingest, prep, rehearse), FSRS, curation |
 | `ios/` | XcodeGen project, `LangCoachKit` Swift package (models, API client, offline queue), SwiftUI app |
 
-## Run the backend
+## Run it (conda)
+
+One command sets up the `langcoach` conda env on first run, installs dependencies, creates
+`backend/.env` from `backend/.env.development`, starts the API, and opens the **web test build**:
+
+```powershell
+# Windows (PowerShell, or double-click scripts\run-backend.bat)
+.\scripts\run-backend.ps1                    # http://localhost:8000/web/  (API docs at /docs)
+.\scripts\run-backend.ps1 -Model local       # use Hearth / Ollama / vLLM from backend\.env
+.\scripts\run-backend.ps1 -Model anthropic   # use Claude (ANTHROPIC_API_KEY in backend\.env)
+.\scripts\run-backend.ps1 -Test              # run the tests first
+.\scripts\run-backend.ps1 -Update            # reinstall dependencies
+.\scripts\run-backend.ps1 -BindHost 0.0.0.0  # reachable from your iPhone on the same Wi-Fi
+```
 
 ```bash
-cd backend
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
-cp .env.example .env
-pytest                                                   # 17 happy-path tests, no model server needed
-uvicorn app.main:app --reload --host 0.0.0.0             # http://localhost:8000/docs
+# macOS / Linux / WSL
+scripts/run-backend.sh [--model local|anthropic|fake] [--test] [--update] [--host 0.0.0.0] [--port 8000]
+```
+
+Out of the box `LLM_PROVIDER=fake` (a tiny offline dictionary) so you can click through every screen
+without a model server. For real Spanish, set `LLM_BASE_URL`, `LLM_FAST_MODEL` and `LLM_SMART_MODEL`
+in `backend/.env` to your Hearth endpoint and run with `-Model local`.
+
+### The web test build
+
+`web/` mirrors the iPhone screens (same colour tokens, layout and flows) against the real API, served by
+the backend at `/web` in development. Sign-in is a dev-only name field (`DEV_LOGIN_ENABLED`), App Attest
+is off locally, speech uses the browser (Chrome or Edge), and the Capture sheet has a
+"pretend capture heard these" box for testing curation without a mic.
+
+### Manual setup (without the scripts)
+
+```bash
+conda env create -f backend/environment.yml && conda activate langcoach
+cd backend && pip install -e ".[dev]" && cp .env.development .env
+pytest                                                   # happy-path tests, no model server needed
+uvicorn app.main:app --reload                            # http://localhost:8000/web/
 ```
 
 **Models.** `LLM_PROVIDER=openai_compatible` points every LangGraph graph at any OpenAI-style endpoint

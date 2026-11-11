@@ -13,7 +13,8 @@ pytestmark = pytest.mark.anyio
 
 
 async def test_attest_register_then_signed_requests():
-    base = Settings(env="test", database_url="sqlite+aiosqlite:///:memory:", llm_provider="fake")
+    base = Settings(_env_file=None, env="test", database_url="sqlite+aiosqlite:///:memory:", llm_provider="fake",
+                    dev_login_enabled=False)
     device = FakeAttestDevice(base.app_id)
     settings = base.model_copy(update={"app_attest_mode": "enforce", "app_attest_root_pem": device.root_pem})
     app = create_app(settings)
