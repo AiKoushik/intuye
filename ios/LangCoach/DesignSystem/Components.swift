@@ -101,20 +101,21 @@ struct InterlinearLine: View {
     let pairs: [AlignedPair]
     /// True when the bottom line is English (Spanish → English results), so "new" marks the top line.
     var bottomIsEnglish = false
-    @State private var selected: String?
+    @State private var selected: Int?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         FlowLayout(spacing: 10, lineSpacing: 12) {
-            ForEach(pairs) { pair in
-                group(pair)
+            // Index identity: the same pair can appear twice in one sentence ("en ... en").
+            ForEach(Array(pairs.enumerated()), id: \.offset) { index, pair in
+                group(pair, index: index)
             }
         }
         .accessibilityElement(children: .contain)
     }
 
-    private func group(_ pair: AlignedPair) -> some View {
-        let isOn = selected == pair.id
+    private func group(_ pair: AlignedPair, index: Int) -> some View {
+        let isOn = selected == index
         return VStack(alignment: .leading, spacing: 1) {
             Text(pair.src)
                 .font(bottomIsEnglish ? .lcSpanishBody : .lcSource)
@@ -133,7 +134,7 @@ struct InterlinearLine: View {
         .background(isOn ? LC.Color.highlight : .clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
         .contentShape(Rectangle())
         .onTapGesture {
-            withAnimation(reduceMotion ? nil : Motion.pair) { selected = isOn ? nil : pair.id }
+            withAnimation(reduceMotion ? nil : Motion.pair) { selected = isOn ? nil : index }
         }
         .sensoryFeedback(.selection, trigger: selected)
         .accessibilityElement(children: .ignore)
