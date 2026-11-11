@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 
@@ -47,7 +48,29 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     from app.routers import register
 
     register(app)
+    _mount_dev_extras(app, settings)
     return app
+
+
+def _mount_dev_extras(app: FastAPI, settings: Settings) -> None:
+    """Web test client at /web and optional CORS — development only."""
+    if settings.env == "production":
+        return
+    if settings.cors_origins:
+        from fastapi.middleware.cors import CORSMiddleware
+
+        app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
+                           allow_methods=["*"], allow_headers=["*"])
+    web_dir = Path(settings.web_client_dir) if settings.web_client_dir else Path(__file__).resolve().parents[2] / "web"
+    if web_dir.is_dir():
+        from fastapi.responses import RedirectResponse
+        from fastapi.staticfiles import StaticFiles
+
+        app.mount("/web", StaticFiles(directory=web_dir, html=True), name="web")
+
+        @app.get("/", include_in_schema=False)
+        async def root() -> RedirectResponse:
+            return RedirectResponse("/web/")
 
 
 app = create_app()  # for `uvicorn app.main:app`; tests build their own with create_app(settings)

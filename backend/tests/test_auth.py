@@ -32,3 +32,33 @@ async def test_settings_export_and_delete(client, apple, auth):
 
     assert (await client.delete("/v1/account", headers=auth)).status_code == 204
     assert (await client.get("/v1/me", headers=auth)).status_code == 401
+
+
+async def test_dev_sign_in_only_when_enabled(app, client):
+    assert (await client.post("/v1/auth/dev", json={"name": "Ahsan"})).status_code == 404  # off by default
+
+
+async def test_dev_sign_in_and_web_client_served(settings, apple):
+    from httpx import ASGITransport, AsyncClient
+
+    from app.main import create_app
+
+    dev_app = create_app(settings.model_copy(update={"dev_login_enabled": True}))
+    await dev_app.state.db.create_all()
+    async with AsyncClient(transport=ASGITransport(app=dev_app), base_url="http://test") as c:
+        r = await c.post("/v1/auth/dev", json={"name": "Ahsan Iqbal"})
+        assert r.status_code == 200 and r.json()["user"]["display_name"] == "Ahsan Iqbal"
+        me = await c.get("/v1/me", headers={"authorization": f"Bearer {r.json()['access_token']}"})
+        assert me.status_code == 200
+        page = await c.get("/web/")
+        assert page.status_code == 200 and "LangCoach" in page.text
+    await dev_app.state.db.dispose()
+
+
+def test_production_refuses_dev_login():
+    import pytest as _pytest
+
+    from app.config import Settings
+
+    with _pytest.raises(ValueError):
+        Settings(env="production", jwt_private_key_pem="x", llm_provider="anthropic", dev_login_enabled=True)

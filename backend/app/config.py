@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     llm_smart_model: str = "qwen3-27b"
     anthropic_api_key: str = ""
 
+    # Local testing: dev sign-in (no Apple) and the web client served at /web. Refused in production.
+    dev_login_enabled: bool = False
+    web_client_dir: str = ""  # empty = <repo>/web
+    cors_origins: str = ""    # comma-separated, e.g. http://localhost:5173
+
     # Limits
     max_body_bytes: int = 64 * 1024
     max_batch_body_bytes: int = 256 * 1024
@@ -58,6 +63,8 @@ class Settings(BaseSettings):
                 raise ValueError("JWT_PRIVATE_KEY_PEM is required in production")
             if self.llm_provider == "fake":
                 raise ValueError("LLM_PROVIDER=fake is not allowed in production")
+            if self.dev_login_enabled:
+                raise ValueError("DEV_LOGIN_ENABLED is not allowed in production")
         return self
 
 

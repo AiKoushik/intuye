@@ -133,8 +133,8 @@ struct NewSceneSheet: View {
     private func create() async {
         busy = true; defer { busy = false }
         do {
-            let s = try await app.api.createScenario(NewScenario(title: title, startsAt: hasDate ? date : nil,
-                                                                 kind: hasDate ? "upcoming" : "manual"))
+            // "upcoming" is reserved for calendar imports ("from your calendar"); hand-made scenes are "manual".
+            let s = try await app.api.createScenario(NewScenario(title: title, startsAt: hasDate ? date : nil, kind: "manual"))
             if hasDate {
                 _ = await app.notifications.requestPermission()
                 await app.notifications.scheduleSceneReminder(id: s.id, title: s.title, phrases: s.phrases?.key.count ?? 8, startsAt: date)

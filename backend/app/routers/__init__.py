@@ -12,3 +12,9 @@ def register(app: FastAPI) -> None:
     guarded = [Depends(attested)]
     for module in (auth, account, coach, utterances, words, scenarios, rehearsals, progress):
         app.include_router(module.router, dependencies=guarded)
+
+    s = app.state.settings
+    if s.dev_login_enabled and s.env != "production":
+        from app.routers import dev
+
+        app.include_router(dev.router, dependencies=guarded)
