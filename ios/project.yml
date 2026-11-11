@@ -1,0 +1,63 @@
+# XcodeGen spec. Generate the project with:  brew install xcodegen && cd ios && xcodegen generate
+name: LangCoach
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: ""            # set your Apple Developer Team ID
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+  configs:
+    Debug:
+      LC_API_BASE_URL: "http://localhost:8000"
+    Release:
+      LC_API_BASE_URL: "https://api.example.com"
+packages:
+  LangCoachKit:
+    path: Packages/LangCoachKit
+targets:
+  LangCoach:
+    type: application
+    platform: iOS
+    sources:
+      - path: LangCoach
+    dependencies:
+      - package: LangCoachKit
+    entitlements:
+      path: LangCoach/LangCoach.entitlements
+      properties:
+        com.apple.developer.applesignin: [Default]
+        com.apple.developer.devicecheck.appattest-environment: development
+    info:
+      path: LangCoach/Info.plist
+      properties:
+        CFBundleDisplayName: LangCoach
+        LCAPIBaseURL: $(LC_API_BASE_URL)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIBackgroundModes: [audio]
+        NSMicrophoneUsageDescription: "LangCoach listens while you hold the mic, or during capture windows you choose, to turn your sentences into Spanish. Audio stays on your iPhone."
+        NSSpeechRecognitionUsageDescription: "Speech is transcribed on your iPhone so only text is sent to your coach."
+        NSCalendarsFullAccessUsageDescription: "LangCoach reads upcoming event titles so it can prepare Spanish for them. Only titles and times are sent."
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.langcoach
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: accent
+        GENERATE_INFOPLIST_FILE: NO
+schemes:
+  LangCoach:
+    build:
+      targets:
+        LangCoach: all
+    test:
+      targets:
+        - package: LangCoachKit/LangCoachKitTests
