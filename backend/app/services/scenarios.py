@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.runtime import AgentContext
 from app.agents.scene_builder import build_scene
-from app.agents.schemas import SceneCardOut
+from app.agents.schemas import PrepPackOut, SceneCardOut
 from app.models import Readiness, Scenario, ScenarioPhrase, UserSettings
 from app.services.lexicon import upsert_lexeme
 
@@ -15,13 +15,13 @@ async def context_for(db: AsyncSession, user_id: str, title: str = "") -> AgentC
     return AgentContext(dialect=settings.dialect if settings else "es-419", level=settings.level if settings else 0, title=title)
 
 
-async def prepare(db: AsyncSession, agents, scenario: Scenario, ctx: AgentContext | None = None) -> SceneCardOut:
+async def prepare(db: AsyncSession, agents, scenario: Scenario, ctx: AgentContext | None = None) -> tuple[PrepPackOut, SceneCardOut]:
     """Run the scene builder agent and store the pack; key phrases become lexemes tied to the scene."""
     ctx = ctx or await context_for(db, scenario.user_id, scenario.title)
     pack, card = await build_scene(agents, ctx, scenario.title, scenario.details)
-    scenario.topic = scenario.topic or card.topic[:64]
+    scenario.topic = scenario.topic or card.topic.strip().lower()[:64] or None
     await store_pack(db, scenario, pack.model_dump())
-    return card
+    return pack, card
 
 
 async def store_pack(db: AsyncSession, scenario: Scenario, pack: dict) -> None:
@@ -39,7 +39,8 @@ async def serialise(db: AsyncSession, s: Scenario, with_phrases: bool = False) -
     ratings = list((await db.execute(select(Readiness).where(Readiness.scenario_id == s.id).order_by(Readiness.at))).scalars())
     before = next((r.value for r in ratings if r.phase == "before"), None)
     after = next((r.value for r in reversed(ratings) if r.phase == "after"), None)
-    out = {"id": s.id, "title": s.title, "kind": s.kind, "topic": s.topic, "status": s.status,
+    out = {"id": s.id, "title": s.title, "details": s.details, "kind": s.kind, "topic": s.topic, "status": s.status,
+           "template_id": s.template_id,
            "starts_at": s.starts_at.isoformat() if s.starts_at else None,
            "readiness": {"before": before, "after": after, "current": after or before}}
     if with_phrases:

@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     llm_smart_model: str = "qwen3-27b"
     anthropic_api_key: str = ""
 
+    # Scene library: embeddings for search and de-duplication
+    embed_provider: Literal["hash", "openai_compatible"] = "hash"
+    embed_model: str = "bge-m3"
+    embed_base_url: str = ""  # empty = llm_base_url
+    library_similar_threshold: float = 0.82
+
     # Local testing: dev sign-in (no Apple) and the web client served at /web. Refused in production.
     dev_login_enabled: bool = False
     web_client_dir: str = ""  # empty = <repo>/web

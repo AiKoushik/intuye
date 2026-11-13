@@ -75,7 +75,7 @@ def _phrase(en: str, es: str) -> s.PhraseOut:
 
 def _card(text: str) -> s.SceneCardOut:
     title = re.split(r"\n", text)[0].strip().removeprefix("SCENE:").strip() or "A scene"
-    return s.SceneCardOut(title=title[:80], situation=f"Getting through this in Spanish: {title.lower()}.",
+    return s.SceneCardOut(title=title[:80], situation=f"{title}.",
                           topic=_topic(text) or "everyday", shareable=not re.search(r"\d{3,}|@", text))
 
 

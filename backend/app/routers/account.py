@@ -5,7 +5,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models as m
@@ -109,6 +109,11 @@ async def export(user: m.User = Depends(current_user), db: AsyncSession = Depend
         select(m.RehearsalTurn).where(m.RehearsalTurn.rehearsal_id.in_(reh_ids)))).scalars()]
     data["batch_items"] = [_row(r) for r in (await db.execute(
         select(m.BatchItem).where(m.BatchItem.batch_id.in_(batch_ids)))).scalars()]
+    # Library scenes shared with your name (anonymous shares hold no link to you), and your reports.
+    data["library_scenes_credited"] = [{k: v for k, v in _row(r).items() if k != "embedding"} for r in (await db.execute(
+        select(m.SceneTemplate).where(m.SceneTemplate.creator_user_id == user.id))).scalars()]
+    data["library_reports"] = [_row(r) for r in (await db.execute(
+        select(m.LibraryReport).where(m.LibraryReport.user_id == user.id))).scalars()]
     return data
 
 
@@ -121,6 +126,10 @@ async def delete_account(user: m.User = Depends(current_user), db: AsyncSession 
     await db.execute(delete(m.ScenarioPhrase).where(m.ScenarioPhrase.scenario_id.in_(scen)))
     await db.execute(delete(m.RehearsalTurn).where(m.RehearsalTurn.rehearsal_id.in_(reh)))
     await db.execute(delete(m.BatchItem).where(m.BatchItem.batch_id.in_(bat)))
+    # Shared scenes stay in the library, anonymised.
+    await db.execute(update(m.SceneTemplate).where(m.SceneTemplate.creator_user_id == user.id)
+                     .values(creator_user_id=None, credit_name=None))
+    await db.execute(delete(m.LibraryReport).where(m.LibraryReport.user_id == user.id))
     for t in [m.Readiness, m.Review, m.Card, m.LexemeEvent, m.PronunciationAttempt, m.Rehearsal, m.Batch,
               m.Scenario, m.Lexeme, m.Utterance, m.UserSettings, m.RefreshToken, m.AttestKey]:
         await db.execute(delete(t).where(t.user_id == user.id))

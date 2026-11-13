@@ -7,6 +7,8 @@ from fastapi import FastAPI
 
 from app import errors
 from app.agents.registry import Agents
+from app.library.embeddings import build_embedder
+from app.library.index import LibraryIndex
 from app.config import Settings, get_settings
 from app.db import Database
 from app.security.middleware import SecurityMiddleware
@@ -36,6 +38,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.apple = AppleIdentityVerifier(settings)
     app.state.attest = AppAttestService(settings)
     app.state.agents = Agents(settings)
+    app.state.library = LibraryIndex(build_embedder(settings))
     errors.install(app)
     app.add_middleware(SecurityMiddleware, max_body=settings.max_body_bytes,
                        max_batch_body=settings.max_batch_body_bytes)

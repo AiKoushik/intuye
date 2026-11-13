@@ -12,7 +12,8 @@ from app.db import get_session
 from app.errors import APIError
 from app.models import Readiness, Scenario, ScenarioPhrase, User, utcnow
 from app.security.deps import current_user, limit
-from app.services.scenarios import prepare, serialise
+from app.services import library
+from app.services.scenarios import context_for, prepare, serialise
 
 router = APIRouter(prefix="/v1/scenarios", tags=["scenarios"])
 CALENDAR_HORIZON = timedelta(days=14)
@@ -24,8 +25,11 @@ def _aware(dt: datetime | None) -> datetime | None:
 
 class ScenarioIn(BaseModel):
     title: str = Field(min_length=2, max_length=160)
+    details: str | None = Field(default=None, max_length=600)
     starts_at: datetime | None = None
     kind: Literal["manual", "upcoming"] = "manual"
+    share: bool = True
+    credit: Literal["anonymous", "name"] = "anonymous"
 
 
 class CalendarEvent(BaseModel):
@@ -44,6 +48,14 @@ class ReadinessIn(BaseModel):
 
 class StatusIn(BaseModel):
     status: Literal["active", "done"]
+
+
+async def _build(request: Request, db: AsyncSession, s: Scenario):
+    """Scene builder with the library search tool wired to this learner's Spanish variety."""
+    ctx = await context_for(db, s.user_id, s.title)
+    ctx.library_search = library.search_for_agent(request.app.state.db.sessionmaker, request.app.state.library, ctx.dialect)
+    pack, card = await prepare(db, request.app.state.agents, s, ctx)
+    return pack, card, ctx
 
 
 async def _owned(db: AsyncSession, user_id: str, scenario_id: str) -> Scenario:
@@ -66,11 +78,14 @@ async def list_scenarios(user: User = Depends(current_user), db: AsyncSession = 
 @router.post("", dependencies=[limit("coach", "coach_rate_limit_per_minute")])
 async def create(body: ScenarioIn, request: Request, user: User = Depends(current_user),
                  db: AsyncSession = Depends(get_session)) -> dict:
-    s = Scenario(user_id=user.id, title=body.title.strip(), kind=body.kind, starts_at=_aware(body.starts_at))
+    details = " ".join(body.details.split()) if body.details else None
+    s = Scenario(user_id=user.id, title=body.title.strip(), details=details or None, kind=body.kind, starts_at=_aware(body.starts_at))
     db.add(s)
     await db.commit()
-    await prepare(db, request.app.state.agents, s)
-    return await serialise(db, s, with_phrases=True)
+    pack, card, ctx = await _build(request, db, s)
+    shared = await library.share(db, request.app.state.library, user, s, card, pack, ctx.dialect, ctx.level, body.share,
+                                 body.credit, request.app.state.settings.library_similar_threshold)
+    return await serialise(db, s, with_phrases=True) | {"library": shared}
 
 
 @router.post("/calendar", dependencies=[limit("coach", "coach_rate_limit_per_minute")])
@@ -87,7 +102,7 @@ async def from_calendar(body: CalendarIn, request: Request, user: User = Depends
         s = Scenario(user_id=user.id, title=e.title.strip(), kind="upcoming", starts_at=starts)
         db.add(s)
         await db.commit()
-        await prepare(db, request.app.state.agents, s)
+        await _build(request, db, s)  # calendar scenes are never shared
         created.append(await serialise(db, s))
     return {"created": created}
 
@@ -104,8 +119,8 @@ async def set_status(scenario_id: str, body: StatusIn, request: Request, user: U
     s.status = body.status
     await db.commit()
     has_pack = (await db.execute(select(ScenarioPhrase.id).where(ScenarioPhrase.scenario_id == s.id).limit(1))).first()
-    if body.status == "active" and not has_pack:  # accepting a suggested recurring scene
-        await prepare(db, request.app.state.agents, s)
+    if body.status == "active" and not has_pack:  # accepting a suggested recurring scene (not shared)
+        await _build(request, db, s)
     return await serialise(db, s, with_phrases=True)
 
 

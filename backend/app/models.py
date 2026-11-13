@@ -182,7 +182,39 @@ class Scenario(Base):
     topic: Mapped[str | None] = mapped_column(String(64))
     starts_at: Mapped[datetime | None] = mapped_column(TZDateTime())
     status: Mapped[str] = mapped_column(String(12), default="active")  # suggested | active | done
+    template_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("scene_templates.id", ondelete="SET NULL"))
     created_at: Mapped[datetime] = mapped_column(TZDateTime(), default=utcnow)
+
+
+class SceneTemplate(Base):
+    """A scene in the shared library. Generalised by the scene builder; not owned by anyone unless credited."""
+
+    __tablename__ = "scene_templates"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    title: Mapped[str] = mapped_column(String(160))
+    situation: Mapped[str] = mapped_column(String(400))
+    topic: Mapped[str | None] = mapped_column(String(64))
+    dialect: Mapped[str] = mapped_column(String(8), index=True)
+    level: Mapped[int] = mapped_column(Integer, default=0)
+    pack: Mapped[dict] = mapped_column(JSON)  # {key, rescue, hear}: [{en, es, alignment}]
+    embedding: Mapped[list] = mapped_column(JSON)
+    embed_model: Mapped[str] = mapped_column(String(80))
+    creator_user_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    credit_name: Mapped[str | None] = mapped_column(String(120))
+    uses: Mapped[int] = mapped_column(Integer, default=1)
+    reports: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(12), default="published")  # published | hidden
+    created_at: Mapped[datetime] = mapped_column(TZDateTime(), default=utcnow)
+
+
+class LibraryReport(Base):
+    __tablename__ = "library_reports"
+    __table_args__ = (UniqueConstraint("template_id", "user_id"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    template_id: Mapped[str] = mapped_column(String(36), ForeignKey("scene_templates.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[str] = UserFK()
+    reason: Mapped[str] = mapped_column(String(12))  # personal | offensive | wrong | other
+    at: Mapped[datetime] = mapped_column(TZDateTime(), default=utcnow)
 
 
 class ScenarioPhrase(Base):
