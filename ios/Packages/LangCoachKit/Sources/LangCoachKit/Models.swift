@@ -144,22 +144,94 @@ public struct PhraseGroups: Codable, Sendable, Hashable { public let key: [Phras
 public struct ScenarioDTO: Codable, Sendable, Hashable, Identifiable {
     public let id: String
     public let title: String
+    public let details: String?
     public let kind: String
     public let topic: String?
     public let status: String
     public let startsAt: String?
     public let readiness: Readiness
     public let phrases: PhraseGroups?
+    public let templateId: String?
+    /// Only on create: what happened to the scene in the shared library.
+    public let library: LibraryShareResult?
 }
 
 public struct ScenarioList: Codable, Sendable { public let upcoming: [ScenarioDTO]; public let recurring: [ScenarioDTO]; public let mine: [ScenarioDTO] }
 
 public struct NewScenario: Codable, Sendable {
     public let title: String
+    public let details: String?
     public let startsAt: String?
     public let kind: String
-    public init(title: String, startsAt: Date?, kind: String = "manual") {
-        self.title = title; self.startsAt = startsAt.map(LCDate.string); self.kind = kind
+    public let share: Bool
+    public let credit: String  // anonymous | name
+    public init(title: String, details: String? = nil, startsAt: Date?, kind: String = "manual", share: Bool = true, showName: Bool = false) {
+        self.title = title; self.details = details; self.startsAt = startsAt.map(LCDate.string); self.kind = kind
+        self.share = share; self.credit = share && showName ? "name" : "anonymous"
+    }
+}
+
+// MARK: Scene library
+
+public struct LibraryCard: Codable, Sendable, Hashable, Identifiable {
+    public let id: String
+    public let title: String
+    public let situation: String
+    public let topic: String?
+    public let uses: Int
+    public let credit: String?
+    public let similarity: Double?
+}
+
+public struct LibrarySearchResult: Codable, Sendable { public let results: [LibraryCard] }
+
+public struct LibraryPhrase: Codable, Sendable, Hashable {
+    public let en: String
+    public let es: String
+    public let alignment: [PhrasePair]?
+}
+
+public struct LibraryPhrases: Codable, Sendable, Hashable {
+    public let key: [LibraryPhrase]; public let rescue: [LibraryPhrase]; public let hear: [LibraryPhrase]
+}
+
+public struct LibraryScene: Codable, Sendable, Hashable, Identifiable {
+    public let id: String
+    public let title: String
+    public let situation: String
+    public let topic: String?
+    public let uses: Int
+    public let credit: String?
+    public let level: Int
+    public let phrases: LibraryPhrases
+}
+
+public struct LibraryShareResult: Codable, Sendable, Hashable {
+    public let status: String  // shared | already_in_library | private
+    public let template: LibraryCard?
+    public let credit: String?
+    public let reason: String?
+
+    /// One line for the learner after building a scene.
+    public var message: String {
+        switch status {
+        case "shared": return credit == "name" ? "Added to the library with your name" : "Added to the library, anonymously"
+        case "already_in_library": return "Already in the library as “\(template?.title ?? "a similar scene")”"
+        default: return reason == "personal" ? "Kept private: it's personal to you" : "Scene ready"
+        }
+    }
+}
+
+public struct UseLibrarySceneRequest: Codable, Sendable { public let startsAt: String?; public let kind: String }
+public enum LibraryReportReason: String, Codable, Sendable, CaseIterable {
+    case personal, offensive, wrong, other
+    public var label: String {
+        switch self {
+        case .personal: "It has someone's personal details"
+        case .offensive: "It's offensive or unsafe"
+        case .wrong: "The Spanish is wrong"
+        case .other: "Something else"
+        }
     }
 }
 

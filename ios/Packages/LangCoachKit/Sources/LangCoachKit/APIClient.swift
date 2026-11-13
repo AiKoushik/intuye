@@ -196,6 +196,20 @@ public actor APIClient {
     public func importCalendar(_ events: [CalendarEventUpload]) async throws -> [ScenarioDTO] {
         try await send("POST", "/v1/scenarios/calendar", body: CalendarUpload(events: events), as: CalendarResult.self).created
     }
+    /// Library search by meaning, in the learner's Spanish variety. An empty query lists the most-used scenes.
+    public func library(_ query: String = "", limit: Int = 8) async throws -> [LibraryCard] {
+        var allowed = CharacterSet.alphanumerics; allowed.insert(charactersIn: "-._~")
+        let q = query.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+        return try await send("GET", "/v1/library?q=\(q)&limit=\(limit)", as: LibrarySearchResult.self).results
+    }
+    public func libraryScene(_ id: String) async throws -> LibraryScene { try await send("GET", "/v1/library/\(id)") }
+    public func useLibraryScene(_ id: String, startsAt: Date? = nil, kind: String = "manual") async throws -> ScenarioDTO {
+        try await send("POST", "/v1/library/\(id)/use", body: UseLibrarySceneRequest(startsAt: startsAt.map(LCDate.string), kind: kind))
+    }
+    public func reportLibraryScene(_ id: String, reason: LibraryReportReason) async throws {
+        struct R: Decodable { let ok: Bool }
+        _ = try await send("POST", "/v1/library/\(id)/report", body: ["reason": reason.rawValue], as: R.self)
+    }
     public func setScenarioStatus(_ id: String, _ status: String) async throws -> ScenarioDTO {
         try await send("PATCH", "/v1/scenarios/\(id)", body: ["status": status])
     }

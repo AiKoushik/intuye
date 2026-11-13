@@ -21,7 +21,7 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 | H5 | **Quick capture** — Action Button, Lock Screen and Control Center controls, Siri "How do I say…" App Intent | P2 | Should | Pressing the Action Button starts hold-to-talk without opening the app | ⬜ |
 | H6 | ★ **Own-voice filter** — 30-second enrolment; only your voice is kept | P2 | Must | Background TV speech isn't stored | ⬜ |
 | H7 | **Privacy controls** — pause, "forget last 10 minutes", auto-delete after N days, never-record places | P2 | Must | "Forget last 10 min" removes those utterances locally and on the server | 🟡 pause + forget; no places |
-| H8 | **Moments** — day timeline of captured sentences; swipe to save or delete | P2 | Should | Today's moments render grouped by hour | 🟡 API only |
+| H8 | **Moments** — day timeline of captured sentences; swipe to save or delete | P2 | Should | Today's moments render grouped by hour | ✅ |
 | H9 | **Phrasebook** — saved sentences with audio, searchable | P1 | Should | Saving a translation adds it to the Phrasebook | ✅ on device |
 | H10 | Pendant / Bluetooth mic input (e.g. Omi) | P3 | Could | Pendant audio flows into the same pipeline | ⬜ |
 
@@ -39,10 +39,10 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 
 | ID | Feature | Phase | Priority | Happy-path acceptance | Status |
 |---|---|---|---|---|---|
-| L1 | ★ **Scene library search** — find a scene by typing or saying it; matching is by meaning (vector search), not keywords, and only shows scenes in your Spanish variety | P1 | Must | "going to the dentist's" finds "At the dentist" | 🟡 API only |
-| L2 | **Use a library scene** — add a ready-made scene with its prep pack at once, no waiting for generation | P1 | Must | Using "At the dentist" creates your scene with ≥ 8 key phrases and counts one more use | 🟡 API only |
-| L3 | ★ **Share new scenes** — a scene you build is generalised (names, places and other personal details removed) and added to the library only if nothing the same or similar is there; anonymous by default, your name only if you choose | P1 | Must | Building "At the dentist's" when "At the dentist" exists adds nothing and links yours to it; an anonymous share stores no link to you | 🟡 API only |
-| L4 | **Report a scene** — any learner can report a library scene; three reports hide it until reviewed (App Store guideline 1.2) | P1 | Must | The third report hides the scene from search | 🟡 API only |
+| L1 | ★ **Scene library search** — find a scene by typing or saying it; matching is by meaning (vector search), not keywords, and only shows scenes in your Spanish variety | P1 | Must | "going to the dentist's" finds "At the dentist" | ✅ |
+| L2 | **Use a library scene** — add a ready-made scene with its prep pack at once, no waiting for generation | P1 | Must | Using "At the dentist" creates your scene with ≥ 8 key phrases and counts one more use | ✅ |
+| L3 | ★ **Share new scenes** — a scene you build is generalised (names, places and other personal details removed) and added to the library only if nothing the same or similar is there; anonymous by default, your name only if you choose | P1 | Must | Building "At the dentist's" when "At the dentist" exists adds nothing and links yours to it; an anonymous share stores no link to you | ✅ |
+| L4 | **Report a scene** — any learner can report a library scene; three reports hide it until reviewed (App Store guideline 1.2) | P1 | Must | The third report hides the scene from search | ✅ |
 
 ## Rehearse — practise the exact moment
 
