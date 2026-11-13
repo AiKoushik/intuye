@@ -223,3 +223,32 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Scene library */
+.lib-search { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 6px 0 14px; border-radius: var(--r-ctl);
+  border: 1px solid var(--lc-border-strong); background: var(--lc-surface); margin: 4px 0 2px; }
+.lib-search > svg { width: 18px; height: 18px; color: var(--lc-text-tertiary); flex: none; }
+.lib-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-size: 17px; padding: 12px 0; }
+.lib-search .lib-mic { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--lc-accent); flex: none; }
+.lib-search .lib-mic svg { width: 20px; height: 20px; }
+.lib-search .lib-mic.on { background: var(--lc-accent-fill); color: var(--lc-on-accent); }
+.lib-search:focus-within { border-color: var(--lc-accent); }
+.row .uses { font-size: 13px; color: var(--lc-text-secondary); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.row.build { color: var(--lc-accent); }
+.row.build svg { width: 20px; height: 20px; flex: none; }
+.lib-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--lc-text-secondary); margin: -4px 0 10px; }
+.lib-meta svg { width: 16px; height: 16px; }
+.situation { font-size: 17px; line-height: 24px; margin: 0 0 10px; }
+.btn.quiet { background: transparent; color: var(--lc-text-secondary); font-weight: 500; font-size: 15px; min-height: 44px; margin-top: 4px; gap: 6px; }
+.btn.quiet svg { width: 16px; height: 16px; }
+/* iOS-style switch on a checkbox */
+.switch { appearance: none; -webkit-appearance: none; width: 51px; height: 31px; border-radius: 16px; background: var(--lc-sunken);
+  border: 1px solid var(--lc-hairline); position: relative; flex: none; cursor: pointer; transition: background .15s; }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 25px; height: 25px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
+.switch:checked { background: var(--lc-success); border-color: transparent; }
+.switch:checked::after { transform: translateX(20px); }
+.switch:disabled { opacity: .4; cursor: default; }
+.switch:focus-visible { outline: 2px solid var(--lc-accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
+.lib-search input::-webkit-search-cancel-button { -webkit-appearance: none; }

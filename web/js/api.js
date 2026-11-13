@@ -95,7 +95,13 @@ export class API {
   pronunciation(lexeme_id, expected, heard) { return this.send("POST", "/v1/pronunciation", { lexeme_id, expected, heard }); }
   scenarios() { return this.send("GET", "/v1/scenarios"); }
   scenario(id) { return this.send("GET", `/v1/scenarios/${id}`); }
-  createScenario(title, starts_at, kind = "manual") { return this.send("POST", "/v1/scenarios", { title, starts_at, kind }); }
+  createScenario(title, starts_at, kind = "manual", { details = null, share = true, credit = "anonymous" } = {}) {
+    return this.send("POST", "/v1/scenarios", { title, starts_at, kind, details, share, credit });
+  }
+  async library(q = "", limit = 8) { return (await this.send("GET", `/v1/library?q=${encodeURIComponent(q)}&limit=${limit}`)).results; }
+  libraryScene(id) { return this.send("GET", `/v1/library/${id}`); }
+  useLibraryScene(id, starts_at = null, kind = "manual") { return this.send("POST", `/v1/library/${id}/use`, { starts_at, kind }); }
+  reportLibraryScene(id, reason) { return this.send("POST", `/v1/library/${id}/report`, { reason }); }
   async importCalendar(events) { return (await this.send("POST", "/v1/scenarios/calendar", { events })).created; }
   setScenarioStatus(id, status) { return this.send("PATCH", `/v1/scenarios/${id}`, { status }); }
   rate(id, value, phase) { return this.send("POST", `/v1/scenarios/${id}/readiness`, { value, phase }); }
