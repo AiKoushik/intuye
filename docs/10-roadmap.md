@@ -26,6 +26,7 @@ Goal: the founder uses it every day for Say-it-my-way and word batches.
 | **Capture spike (do this first):** prove background capture survives lock for 8 h on current iOS | H4 |
 | Ambient capture, own-voice filter, privacy controls, Moments | H4, H6, H7, H8 |
 | Recurring + calendar scenarios, prep timing | A1, A2, A5 |
+| Scene library: search by meaning (text or voice), use, share, report | L1, L2, L3, L4 |
 | Role-play with hints, rescue drill, shadowing | R1, R2, R3, R5 |
 | Pronunciation scoring (GOP on wav2vec 2.0 phonemes) | T4 |
 | Notification budget, quiet hours | T5 |

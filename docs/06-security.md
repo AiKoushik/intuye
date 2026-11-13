@@ -103,9 +103,29 @@ App Transport Security defaults; certificate pinning via `NSPinnedDomains` is a 
 
 - System prompts state that user text is data, never instructions; user text is wrapped in
   `<user_text>` tags.
-- Models get no tools and no access to other users' data.
+- Agents get only our own tools: the scene builder's read-only `search_scene_library`, scoped to
+  published, generalised scenes. Deep Agents' filesystem and shell tools are disabled. No agent can
+  read another learner's private data.
+- Library text written by other learners is wrapped as data whenever it reaches an agent.
 - Outputs must validate against Pydantic schemas; invalid output → one retry → safe fallback.
 - Model API keys exist only on the server.
+
+### 9. Shared scene library
+
+- **What is shared:** the scene builder's generalised card (title, one-sentence situation, topic),
+  the Spanish variety, the level and the phrase pack. The phrase writer is told never to put names,
+  places, employers, dates or numbers in phrases.
+- **Never shared:** your own title, details, dates, readiness ratings, rehearsals and anything from
+  Calendar. Calendar scenes are never published.
+- **Anonymous by default:** an anonymous share stores no link to you at all. With *Show my name*, the
+  scene keeps your user id and display name; deleting your account removes both and the scene stays
+  anonymous.
+- **Gates before publishing:** the learner chose to share; the builder marked it `shareable`; a
+  pattern check finds no email, phone number, URL or long digit run; nothing the same or similar is
+  already published in that variety.
+- **Reports:** `POST /v1/library/{id}/report`, one per learner per scene; three reports hide the
+  scene from search until reviewed (App Store guideline 1.2 requires reporting for user-generated
+  content).
 
 ## MASVS v2 mapping (app)
 

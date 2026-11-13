@@ -19,6 +19,8 @@ erDiagram
   SCENARIO ||--o{ SCENARIO_PHRASE : includes
   SCENARIO ||--o{ READINESS : rated
   SCENARIO ||--o{ REHEARSAL : practised
+  SCENE_TEMPLATE |o--o{ SCENARIO : "used as"
+  SCENE_TEMPLATE ||--o{ LIBRARY_REPORT : receives
   REHEARSAL ||--o{ REHEARSAL_TURN : has
   USER ||--o{ PRONUNCIATION_ATTEMPT : makes
 ```
@@ -43,7 +45,9 @@ mispronounced, which is what the curation ranker reads.
 | `reviews` | `id`, `user_id`, `lexeme_id`, `rating` (1–4), `reviewed_at`, `elapsed_days`, `scheduled_days`, `retrievability` | Log for future parameter fitting |
 | `batches` | `id`, `user_id`, `created_at`, `completed_at` | |
 | `batch_items` | `id`, `batch_id`, `lexeme_id`, `position`, `reason`, `reason_kind`, `score` | Reason shown in UI |
-| `scenarios` | `id`, `user_id`, `title`, `kind` (`upcoming`/`recurring`/`manual`), `starts_at`, `topic`, `status` (`suggested`/`active`/`done`), `created_at` | |
+| `scenarios` | `id`, `user_id`, `title`, `details`, `kind` (`upcoming`/`recurring`/`manual`), `starts_at`, `topic`, `status` (`suggested`/`active`/`done`), `template_id` (nullable), `created_at` | `details` is private, never shared |
+| `scene_templates` | `id`, `title`, `situation`, `topic`, `dialect`, `level`, `pack` (JSON: key/rescue/hear), `embedding` (JSON floats), `embed_model`, `creator_user_id` (nullable, only when credited), `credit_name` (nullable), `uses`, `reports`, `status` (`published`/`hidden`), `created_at` | The shared library; not user-owned, so it survives account deletion anonymised |
+| `library_reports` | `id`, `template_id`, `user_id`, `reason` (`personal`/`offensive`/`wrong`/`other`), `at`, unique(`template_id`,`user_id`) | |
 | `scenario_phrases` | `id`, `scenario_id`, `kind` (`key`/`rescue`/`hear`), `en`, `es`, `alignment` (JSON), `position` | |
 | `readiness` | `id`, `scenario_id`, `user_id`, `value` (1–5), `phase` (`before`/`after`), `at` | Confidence map |
 | `rehearsals` | `id`, `user_id`, `scenario_id`, `difficulty`, `started_at`, `ended_at`, `summary` | LangGraph `thread_id` = `id` |

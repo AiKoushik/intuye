@@ -31,9 +31,18 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 |---|---|---|---|---|---|
 | A1 | ★ **Recurring scenarios** — topics you keep talking about become scenarios (e.g. "neuroscience", "cooking") | P2 | Must | 3+ utterances on a topic within 7 days creates a suggested scenario | ✅ |
 | A2 | ★ **Upcoming scenarios from Calendar** — opt-in; titles read on device, only title, time and a category sent | P2 | Must | "Dentist Thu 10:00" creates a "At the dentist" scenario due Wed evening | ✅ |
-| A3 | **"I have this coming up"** — create a scenario by typing or saying it | P1 | Must | "Parent-teacher meeting next week" creates a scenario with a prep pack | ✅ |
+| A3 | **"I have this coming up"** — create a scenario by typing or saying it, with optional details; the scene builder agent drafts the pack | P1 | Must | "Parent-teacher meeting next week" creates a scenario with a prep pack | ✅ |
 | A4 | ★ **Prep pack** — 8–12 key phrases, likely questions you'll hear, rescue phrases | P1 | Must | Every scenario has a pack with at least 8 phrases and 3 rescue phrases | ✅ |
 | A5 | **Prep timing** — reminder the evening before or 2 h before | P2 | Should | A calendar scenario schedules one reminder within the notification budget | 🟡 evening-before only |
+
+## Library — scenes other learners have built
+
+| ID | Feature | Phase | Priority | Happy-path acceptance | Status |
+|---|---|---|---|---|---|
+| L1 | ★ **Scene library search** — find a scene by typing or saying it; matching is by meaning (vector search), not keywords, and only shows scenes in your Spanish variety | P1 | Must | "going to the dentist's" finds "At the dentist" | ⬜ |
+| L2 | **Use a library scene** — add a ready-made scene with its prep pack at once, no waiting for generation | P1 | Must | Using "At the dentist" creates your scene with ≥ 8 key phrases and counts one more use | ⬜ |
+| L3 | ★ **Share new scenes** — a scene you build is generalised (names, places and other personal details removed) and added to the library only if nothing the same or similar is there; anonymous by default, your name only if you choose | P1 | Must | Building "At the dentist's" when "At the dentist" exists adds nothing and links yours to it; an anonymous share stores no link to you | ⬜ |
+| L4 | **Report a scene** — any learner can report a library scene; three reports hide it until reviewed (App Store guideline 1.2) | P1 | Must | The third report hides the scene from search | ⬜ |
 
 ## Rehearse — practise the exact moment
 
@@ -78,7 +87,7 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 | P6 | **Offline mode** — queue utterances, run reviews offline, sync later | P2 | Should | Airplane-mode reviews sync on reconnect | 🟡 capture queue only |
 | P7 | **Widgets + Live Activity** — today's batch widget; capture status in the Dynamic Island | P2 | Should | Widget shows due count | ⬜ |
 | P8 | **Accessibility** — Dynamic Type to AX5, VoiceOver labels, Reduce Motion, no colour-only states | P1 | Must | Every screen usable at AX3 with VoiceOver | 🟡 built in, not audited |
-| P9 | **Model routing** — LangGraph agent graphs over a provider-agnostic chat model: self-hosted (OpenAI-compatible, e.g. Hearth) or cloud; on-device Apple model for short offline translations | P1 | Should | Switching `LLM_PROVIDER` changes the backend model with no code change | ✅ backend; on-device ⬜ |
+| P9 | **Model routing** — every agent runs on LangChain Deep Agents (LangGraph underneath) over a provider-agnostic chat model: self-hosted (OpenAI-compatible, e.g. Hearth) or cloud; on-device Apple model for short offline translations | P1 | Should | Switching `LLM_PROVIDER` changes the backend model with no code change | ✅ backend; on-device ⬜ |
 | P10 | **Settings and privacy centre** — what's stored, where, and delete controls | P1 | Must | Settings lists data categories with delete actions | ✅ |
 
 ## What we deliberately left out

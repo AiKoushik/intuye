@@ -70,13 +70,22 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 | Method | Path | Body → Response |
 |---|---|---|
 | GET | `/v1/scenarios` | → `{upcoming, recurring, mine}` |
-| POST | `/v1/scenarios` | `{title, starts_at?, kind: "manual" \| "upcoming"}` → scenario with prep pack |
+| POST | `/v1/scenarios` | `{title, details?, starts_at?, kind: "manual" \| "upcoming", share?: true, credit?: "anonymous" \| "name"}` → scenario with prep pack and `library: {status: "shared" \| "already_in_library" \| "private", template?: {id, title}, credit?, reason?}` |
 | POST | `/v1/scenarios/calendar` | `{events: [{title, starts_at}]}` (titles read on device) → created/updated scenarios |
 | GET | `/v1/scenarios/{id}` | → scenario + phrases + readiness |
 | POST | `/v1/scenarios/{id}/readiness` | `{value: 1–5, phase}` → readiness |
 | POST | `/v1/rehearsals` | `{scenario_id, difficulty}` → `{rehearsal_id, coach: {es, en}}` |
 | POST | `/v1/rehearsals/{id}/turns` | `{text}` → `{native?, coach: {es, en}, done}` |
 | POST | `/v1/rehearsals/{id}/end` | → `{summary, keep_phrases}` |
+
+## Scene library
+
+| Method | Path | Body → Response |
+|---|---|---|
+| GET | `/v1/library?q=&limit=` | → `{results: [{id, title, situation, topic, uses, credit, similarity}]}` in your variety; empty `q` lists the most used |
+| GET | `/v1/library/{id}` | → scene card + phrases |
+| POST | `/v1/library/{id}/use` | `{starts_at?, kind?}` → your new scenario with the pack (no generation) |
+| POST | `/v1/library/{id}/report` | `{reason: "personal" \| "offensive" \| "wrong" \| "other"}` → `{ok: true}` |
 
 ## Progress
 

@@ -79,7 +79,10 @@ Today: "Your words · 7 ready" ─► card: English cue + your original sentence
 ### 4. Scenario prep and rehearsal (A3, A4, R1, R2, G4)
 
 ```
-Scenes ─► "Something coming up" ─► "Dentist on Thursday" ─► prep pack generated
+Scenes ─► "Find or add a scene" (type, or hold the mic and say it)
+       ─► library results by meaning ─► "Use this scene" ─► prep pack at once
+       ─► or "Build my own" ─► title + optional details ─► Share with other learners (on) · Show my name (off)
+       ─► prep pack generated ─► "Added to the library, anonymously" | "Already in the library as …" | "Kept private"
        ─► rate readiness (1–5) ─► phrases (interlinear) ─► rescue phrases ─► Rehearse
        ─► voice role-play (coach speaks Spanish; tap bubble for English; "say it in English" any time)
        ─► summary + rate readiness again ─► confidence map updates
@@ -121,8 +124,14 @@ Accessory pill ─► capture sheet: Off / Windows (e.g. 9–12, 18–21) / Alwa
 - Swipe gestures are an accelerator only, not the sole path.
 
 ### Scenes
+- Top: **Find or add a scene** search field with a mic button. Typing or speaking shows library
+  matches (title, one-line situation, "used by 214"); the last row is always **Build "…"** with the
+  exact words typed. Each result has a report option in its menu.
 - Sections: **Upcoming** (from calendar, dated), **Recurring** (from your topics), **Yours**
   (manual). Each row: title, readiness dots, due label.
+- New scene sheet: title, optional details ("the teacher only speaks Spanish"), **Share with other
+  learners** (on; footnote: "We remove names and places first. Only shared if it's not already in
+  the library."), **Show my name** (off). Calendar scenes are never shared.
 - Scene detail: readiness slider, "Key phrases" (interlinear list), "If you get stuck" (rescue
   phrases), "You might hear" (likely questions), primary *Rehearse*.
 
