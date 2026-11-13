@@ -57,6 +57,7 @@ struct ScenesView: View {
                 } footer: { Text("Only event titles and times for the next two weeks are sent, and calendar scenes are never shared.") }
             }
         }
+        .lcGroupedBackground(.sage, .sea)
         .navigationTitle("Scenes")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -210,6 +211,7 @@ struct NewSceneSheet: View {
                 }
                 if let error { Text(error).foregroundStyle(LC.Color.danger) }
             }
+            .lcGroupedBackground()
             .navigationTitle("New scene")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

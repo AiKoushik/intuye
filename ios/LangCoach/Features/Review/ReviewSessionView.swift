@@ -72,7 +72,7 @@ struct ReviewSessionView: View {
             }
         }
         .padding(Space.margin)
-        .background(LC.Color.canvas.ignoresSafeArea())
+        .background(AmbientBackground(.sea, .sage))
         .animation(reduceMotion ? .easeInOut(duration: 0.15) : Motion.spring, value: model.index)
         .animation(Motion.spring, value: model.revealed)
         .sensoryFeedback(.success, trigger: ratingTrigger)

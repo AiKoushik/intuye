@@ -46,7 +46,7 @@ struct TodayView: View {
             .padding(.horizontal, Space.margin)
             .padding(.bottom, Space.xxl)
         }
-        .background(LC.Color.canvas.ignoresSafeArea())
+        .background(AmbientBackground(.sand, .rose))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettings = true } label: { Image(systemName: "person.crop.circle") }.accessibilityLabel("Settings")
@@ -78,7 +78,7 @@ struct TodayView: View {
             }
             Text((s.readiness.after ?? 0) > 0 ? "Rehearse again" : "Prep").buttonLike()
         }
-        .lcCard()
+        .lcCard(wash: Tint.topic(s.topic, title: s.title))
     }
 
     private var words: some View {
@@ -99,7 +99,7 @@ struct TodayView: View {
             }
             Button(count > 0 ? "Start review" : "Get today's words") { showReview = true }.buttonStyle(.lcSubtle)
         }
-        .lcCard()
+        .lcCard(wash: .sea)
     }
 
     private func load() async {

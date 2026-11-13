@@ -43,6 +43,7 @@ struct SettingsView: View {
                 if let error { Section { Text(error).foregroundStyle(LC.Color.danger) } }
                 Section { Button("Sign out") { Task { await app.signOut(); dismiss() } } }
             }
+            .lcGroupedBackground()
             .navigationTitle("Settings")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             .confirmationDialog("Delete your account and all your data?", isPresented: $confirmDelete, titleVisibility: .visible) {

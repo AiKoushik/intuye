@@ -60,6 +60,7 @@ struct CaptureSheet: View {
                     if let toast { Text(toast) }
                 }
             }
+            .lcGroupedBackground()
             .navigationTitle("Capture")
             .navigationBarTitleDisplayMode(.inline)
             .sensoryFeedback(.warning, trigger: forgetTrigger)

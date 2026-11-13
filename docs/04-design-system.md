@@ -18,13 +18,31 @@ The identity comes from three choices: **ink and tile** colour, **two voices** i
    approach.
 4. **Contrast-checked automatically** against WCAG 2.2 (W3C, Oct 2023): text 4.5:1, large text and UI
    3:1; in Increase Contrast mode, 7:1 and 4.5:1. `generate.py --check` fails the build if any pair
-   drops below. Current result: **188 checks, 0 failing** — see
+   drops below. Current result: **344 checks, 0 failing** — see
    [`design/tokens/build/contrast-report.md`](../design/tokens/build/contrast-report.md).
 5. **Four appearances per token:** light, dark, light + high contrast, dark + high contrast, shipped as
    Display P3 colour sets in `Assets.xcassets`.
 
 Pipeline: `design/tokens/source.json` → `generate.py` → asset catalog + `ColorTokens.swift` +
 `tokens.css` + report.
+
+### Layers, not flat white or black
+
+Every screen is built from lightness layers so cards, sheets and wells separate without heavy borders:
+
+| Layer | Light (L) | Dark (L) |
+|---|---|---|
+| Well (`sunken`) | 0.93 | 0.19 |
+| Page (`canvas`) | 0.95, soft mist | 0.22, deep slate |
+| Card (`surface`, or a tint `Wash`) | 0.99 | 0.26 |
+| Sheet (`surfaceRaised`) | 1.00 | 0.30 |
+
+Text stops short of the extremes: body text is L 0.26 on the light page (13.7:1) and L 0.94 on the
+dark page (14.5:1), well past WCAG's 4.5:1 without the glare of black on white or the halo of white
+on black. Each screen carries a faint glow at the top, mixed from two tints' `Ambient` strength
+(Today: sand + rose; Say: sea + plum; Scenes: sage + sea; Progress: plum + sea; Review: sea + sage;
+Rehearse: sage + sand), and cards that hold a particular kind of thing sit on that tint's `Wash`
+(the next scene, today's words, rescue phrases, what you'll hear, your Spanglish trend, answers).
 
 ### Families
 
@@ -38,10 +56,10 @@ Pipeline: `design/tokens/source.json` → `generate.py` → asset catalog + `Col
 
 ### Sober tints
 
-Five quiet families, peak chroma about a third of azulejo's, on the same lightness scale. They say
-**what something is about** or **why it's here**, never "tap me", and always sit next to a label. Each
-has a text colour (step 700 light, 300 dark) and a subtle background (step 100 light, 900 dark); text
-on its own tint is 6.8:1 or better in light mode and 8.5:1 in dark.
+Five quiet families on the same lightness scale, each in four strengths from one recipe: text (L 0.43 / 0.83), subtle for chips and tiles (L 0.91 / 0.34), wash for cards (L 0.97 / 0.27) and ambient for the screen glow (L 0.90 / 0.30). They say
+**what something is about** or **why it's here**, never "tap me", and always sit next to a label. A
+tint's text on its own chip is 6.1:1 or better in light mode and 7.1:1 in dark; body text on any wash
+is 12:1 or better.
 
 | Tint | Hue | Scenes about | Why a word is here | Also |
 |---|---|---|---|---|
@@ -59,27 +77,30 @@ classes in the web build.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `canvas` | `#F8FAFE` | `#0C0D0F` | Screen background |
-| `surface` | `#FFFFFF` | `#151619` | Cards, sheets |
-| `sunken` | `#F1F3F7` | `#0E1015` | Input wells, grouped areas |
-| `textPrimary` | `#151619` | `#F8FAFE` | Spanish lines, titles, body |
-| `textSecondary` | `#5E636C` | `#BABEC5` | Your words (source line), captions |
-| `textTertiary` | `#7B808B` | `#9A9FA7` | Large hints, placeholders only |
-| `hairline` | `#E5E8ED` | `#202225` | Dividers (decorative) |
-| `borderStrong` | `#7B808B` | `#5E636C` | Input borders, control outlines |
-| `accent` | `#3E55C8` | `#A4BBFF` | Links, tinted text, icons |
-| `accentFill` / `onAccent` | `#3E55C8` / white | `#7997FF` / ink | Primary buttons |
-| `accentSubtle` | `#EFF3FF` | `#121C4B` | Selected rows, secondary buttons |
-| `highlight` / `onHighlight` | `#F2D39E` / ink | `#4B3300` / white | New-word mark, paired-word mark |
-| `success` | `#34591B` | `#A6CA93` | Got it, readiness up |
-| `warning` | `#664700` | `#E0B771` | Attention |
-| `danger` | `#AD2F32` | `#FFA09A` | Forgot, errors, destructive |
-| `focusRing` | `#5471F7` | `#A4BBFF` | Keyboard / Full Keyboard Access focus |
-| `sage` / `sageSubtle` | `#3B5440` / `#DDEDDF` | `#ADC5B1` / `#18251B` | Health scenes, "for a scene" reasons, partner bubbles |
-| `sea` / `seaSubtle` | `#30535C` / `#D8ECF1` | `#A4C4CC` / `#132529` | Work scenes, "you said it" reasons |
-| `sand` / `sandSubtle` | `#594B34` / `#F0E6D8` | `#CABCA6` / `#282015` | Home scenes, core-Spanish reasons |
-| `rose` / `roseSubtle` | `#634346` / `#F8E2E3` | `#D5B4B7` / `#2D1C1E` | Food scenes, "you keep missing it" reasons |
-| `plum` / `plumSubtle` | `#58455D` / `#EFE3F2` | `#C9B6CE` / `#271E2A` | Travel scenes, topic reasons, Spanglish trend |
+| `canvas` | `#EBEFF6` (L 0.95) | `#151A21` (L 0.21) | The page, under everything (light: a soft mist, not white; dark: deep slate, not black) |
+| `surface` | `#FAFCFE` (L 0.99) | `#1F252D` (L 0.26) | Cards, grouped rows: one layer above the page |
+| `surfaceRaised` | `#FDFEFF` (L 1.00) | `#282E38` (L 0.30) | Sheets and popovers: one more layer |
+| `sunken` | `#E2E8EF` (L 0.93) | `#0F141A` (L 0.19) | Input wells, segmented controls |
+| `textPrimary` | `#1C232E` (L 0.26) | `#E6EAEF` (L 0.94) | Spanish lines, titles, body (never pure black or white) |
+| `textSecondary` | `#4F5763` (L 0.46) | `#B0B6C0` (L 0.78) | Your words (source line), captions |
+| `textTertiary` | `#69717C` (L 0.55) | `#8E949E` (L 0.67) | Large hints, placeholders only |
+| `hairline` | `#D2D8E1` (L 0.88) | `#303741` (L 0.34) | Dividers (decorative) |
+| `borderStrong` | `#727B88` (L 0.58) | `#737B86` (L 0.58) | Input borders, control outlines |
+| `accent` | `#3A55B1` (L 0.48) | `#A3BCFC` (L 0.80) | Links, tappable text and icons |
+| `accentFill` | `#3A55B1` (L 0.48) | `#93AEF8` (L 0.76) | Primary buttons |
+| `onAccent` | `#FAFCFF` (L 0.99) | `#101524` (L 0.20) | Text on primary buttons |
+| `accentSubtle` | `#D6E2FE` (L 0.91) | `#283350` (L 0.33) | Secondary buttons, selected rows |
+| `highlight` | `#F4D397` (L 0.88) | `#644B18` (L 0.43) | New-word mark, paired-word mark |
+| `onHighlight` | `#1C232E` (L 0.26) | `#EFF2F6` (L 0.96) | Text on the highlight |
+| `success` | `#345F2A` (L 0.44) | `#A2D098` (L 0.81) | Got it, readiness up |
+| `warning` | `#755010` (L 0.46) | `#E6C183` (L 0.83) | Attention |
+| `danger` | `#A53332` (L 0.49) | `#F19E97` (L 0.78) | Forgot, errors, destructive |
+| `focusRing` | `#4F6DCC` (L 0.56) | `#99B5FE` (L 0.78) | Keyboard / Full Keyboard Access focus |
+| `sage` / `Subtle` / `Wash` / `Ambient` | `#325B3B` / `#CFEAD4` / `#ECF9ED` / `#C5E9CB` | `#ACD3B3` / `#243E29` / `#1C2B1F` / `#1E3422` | Text, chips, cards, screen glow |
+| `sea` / `Subtle` / `Wash` / `Ambient` | `#115968` / `#C3EAF4` / `#E6F8FD` / `#B5E8F5` | `#9BD2E0` / `#133D46` / `#142B30` / `#10333B` | Text, chips, cards, screen glow |
+| `sand` / `Subtle` / `Wash` / `Ambient` | `#654B1E` / `#F2DFC3` / `#FCF3E6` / `#F3DAB6` | `#DDC39C` / `#443318` / `#2F2516` / `#392B14` | Text, chips, cards, screen glow |
+| `rose` / `Subtle` / `Wash` / `Ambient` | `#713F45` / `#FDD7DA` / `#FFF0F1` / `#FFD0D5` | `#ECB8BD` / `#4C2C30` / `#342123` / `#402528` | Text, chips, cards, screen glow |
+| `plum` / `Subtle` / `Wash` / `Ambient` | `#614368` / `#EFD9F4` / `#FBF0FD` / `#EFD3F5` | `#D9BBE0` / `#422E46` / `#2E2230` / `#37273B` | Text, chips, cards, screen glow |
 
 **Rule:** colour is never the only signal. Rating buttons pair colour with a label and an SF Symbol;
 new words pair the highlight with VoiceOver "new word".

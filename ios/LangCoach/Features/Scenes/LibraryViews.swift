@@ -138,7 +138,7 @@ struct LibrarySceneView: View {
             .padding(.horizontal, Space.margin)
             .padding(.bottom, Space.xxl)
         }
-        .background(LC.Color.canvas.ignoresSafeArea())
+        .background(AmbientBackground(.sage, .plum))
         .navigationBarTitleDisplayMode(.inline)
         .confirmationDialog("What's wrong with this scene?", isPresented: $reporting, titleVisibility: .visible) {
             ForEach(LibraryReportReason.allCases, id: \.self) { reason in

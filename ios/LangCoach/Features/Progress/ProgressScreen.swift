@@ -22,7 +22,7 @@ struct ProgressScreen: View {
             .padding(.horizontal, Space.margin)
             .padding(.bottom, Space.xxl)
         }
-        .background(LC.Color.canvas.ignoresSafeArea())
+        .background(AmbientBackground(.plum, .sea))
         .navigationTitle("Progress")
         .refreshable { await load() }
         .task(id: app.refreshToken) { await load() }
@@ -58,7 +58,7 @@ struct ProgressScreen: View {
                     .font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
             }
         }
-        .lcCard()
+        .lcCard(wash: .plum)
     }
 
     private func confidence(_ rows: [ConfidenceRow]) -> some View {

@@ -31,7 +31,7 @@ struct SceneDetailView: View {
                         VStack(alignment: .leading, spacing: Space.s) {
                             ForEach(p.rescue) { r in spanishButton(r.es) }
                         }
-                        .lcCard()
+                        .lcCard(wash: .rose)
                         header("You might hear")
                         VStack(alignment: .leading, spacing: Space.m) {
                             ForEach(p.hear) { h in
@@ -41,7 +41,7 @@ struct SceneDetailView: View {
                                 }
                             }
                         }
-                        .lcCard()
+                        .lcCard(wash: .sea)
                     }
                     NavigationLink("Rehearse") { RehearseView(scene: s) }
                         .buttonStyle(.lcPrimary)
@@ -55,7 +55,7 @@ struct SceneDetailView: View {
             .padding(.horizontal, Space.margin)
             .padding(.bottom, Space.xxl)
         }
-        .background(LC.Color.canvas.ignoresSafeArea())
+        .background(AmbientBackground(.sand, .sea))
         .navigationBarTitleDisplayMode(.inline)
         .task { await load() }
     }

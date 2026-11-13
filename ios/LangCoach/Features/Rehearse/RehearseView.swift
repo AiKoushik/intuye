@@ -69,7 +69,7 @@ struct RehearseView: View {
                 if let last = model.bubbles.last { withAnimation { proxy.scrollTo(last.id, anchor: .bottom) } }
             }
         }
-        .background(LC.Color.canvas.ignoresSafeArea())
+        .background(AmbientBackground(.sage, .sand))
         .navigationTitle(scene.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

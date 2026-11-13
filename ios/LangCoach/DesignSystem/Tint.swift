@@ -15,6 +15,7 @@ enum Tint: CaseIterable {
         }
     }
 
+    /// Chips and tiles.
     var bg: Color {
         switch self {
         case .sage: LC.Color.sageSubtle
@@ -22,6 +23,28 @@ enum Tint: CaseIterable {
         case .sand: LC.Color.sandSubtle
         case .rose: LC.Color.roseSubtle
         case .plum: LC.Color.plumSubtle
+        }
+    }
+
+    /// Whole cards: just off the page, so different kinds of card read as different at a glance.
+    var wash: Color {
+        switch self {
+        case .sage: LC.Color.sageWash
+        case .sea: LC.Color.seaWash
+        case .sand: LC.Color.sandWash
+        case .rose: LC.Color.roseWash
+        case .plum: LC.Color.plumWash
+        }
+    }
+
+    /// The soft glow at the top of a screen.
+    var ambient: Color {
+        switch self {
+        case .sage: LC.Color.sageAmbient
+        case .sea: LC.Color.seaAmbient
+        case .sand: LC.Color.sandAmbient
+        case .rose: LC.Color.roseAmbient
+        case .plum: LC.Color.plumAmbient
         }
     }
 
@@ -99,5 +122,32 @@ struct TintChip: View {
             .foregroundStyle(tint.fg)
             .padding(.horizontal, 10).padding(.vertical, 3)
             .background(tint.bg, in: Capsule())
+    }
+}
+
+/// The page: the canvas with a faint glow from two tints at the top corners.
+struct AmbientBackground: View {
+    let leading: Tint
+    let trailing: Tint
+    init(_ leading: Tint, _ trailing: Tint) { self.leading = leading; self.trailing = trailing }
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .top) {
+                LC.Color.canvas
+                EllipticalGradient(colors: [leading.ambient, leading.ambient.opacity(0)], center: .topLeading,
+                                   startRadiusFraction: 0, endRadiusFraction: 0.72)
+                    .frame(width: geo.size.width * 1.5, height: geo.size.height * 0.46)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                EllipticalGradient(colors: [trailing.ambient, trailing.ambient.opacity(0)], center: .topTrailing,
+                                   startRadiusFraction: 0, endRadiusFraction: 0.66)
+                    .frame(width: geo.size.width * 1.2, height: geo.size.height * 0.40)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+            .clipped()
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
     }
 }

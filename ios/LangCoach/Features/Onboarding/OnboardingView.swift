@@ -31,7 +31,7 @@ struct OnboardingView: View {
         }
         .padding(.horizontal, Space.margin)
         .padding(.bottom, Space.xl)
-        .background(LC.Color.canvas.ignoresSafeArea())
+        .background(AmbientBackground(.sea, .plum))
         .animation(Motion.spring, value: step)
     }
 

@@ -5,17 +5,28 @@ import SwiftUI
 
 struct LCCard: ViewModifier {
     var padding: CGFloat = Space.l
+    var wash: Tint? = nil
     func body(content: Content) -> some View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LC.Color.surface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: Radius.card, style: .continuous).strokeBorder(LC.Color.hairline, lineWidth: 1))
+            .background(wash?.wash ?? LC.Color.surface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
+                .strokeBorder(wash.map { $0.fg.opacity(0.14) } ?? LC.Color.hairline, lineWidth: 1))
     }
 }
 
 extension View {
-    func lcCard(padding: CGFloat = Space.l) -> some View { modifier(LCCard(padding: padding)) }
+    /// A card one layer above the page; `wash` tints it by what it holds.
+    func lcCard(padding: CGFloat = Space.l, wash: Tint? = nil) -> some View { modifier(LCCard(padding: padding, wash: wash)) }
+
+    /// Grouped lists and forms on our page colour instead of the system's black or white.
+    func lcGroupedBackground(_ leading: Tint? = nil, _ trailing: Tint? = nil) -> some View {
+        scrollContentBackground(.hidden)
+            .background {
+                if let leading, let trailing { AmbientBackground(leading, trailing) } else { LC.Color.canvas.ignoresSafeArea() }
+            }
+    }
 }
 
 // MARK: Buttons

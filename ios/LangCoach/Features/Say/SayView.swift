@@ -60,7 +60,7 @@ struct SayView: View {
                 if let last = model.results.last { withAnimation { proxy.scrollTo(last.id, anchor: .bottom) } }
             }
         }
-        .background(LC.Color.canvas.ignoresSafeArea())
+        .background(AmbientBackground(.sea, .plum))
         .navigationTitle("Say")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -156,10 +156,13 @@ struct AnswerCard: View {
     let result: CoachResult
     var body: some View {
         VStack(alignment: .leading, spacing: Space.s) {
-            Text(result.source).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            HStack(spacing: Space.s) {
+                DirectionChip(intent: .ask)
+                Text(result.source).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            }
             Text(result.answer ?? "").font(.lcBody)
         }
-        .lcCard()
+        .lcCard(wash: .sand)
     }
 }
 
