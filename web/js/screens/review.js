@@ -1,5 +1,5 @@
 import { h, icon, parseDate, relativeDay } from "../dom.js";
-import { errorBanner, holdToTalk, ratingButtons, spinner } from "../components.js";
+import { errorBanner, holdToTalk, ratingButtons, reasonTint, spinner, tintChip } from "../components.js";
 import { localeFor, speak } from "../speech.js";
 
 /** Full-screen review session (fullScreenCover on iPhone). */
@@ -62,7 +62,7 @@ export class ReviewCover {
       this.revealed
         ? h("div", {},
           h("button", { class: "es-xl", type: "button", onclick: (e) => { e.stopPropagation(); speak(c.es, this.app.dialect); }, "aria-label": `Play ${c.es}` }, c.es),
-          c.reason ? h("p", { class: "reason", style: "margin-top:8px" }, c.reason) : null,
+          c.reason ? h("p", { style: "margin-top:10px" }, tintChip(reasonTint(c.reason_kind), c.reason)) : null,
           this.pron ? h("p", { class: `pron ${this.pron.ok ? "ok" : "no"}`, style: "margin-top:8px" }, icon(this.pron.ok ? "check" : "ear"),
             this.pron.ok ? "Sounded right" : "Close — listen and try again") : null)
         : h("div", { class: "hint" }, "Tap to show, or hold the mic and say it"),

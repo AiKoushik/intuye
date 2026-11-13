@@ -1,5 +1,5 @@
 {
-  "$comment": "Single source of truth for colour. Families are OKLCH tonal ramps; semantic tokens reference family.step per appearance. Run generate.py after editing.",
+  "$comment": "Single source of truth for colour. Families are OKLCH tonal ramps; semantic tokens reference family.step per appearance. Azulejo means you can tap it; the five sober tints say what something is or why it is here, always alongside text. Run generate.py after editing.",
   "steps": {
     "25":  0.985,
     "50":  0.965,
@@ -20,7 +20,12 @@
     "azulejo": { "hue": 270, "chroma": 0.21,  "note": "Ultramarine of Spanish tilework. The single accent: actions, links, alignment threads." },
     "azafran": { "hue": 80,  "chroma": 0.165, "note": "Saffron. The highlighter mark on new words; also attention states." },
     "olivo":   { "hue": 135, "chroma": 0.14,  "note": "Olive. Success and 'Got it'." },
-    "granada": { "hue": 24,  "chroma": 0.19,  "note": "Pomegranate. Errors and 'Forgot'." }
+    "granada": { "hue": 24,  "chroma": 0.19,  "note": "Pomegranate. Errors and 'Forgot'." },
+    "salvia":  { "hue": 150, "chroma": 0.064, "note": "Sage. Sober tint: health and body scenes; 'for a scene coming up' reasons." },
+    "mar":     { "hue": 215, "chroma": 0.06,  "note": "Slate sea. Sober tint: work and study scenes; 'you said it' reasons." },
+    "arena":   { "hue": 78,  "chroma": 0.056, "note": "Sand. Sober tint: home and family scenes; 'core Spanish' reasons." },
+    "rosa":    { "hue": 12,  "chroma": 0.064, "note": "Dusty rose. Sober tint: food and friends scenes; 'you keep missing it' reasons." },
+    "ciruela": { "hue": 320, "chroma": 0.064, "note": "Plum. Sober tint: travel and errands scenes; 'a topic you talk about' reasons; the Spanglish trend line." }
   },
   "semantic": {
     "canvas":          { "light": "ink.25",     "dark": "ink.975",    "lightHC": "#FFFFFF",    "darkHC": "#000000",  "role": "background" },
@@ -40,6 +45,16 @@
     "success":         { "light": "olivo.700",  "dark": "olivo.300",  "lightHC": "olivo.800",  "darkHC": "olivo.200","role": "text" },
     "warning":         { "light": "azafran.700","dark": "azafran.300","lightHC": "azafran.800","darkHC": "azafran.200","role": "text" },
     "danger":          { "light": "granada.600","dark": "granada.300","lightHC": "granada.700","darkHC": "granada.200","role": "text" },
-    "focusRing":       { "light": "azulejo.500","dark": "azulejo.300","lightHC": "azulejo.700","darkHC": "azulejo.200","role": "ui" }
+    "focusRing":       { "light": "azulejo.500","dark": "azulejo.300","lightHC": "azulejo.700","darkHC": "azulejo.200","role": "ui" },
+    "sage":           { "light": "salvia.700", "dark": "salvia.300", "lightHC": "salvia.800", "darkHC": "salvia.200", "role": "text" },
+    "sageSubtle":     { "light": "salvia.100", "dark": "salvia.900", "lightHC": "salvia.100", "darkHC": "salvia.950", "role": "background" },
+    "sea":            { "light": "mar.700", "dark": "mar.300", "lightHC": "mar.800", "darkHC": "mar.200", "role": "text" },
+    "seaSubtle":      { "light": "mar.100", "dark": "mar.900", "lightHC": "mar.100", "darkHC": "mar.950", "role": "background" },
+    "sand":           { "light": "arena.700", "dark": "arena.300", "lightHC": "arena.800", "darkHC": "arena.200", "role": "text" },
+    "sandSubtle":     { "light": "arena.100", "dark": "arena.900", "lightHC": "arena.100", "darkHC": "arena.950", "role": "background" },
+    "rose":           { "light": "rosa.700", "dark": "rosa.300", "lightHC": "rosa.800", "darkHC": "rosa.200", "role": "text" },
+    "roseSubtle":     { "light": "rosa.100", "dark": "rosa.900", "lightHC": "rosa.100", "darkHC": "rosa.950", "role": "background" },
+    "plum":           { "light": "ciruela.700", "dark": "ciruela.300", "lightHC": "ciruela.800", "darkHC": "ciruela.200", "role": "text" },
+    "plumSubtle":     { "light": "ciruela.100", "dark": "ciruela.900", "lightHC": "ciruela.100", "darkHC": "ciruela.950", "role": "background" }
   }
 }

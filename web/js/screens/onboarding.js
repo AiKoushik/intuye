@@ -1,5 +1,5 @@
 import { append, h, icon } from "../dom.js";
-import { errorBanner, interlinear } from "../components.js";
+import { errorBanner, interlinear, tile } from "../components.js";
 
 const EXAMPLE = [
   { src: "me gusta", tgt: "Me gusta" }, { src: "escuchar", tgt: "escuchar" }, { src: "this", tgt: "esto" },
@@ -37,6 +37,10 @@ export class Onboarding {
         h("p", { class: "body secondary" }, "Speak English, Spanish or a mix. Get Spanish back that stays close to what you said."),
         h("div", { class: "card" }, interlinear(EXAMPLE)),
         h("p", { class: "fine" }, "Tap a word to see its partner."),
+        ...[["sea", "bubble", "Say anything, in any mix", "English, Spanish or both at once"],
+            ["sage", "calendar", "Get ready for what's coming up", "The dentist, a meeting, dinner with friends"],
+            ["sand", "cards", "Keep 5 to 10 words a day", "Picked from what you actually say"]].map(([t, ic, title, sub]) =>
+          h("div", { class: "promise" }, tile(t, ic), h("div", {}, h("b", {}, title), h("span", { class: "sub" }, sub)))),
         h("div", { style: "flex:1" }),
         h("button", { class: "btn", type: "button", onclick: () => this.go(1) }, "Continue"),
       );

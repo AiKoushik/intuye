@@ -76,10 +76,12 @@ async def today(user: User = Depends(current_user), db: AsyncSession = Depends(g
                                      .order_by(Scenario.created_at.desc()).limit(1))).scalar_one_or_none()
     suggested = (await db.execute(select(func.count()).select_from(Scenario).where(
         Scenario.user_id == user.id, Scenario.status == "suggested"))).scalar_one()
-    due_rows = (await db.execute(select(Lexeme.es).join(Card, Card.lexeme_id == Lexeme.id).where(
-        Card.user_id == user.id, Card.due_at <= now).order_by(Card.due_at).limit(50))).scalars().all()
+    due_rows = (await db.execute(select(Lexeme.es, Lexeme.origin).join(Card, Card.lexeme_id == Lexeme.id).where(
+        Card.user_id == user.id, Card.due_at <= now).order_by(Card.due_at).limit(50))).all()
     recent = (await db.execute(select(Utterance).where(Utterance.user_id == user.id, Utterance.source != "rehearsal")
                                .order_by(Utterance.spoken_at.desc()).limit(3))).scalars()
     return {"next_scenario": await serialise(db, upcoming) if upcoming else None, "suggested_scenarios": suggested,
-            "words_ready": {"count": len(due_rows), "preview": list(due_rows[:4])},
+            # preview_items carry where each word came from, so clients can tint it (spoken, scenario, base, grammar)
+            "words_ready": {"count": len(due_rows), "preview": [r.es for r in due_rows[:4]],
+                            "preview_items": [{"es": r.es, "origin": r.origin} for r in due_rows[:4]]},
             "recent": [{"id": u.id, "text": u.text, "close_es": u.close_es, "spoken_at": u.spoken_at.isoformat()} for u in recent]}

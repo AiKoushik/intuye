@@ -76,7 +76,8 @@ export class Say extends Screen {
   }
 
   answerCard(r) {
-    return h("div", { class: "card" }, h("p", { class: "answer-q" }, r.source), h("p", { class: "body" }, r.answer));
+    return h("div", { class: "card" }, h("p", { class: "answer-q", style: "display:flex;align-items:center;gap:8px" }, chipDir("ask"), r.source),
+      h("p", { class: "body" }, r.answer));
   }
 
   async send(text) {

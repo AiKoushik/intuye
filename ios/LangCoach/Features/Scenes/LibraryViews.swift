@@ -60,6 +60,7 @@ struct LibraryRow: View {
     let card: LibraryCard
     var body: some View {
         HStack(spacing: Space.m) {
+            TintTile(tint: Tint.topic(card.topic, title: card.title))
             VStack(alignment: .leading, spacing: 2) {
                 Text(card.title).font(.lcBody)
                 Text(card.situation).font(.lcCaption).foregroundStyle(LC.Color.textSecondary).lineLimit(2)
@@ -90,6 +91,8 @@ struct LibrarySceneView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Space.m) {
                 if let t = scene {
+                    let tint = Tint.topic(t.topic, title: t.title)
+                    TintChip(tint: tint, text: tint.topicLabel)
                     Text(t.title).font(.lcDisplay)
                     Text(t.situation).font(.lcBody)
                     Label("\(usesLabel(t.uses)). \(t.credit.map { "Shared by \($0)" } ?? "Shared anonymously").",

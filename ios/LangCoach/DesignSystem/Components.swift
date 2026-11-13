@@ -148,12 +148,13 @@ struct InterlinearLine: View {
 struct WordChip: View {
     let text: String
     var isNew = false
+    var tint: Tint? = nil
     var body: some View {
         Text(text)
             .font(.lcSpanishBody)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(LC.Color.sunken, in: Capsule())
+            .background(tint?.bg ?? LC.Color.sunken, in: Capsule())
             .overlay(alignment: .bottom) {
                 if isNew { Capsule().fill(LC.Color.highlight).frame(height: 3).padding(.horizontal, 8) }
             }
@@ -164,23 +165,21 @@ struct WordChip: View {
 struct DirectionChip: View {
     let intent: CoachIntent
     var body: some View {
-        Text(intent == .toEn ? "Spanish → English" : intent == .toEs ? "English → Spanish" : "Answer")
-            .font(.caption)
-            .foregroundStyle(LC.Color.accent)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 3)
-            .background(LC.Color.accentSubtle, in: Capsule())
+        let tint: Tint = intent == .toEn ? .plum : intent == .toEs ? .sea : .sand
+        TintChip(tint: tint, text: intent == .toEn ? "Spanish → English" : intent == .toEs ? "English → Spanish" : "You asked")
     }
 }
 
 struct ReadinessDots: View {
     let value: Int?
+    var tint: Tint? = nil
     var body: some View {
+        let c = tint?.fg ?? LC.Color.accent
         HStack(spacing: 4) {
             ForEach(1...5, id: \.self) { i in
                 Circle()
-                    .strokeBorder(LC.Color.accent, lineWidth: 1.5)
-                    .background(Circle().fill(i <= (value ?? 0) ? LC.Color.accent : .clear))
+                    .strokeBorder(c, lineWidth: 1.5)
+                    .background(Circle().fill(i <= (value ?? 0) ? c : .clear))
                     .frame(width: 8, height: 8)
             }
         }

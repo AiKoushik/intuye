@@ -105,7 +105,7 @@ struct RehearseView: View {
                 }
             }
             .padding(.horizontal, 14).padding(.vertical, 10)
-            .background(b.coach ? LC.Color.accentSubtle : LC.Color.surface,
+            .background(b.coach ? Tint.topic(scene.topic, title: scene.title).bg : LC.Color.surface,
                         in: UnevenRoundedRectangle(topLeadingRadius: 20, bottomLeadingRadius: b.coach ? 6 : 20,
                                                    bottomTrailingRadius: b.coach ? 20 : 6, topTrailingRadius: 20, style: .continuous))
             .onTapGesture { if b.coach { if shown.contains(b.id) { shown.remove(b.id) } else { shown.insert(b.id) } } }

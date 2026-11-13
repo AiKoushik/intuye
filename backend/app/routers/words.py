@@ -42,9 +42,10 @@ async def due(user: User = Depends(current_user), db: AsyncSession = Depends(get
         ids = [lx.id for _, lx in rows]
         for item in (await db.execute(select(BatchItem).join(Batch).where(
                 Batch.user_id == user.id, BatchItem.lexeme_id.in_(ids)).order_by(Batch.created_at))).scalars():
-            reasons[item.lexeme_id] = item.reason
+            reasons[item.lexeme_id] = (item.reason, item.reason_kind)
     return {"items": [{"lexeme_id": lx.id, "es": lx.es, "en": lx.en, "context": lx.context, "state": c.state,
-                       "reason": reasons.get(lx.id)} for c, lx in rows]}
+                       "reason": reasons.get(lx.id, (None, None))[0], "reason_kind": reasons.get(lx.id, (None, lx.origin))[1]}
+                      for c, lx in rows]}
 
 
 @router.post("/reviews")

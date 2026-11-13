@@ -18,7 +18,7 @@ The identity comes from three choices: **ink and tile** colour, **two voices** i
    approach.
 4. **Contrast-checked automatically** against WCAG 2.2 (W3C, Oct 2023): text 4.5:1, large text and UI
    3:1; in Increase Contrast mode, 7:1 and 4.5:1. `generate.py --check` fails the build if any pair
-   drops below. Current result: **108 checks, 0 failing** — see
+   drops below. Current result: **188 checks, 0 failing** — see
    [`design/tokens/build/contrast-report.md`](../design/tokens/build/contrast-report.md).
 5. **Four appearances per token:** light, dark, light + high contrast, dark + high contrast, shipped as
    Display P3 colour sets in `Assets.xcassets`.
@@ -31,10 +31,29 @@ Pipeline: `design/tokens/source.json` → `generate.py` → asset catalog + `Col
 | Family | Hue | Meaning | Why this hue |
 |---|---|---|---|
 | **Ink** | 262° (blue-black, very low chroma) | Text, surfaces, borders | Writing ink, so your words read like your own handwriting |
-| **Azulejo** | 270° ultramarine | The only accent: actions, links, alignment threads | The blue of Spanish tilework; deeper and more violet than iOS default blue, so it doesn't read as "untinted" |
+| **Azulejo** | 270° ultramarine | The only accent: things you can tap (actions, links, the mic) | The blue of Spanish tilework; deeper and more violet than iOS default blue, so it doesn't read as "untinted" |
 | **Azafrán** | 80° saffron | The highlighter on new words; attention | A highlighter pen marks what's new, and saffron is unmistakably Spanish without flag clichés |
 | **Olivo** | 135° olive | Success, *Got it* | Calm rather than neon "success green" |
 | **Granada** | 24° pomegranate | Errors, *Forgot* | Warm red that sits with saffron instead of fighting it |
+
+### Sober tints
+
+Five quiet families, peak chroma about a third of azulejo's, on the same lightness scale. They say
+**what something is about** or **why it's here**, never "tap me", and always sit next to a label. Each
+has a text colour (step 700 light, 300 dark) and a subtle background (step 100 light, 900 dark); text
+on its own tint is 6.8:1 or better in light mode and 8.5:1 in dark.
+
+| Tint | Hue | Scenes about | Why a word is here | Also |
+|---|---|---|---|---|
+| **Salvia** (`sage`) | 150° sage | Health and body | For a scene coming up | Rehearsal partner's bubbles |
+| **Mar** (`sea`) | 215° slate sea | Work and study | You said it | English → Spanish label, "words ready" |
+| **Arena** (`sand`) | 78° sand | Home and family | Core Spanish for your level | "You asked" label, "Heard at" stamps |
+| **Rosa** (`rose`) | 12° dusty rose | Food and friends | You keep missing it | Notifications row |
+| **Ciruela** (`plum`) | 320° plum | Travel and errands | A topic you talk about | Spanish → English label, the Spanglish trend line |
+
+A scene's tint comes from its topic, then its title (keyword match), falling back to a stable hash
+of the text. Readiness dots take the scene's tint. Code: `Tint` in `DesignSystem/Tint.swift`, `.t-*`
+classes in the web build.
 
 ### Semantic tokens (use these, never ramps, in code)
 
@@ -50,12 +69,17 @@ Pipeline: `design/tokens/source.json` → `generate.py` → asset catalog + `Col
 | `borderStrong` | `#7B808B` | `#5E636C` | Input borders, control outlines |
 | `accent` | `#3E55C8` | `#A4BBFF` | Links, tinted text, icons |
 | `accentFill` / `onAccent` | `#3E55C8` / white | `#7997FF` / ink | Primary buttons |
-| `accentSubtle` | `#EFF3FF` | `#121C4B` | Selected rows, coach bubbles |
+| `accentSubtle` | `#EFF3FF` | `#121C4B` | Selected rows, secondary buttons |
 | `highlight` / `onHighlight` | `#F2D39E` / ink | `#4B3300` / white | New-word mark, paired-word mark |
 | `success` | `#34591B` | `#A6CA93` | Got it, readiness up |
 | `warning` | `#664700` | `#E0B771` | Attention |
 | `danger` | `#AD2F32` | `#FFA09A` | Forgot, errors, destructive |
 | `focusRing` | `#5471F7` | `#A4BBFF` | Keyboard / Full Keyboard Access focus |
+| `sage` / `sageSubtle` | `#3B5440` / `#DDEDDF` | `#ADC5B1` / `#18251B` | Health scenes, "for a scene" reasons, partner bubbles |
+| `sea` / `seaSubtle` | `#30535C` / `#D8ECF1` | `#A4C4CC` / `#132529` | Work scenes, "you said it" reasons |
+| `sand` / `sandSubtle` | `#594B34` / `#F0E6D8` | `#CABCA6` / `#282015` | Home scenes, core-Spanish reasons |
+| `rose` / `roseSubtle` | `#634346` / `#F8E2E3` | `#D5B4B7` / `#2D1C1E` | Food scenes, "you keep missing it" reasons |
+| `plum` / `plumSubtle` | `#58455D` / `#EFE3F2` | `#C9B6CE` / `#271E2A` | Travel scenes, topic reasons, Spanglish trend |
 
 **Rule:** colour is never the only signal. Rating buttons pair colour with a label and an SF Symbol;
 new words pair the highlight with VoiceOver "new word".

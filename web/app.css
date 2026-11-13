@@ -87,11 +87,11 @@ svg { width: 1em; height: 1em; flex: none; }
 .secondary { color: var(--lc-text-secondary); }
 .es { font-family: var(--es); }
 .dots { display: inline-flex; gap: 4px; }
-.dots i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--lc-accent); }
-.dots i.on { background: var(--lc-accent); }
+.dots i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--t-fg, var(--lc-accent)); }
+.dots i.on { background: var(--t-fg, var(--lc-accent)); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .chip { font-family: var(--es); font-size: 17px; padding: 5px 12px; border-radius: 999px; background: var(--lc-sunken); }
-.chip-dir { display: inline-block; font-size: 12px; color: var(--lc-accent); background: var(--lc-accent-subtle); border-radius: 999px; padding: 3px 10px; }
+.chip-dir { display: inline-block; font-size: 12px; font-weight: 500; color: var(--t-fg, var(--lc-accent)); background: var(--t-bg, var(--lc-accent-subtle)); border-radius: 999px; padding: 3px 10px; }
 .empty { color: var(--lc-text-secondary); font-size: 16px; line-height: 22px; }
 .error { display: flex; gap: 8px; align-items: flex-start; background: var(--lc-sunken); border-radius: var(--r-ctl); padding: 12px; font-size: 13px; line-height: 18px; margin-bottom: 12px; }
 .error svg { color: var(--lc-danger); width: 18px; height: 18px; margin-top: 1px; }
@@ -173,13 +173,13 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 .rescue { font-family: var(--es); font-size: 19px; padding: 7px 0; display: block; width: 100%; text-align: left; }
 .ready-dots { display: inline-flex; }
 .ready-dots button { width: 30px; height: 40px; display: grid; place-items: center; }
-.ready-dots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--lc-accent); }
-.ready-dots i.on { background: var(--lc-accent); }
+.ready-dots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--t-fg, var(--lc-accent)); }
+.ready-dots i.on { background: var(--t-fg, var(--lc-accent)); }
 
 /* Rehearse */
 .chat { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
 .bubble { max-width: 82%; padding: 10px 14px; border-radius: 20px; font-size: 17px; line-height: 23px; }
-.bubble.coach { align-self: flex-start; background: var(--lc-accent-subtle); font-family: var(--es); font-size: 19px; border-bottom-left-radius: 6px; cursor: pointer; }
+.bubble.coach { align-self: flex-start; background: var(--lc-sage-subtle); font-family: var(--es); font-size: 19px; border-bottom-left-radius: 6px; cursor: pointer; }
 .bubble.coach small { display: block; font-family: var(--ui); font-size: 13px; line-height: 18px; color: var(--lc-text-secondary); margin-top: 4px; }
 .bubble.you { align-self: flex-end; background: var(--lc-surface); border: 1px solid var(--lc-hairline); border-bottom-right-radius: 6px; }
 .bubble .native { font-size: 13px; color: var(--lc-text-secondary); margin-top: 4px; line-height: 18px; }
@@ -191,9 +191,9 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 /* Progress */
 .big { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.stats div { background: var(--lc-sunken); border-radius: 14px; padding: 12px 4px; text-align: center; }
+.stats div { background: var(--t-bg, var(--lc-sunken)); color: var(--t-fg, inherit); border-radius: 14px; padding: 12px 4px; text-align: center; }
 .stats b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
-.stats span { font-size: 12px; color: var(--lc-text-secondary); }
+.stats span { font-size: 12px; color: var(--t-fg, var(--lc-text-secondary)); }
 .conf-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid var(--lc-hairline); font-variant-numeric: tabular-nums; }
 .conf-row:first-of-type { border-top: 0; }
 .conf-row .grow { flex: 1; }
@@ -252,3 +252,22 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 .switch:focus-visible { outline: 2px solid var(--lc-accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
 .lib-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+/* Sober tints: what something is about, or why it's here. Always next to a label. */
+.t-sage { --t-fg: var(--lc-sage); --t-bg: var(--lc-sage-subtle); }
+.t-sea { --t-fg: var(--lc-sea); --t-bg: var(--lc-sea-subtle); }
+.t-sand { --t-fg: var(--lc-sand); --t-bg: var(--lc-sand-subtle); }
+.t-rose { --t-fg: var(--lc-rose); --t-bg: var(--lc-rose-subtle); }
+.t-plum { --t-fg: var(--lc-plum); --t-bg: var(--lc-plum-subtle); }
+.tile { width: 32px; height: 32px; border-radius: 9px; flex: none; display: grid; place-items: center; background: var(--t-bg); color: var(--t-fg); }
+.tile svg { width: 17px; height: 17px; }
+.tile.lg { width: 36px; height: 36px; border-radius: 10px; }
+.tile.lg svg { width: 19px; height: 19px; }
+.tchip { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; font-size: 12px; font-weight: 500; color: var(--t-fg); background: var(--t-bg); border-radius: 999px; padding: 3px 10px; }
+.tchip svg { width: 14px; height: 14px; }
+.chip[class*="t-"] { background: var(--t-bg); }
+.chip.new { box-shadow: inset 0 -3px 0 var(--lc-highlight); }
+.lead { display: flex; align-items: center; gap: 12px; }
+.promise { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.promise b { display: block; font-size: 16px; font-weight: 600; }
+.promise span.sub { font-size: 14px; line-height: 19px; color: var(--lc-text-secondary); }

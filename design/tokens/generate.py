@@ -196,7 +196,8 @@ EXTRA_PAIRS = [  # (foreground, background, required role)
     ("success", "surface", "text"),
     ("danger", "surface", "text"),
     ("warning", "surface", "text"),
-]
+] + [(t, f"{t}Subtle", "text") for t in ("sage", "sea", "sand", "rose", "plum")] \
+  + [("textPrimary", f"{t}Subtle", "text") for t in ("sage", "sea", "sand", "rose", "plum")]
 
 
 def required(role: str, appearance: str) -> float | None:

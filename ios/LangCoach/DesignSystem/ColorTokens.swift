@@ -22,5 +22,15 @@ public enum LC {
         public static let warning = SwiftUI.Color("warning", bundle: .main)
         public static let danger = SwiftUI.Color("danger", bundle: .main)
         public static let focusRing = SwiftUI.Color("focusRing", bundle: .main)
+        public static let sage = SwiftUI.Color("sage", bundle: .main)
+        public static let sageSubtle = SwiftUI.Color("sageSubtle", bundle: .main)
+        public static let sea = SwiftUI.Color("sea", bundle: .main)
+        public static let seaSubtle = SwiftUI.Color("seaSubtle", bundle: .main)
+        public static let sand = SwiftUI.Color("sand", bundle: .main)
+        public static let sandSubtle = SwiftUI.Color("sandSubtle", bundle: .main)
+        public static let rose = SwiftUI.Color("rose", bundle: .main)
+        public static let roseSubtle = SwiftUI.Color("roseSubtle", bundle: .main)
+        public static let plum = SwiftUI.Color("plum", bundle: .main)
+        public static let plumSubtle = SwiftUI.Color("plumSubtle", bundle: .main)
     }
 }

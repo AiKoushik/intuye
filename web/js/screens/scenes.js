@@ -1,10 +1,11 @@
 import { h, icon, whenLabel } from "../dom.js";
-import { dots, interlinear, readyDots, spinner } from "../components.js";
+import { dots, interlinear, readyDots, spinner, tintChip, topicTile, topicTint } from "../components.js";
 import { localeFor, speak } from "../speech.js";
 import { Screen, navButton } from "./base.js";
 import { Rehearse } from "./rehearse.js";
 
 const usedLabel = (n) => (n === 1 ? "1 use" : `${n} uses`);
+const topicLabel = (tint) => ({ sage: "Health and body", sea: "Work and study", sand: "Home and family", rose: "Food and friends", plum: "Travel and errands" })[tint];
 
 export class Scenes extends Screen {
   constructor(app) { super(app); this.title = "Scenes"; this.list = null; this.q = ""; this.results = null; this.popular = []; this.listening = false; }
@@ -65,6 +66,7 @@ export class Scenes extends Screen {
 
   libraryRow(t) {
     return h("button", { class: "row", type: "button", onclick: () => this.app.push(new LibraryScene(this.app, t.id, (scene) => this.created(scene))) },
+      topicTile(t.topic, t.title),
       h("span", { class: "grow" }, h("span", { style: "display:block" }, t.title), h("span", { class: "meta" }, t.situation)),
       h("span", { class: "uses" }, usedLabel(t.uses)), icon("chevron", "chev"));
   }
@@ -100,13 +102,14 @@ export class Scenes extends Screen {
 
   row(s) {
     if (s.status === "suggested") {
-      return h("div", { class: "row" },
+      return h("div", { class: "row" }, topicTile(s.topic, s.title),
         h("span", { class: "grow" }, h("span", { style: "display:block" }, s.title), h("span", { class: "meta" }, "Suggested from what you talk about")),
         h("button", { class: "btn inline", type: "button", onclick: async () => { await this.api.setScenarioStatus(s.id, "active"); this.refresh(); } }, "Add"));
     }
     return h("button", { class: "row", type: "button", onclick: () => this.app.push(new SceneDetail(this.app, s.id)) },
+      topicTile(s.topic, s.title),
       h("span", { class: "grow" }, h("span", { style: "display:block" }, s.title), h("span", { class: "meta" }, whenLabel(s))),
-      dots(s.readiness.current), icon("chevron", "chev"));
+      dots(s.readiness.current, topicTint(s.topic, s.title)), icon("chevron", "chev"));
   }
 }
 
@@ -119,10 +122,10 @@ export class SceneDetail extends Screen {
     if (!s) return this.loaded ? [] : [spinner()];
     const p = s.phrases || { key: [], rescue: [], hear: [] };
     return [
-      h("p", { class: "date" }, whenLabel(s)),
+      h("p", { class: "date", style: "display:flex;align-items:center;gap:8px" }, tintChip(topicTint(s.topic, s.title), topicLabel(topicTint(s.topic, s.title))), whenLabel(s)),
       h("h1", { class: "large-title" }, s.title),
       h("div", { class: "card split", style: "padding:6px 8px 6px 16px" }, h("span", { class: "body" }, "How ready do you feel?"),
-        readyDots(s.readiness.current, (v) => this.rate(v))),
+        readyDots(s.readiness.current, (v) => this.rate(v), topicTint(s.topic, s.title))),
       h("p", { class: "section-label" }, "Key phrases"),
       h("div", { class: "card" }, p.key.map((ph) => h("div", { class: "phrase-row" },
         interlinear(ph.alignment.map((a) => ({ src: a.src, tgt: a.tgt }))),
@@ -153,6 +156,7 @@ export class LibraryScene extends Screen {
     if (!t) return this.loaded ? [] : [spinner()];
     const p = t.phrases;
     return [
+      tintChip(topicTint(t.topic, t.title), topicLabel(topicTint(t.topic, t.title))),
       h("h1", { class: "large-title" }, t.title),
       h("p", { class: "situation" }, t.situation),
       h("p", { class: "lib-meta" }, icon("people"), `${usedLabel(t.uses)}. ${t.credit ? `Shared by ${t.credit}` : "Shared anonymously"}.`),

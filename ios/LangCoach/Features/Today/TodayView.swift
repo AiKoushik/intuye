@@ -66,13 +66,15 @@ struct TodayView: View {
 
     private func comingUp(_ s: ScenarioDTO) -> some View {
         VStack(alignment: .leading, spacing: Space.m) {
-            HStack(alignment: .top) {
+            let tint = Tint.topic(s.topic, title: s.title)
+            HStack(alignment: .top, spacing: Space.m) {
+                TintTile(tint: tint, size: 36)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.title).font(.lcHeadline).foregroundStyle(LC.Color.textPrimary)
                     Text(whenLabel(s)).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
                 }
                 Spacer()
-                ReadinessDots(value: s.readiness.current)
+                ReadinessDots(value: s.readiness.current, tint: tint)
             }
             Text((s.readiness.after ?? 0) > 0 ? "Rehearse again" : "Prep").buttonLike()
         }
@@ -82,11 +84,18 @@ struct TodayView: View {
     private var words: some View {
         VStack(alignment: .leading, spacing: Space.m) {
             let count = today?.wordsReady.count ?? 0
-            Text(count > 0 ? "\(count) words ready" : "Your words").font(.lcHeadline)
-            Text(count > 0 ? "From what you said and what's coming up" : "Get 5–10 words picked from your week")
-                .font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
-            if let preview = today?.wordsReady.preview, !preview.isEmpty {
-                FlowLayout(spacing: 8, lineSpacing: 8) { ForEach(preview, id: \.self) { WordChip(text: $0) } }
+            HStack(spacing: Space.m) {
+                TintTile(tint: .sea, symbol: "rectangle.stack", size: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(count > 0 ? "\(count) words ready" : "Your words").font(.lcHeadline)
+                    Text(count > 0 ? "From what you said and what's coming up" : "Get 5–10 words picked from your week")
+                        .font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+                }
+            }
+            if let items = today?.wordsReady.previewItems, !items.isEmpty {
+                FlowLayout(spacing: 8, lineSpacing: 8) {
+                    ForEach(items, id: \.es) { WordChip(text: $0.es, tint: Tint.reason($0.origin)) }
+                }
             }
             Button(count > 0 ? "Start review" : "Get today's words") { showReview = true }.buttonStyle(.lcSubtle)
         }

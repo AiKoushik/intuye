@@ -19,13 +19,47 @@ export function interlinear(pairs, { toEn = false } = {}) {
   return el;
 }
 
-export function dots(value) {
-  return h("span", { class: "dots", role: "img", "aria-label": value ? `Readiness ${value} of 5` : "Not rated yet" },
+/* Sober tints say what something is about or why it's here; azulejo stays for things you tap.
+   Topic -> tint by keyword (topic first, then title); unknown topics get a stable tint from their name. */
+const TOPIC_TINTS = [
+  ["sage", "heart", /health|dentist|doctor|medic|pharmac|hospital|body|tooth|clinic|sport|fitness/],
+  ["sea", "briefcase", /work|job|office|meeting|study|science|neuro|tech|career|universit|interview|class/],
+  ["sand", "home", /home|family|kid|son|daughter|child|school|parent|landlord|house|neighbo/],
+  ["rose", "food", /food|restaurant|cook|dinner|lunch|breakfast|friend|party|social|café|cafe|bar\b|order/],
+  ["plum", "pin", /travel|errand|bank|shop|ticket|train|bus|airport|hotel|plumber|repair|admin|post office|taxi/],
+];
+const TINTS = ["sage", "sea", "sand", "rose", "plum"];
+const ICON_FOR = { sage: "heart", sea: "briefcase", sand: "home", rose: "food", plum: "pin" };
+
+export function topicTint(topic, title = "") {
+  const text = `${topic || ""} ${title || ""}`.toLowerCase();
+  for (const [tint, , re] of TOPIC_TINTS) if (re.test(`${topic || ""}`.toLowerCase())) return tint;
+  for (const [tint, , re] of TOPIC_TINTS) if (re.test(text)) return tint;
+  let hsh = 0; for (const ch of text) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
+  return TINTS[hsh % TINTS.length];
+}
+
+/** Why a word is in your batch -> tint. Matches the batch's reason_kind or a lexeme's origin. */
+export function reasonTint(kind) {
+  return { spoken: "sea", scenario: "sage", struggle: "rose", topic: "plum", base: "sand", grammar: "plum" }[kind] || "sand";
+}
+
+export function topicTile(topic, title) {
+  const tint = topicTint(topic, title);
+  return h("span", { class: `tile t-${tint}`, "aria-hidden": "true" }, icon(ICON_FOR[tint]));
+}
+
+export function tile(tint, iconName) { return h("span", { class: `tile t-${tint}`, "aria-hidden": "true" }, icon(iconName)); }
+
+export function tintChip(tint, text) { return h("span", { class: `tchip t-${tint}` }, text); }
+
+export function dots(value, tint = null) {
+  return h("span", { class: `dots${tint ? ` t-${tint}` : ""}`, role: "img", "aria-label": value ? `Readiness ${value} of 5` : "Not rated yet" },
     [1, 2, 3, 4, 5].map((i) => h("i", { class: i <= (value || 0) ? "on" : "" })));
 }
 
-export function readyDots(value, onRate) {
-  return h("span", { class: "ready-dots" }, [1, 2, 3, 4, 5].map((v) =>
+export function readyDots(value, onRate, tint = null) {
+  return h("span", { class: `ready-dots${tint ? ` t-${tint}` : ""}` }, [1, 2, 3, 4, 5].map((v) =>
     h("button", { type: "button", "aria-label": `${v} of 5`, onclick: () => onRate(v) }, h("i", { class: v <= (value || 0) ? "on" : "" }))));
 }
 
@@ -67,5 +101,6 @@ export function holdToTalk({ onBegin, onEnd, label = "Hold to talk" }) {
 }
 
 export function chipDir(intent) {
-  return h("span", { class: "chip-dir" }, intent === "to_en" ? "Spanish → English" : intent === "to_es" ? "English → Spanish" : "Answer");
+  const tint = intent === "to_en" ? "plum" : intent === "to_es" ? "sea" : "sand";
+  return h("span", { class: `chip-dir t-${tint}` }, intent === "to_en" ? "Spanish → English" : intent === "to_es" ? "English → Spanish" : "You asked");
 }

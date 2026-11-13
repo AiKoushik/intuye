@@ -1,5 +1,5 @@
 import { h } from "../dom.js";
-import { holdToTalk, readyDots } from "../components.js";
+import { holdToTalk, readyDots, topicTint } from "../components.js";
 import { localeFor, speak } from "../speech.js";
 import { Screen, navButton } from "./base.js";
 
@@ -116,7 +116,8 @@ class RehearsalSummary extends Screen {
         h("span", { class: "grow" }, h("span", { class: "es", style: "display:block;font-size:19px" }, p.es), h("span", { class: "meta" }, p.en))))),
       h("p", { class: "group-title" }, "How ready do you feel now?"),
       h("div", { class: "group" }, h("div", { class: "row" }, h("span", { class: "grow" }, this.rated ? `Saved: ${this.rated} of 5` : "Tap a dot"),
-        readyDots(this.rated, async (v) => { this.rated = v; await this.api.rate(this.scene.id, v, "after"); this.update(); }))),
+        readyDots(this.rated, async (v) => { this.rated = v; await this.api.rate(this.scene.id, v, "after"); this.update(); },
+          topicTint(this.scene.topic, this.scene.title)))),
     ];
   }
 }

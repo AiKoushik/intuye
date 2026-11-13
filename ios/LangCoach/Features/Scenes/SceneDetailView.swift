@@ -11,7 +11,11 @@ struct SceneDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Space.m) {
                 if let s = scene {
-                    Text(whenLabel(s)).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+                    let tint = Tint.topic(s.topic, title: s.title)
+                    HStack(spacing: Space.s) {
+                        TintChip(tint: tint, text: tint.topicLabel)
+                        Text(whenLabel(s)).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+                    }
                     Text(s.title).font(.lcDisplay)
                     readiness(s)
                     if let p = s.phrases {
@@ -86,7 +90,7 @@ struct SceneDetailView: View {
                 ForEach(1...5, id: \.self) { v in
                     Button { Task { await rate(v) } } label: {
                         Image(systemName: v <= (s.readiness.current ?? 0) ? "circle.fill" : "circle")
-                            .font(.footnote).foregroundStyle(LC.Color.accent).frame(width: 28, height: 44)
+                            .font(.footnote).foregroundStyle(Tint.topic(s.topic, title: s.title).fg).frame(width: 28, height: 44)
                     }
                     .accessibilityLabel("\(v) of 5")
                 }

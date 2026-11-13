@@ -154,13 +154,15 @@ struct ScenesView: View {
 struct SceneRow: View {
     let scene: ScenarioDTO
     var body: some View {
-        HStack {
+        let tint = Tint.topic(scene.topic, title: scene.title)
+        HStack(spacing: Space.m) {
+            TintTile(tint: tint)
             VStack(alignment: .leading, spacing: 2) {
                 Text(scene.title).font(.lcBody)
                 Text(whenLabel(scene)).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
             }
             Spacer()
-            ReadinessDots(value: scene.readiness.current)
+            ReadinessDots(value: scene.readiness.current, tint: tint)
         }
         .padding(.vertical, 2)
     }

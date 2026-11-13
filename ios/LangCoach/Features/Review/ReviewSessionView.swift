@@ -92,7 +92,7 @@ struct ReviewSessionView: View {
                         Text(card.es).font(.system(.largeTitle, design: .serif)).foregroundStyle(LC.Color.textPrimary)
                     }
                     .accessibilityHint("Plays the Spanish")
-                    if let reason = card.reason { Text(reason).font(.lcCaption).foregroundStyle(LC.Color.textSecondary) }
+                    if let reason = card.reason { TintChip(tint: Tint.reason(card.reasonKind), text: reason) }
                     if let p = model.pronunciation {
                         Label(p.ok ? "Sounded right" : "Close — listen and try again", systemImage: p.ok ? "checkmark" : "ear")
                             .font(.lcCaption).foregroundStyle(p.ok ? LC.Color.success : LC.Color.warning)

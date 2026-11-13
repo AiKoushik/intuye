@@ -44,10 +44,10 @@ struct ProgressScreen: View {
                 }
                 Chart(weeks, id: \.week) { w in
                     LineMark(x: .value("Week", w.week), y: .value("English share", w.ratio))
-                        .foregroundStyle(LC.Color.accent)
+                        .foregroundStyle(LC.Color.plum)
                         .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
                     PointMark(x: .value("Week", w.week), y: .value("English share", w.ratio))
-                        .foregroundStyle(LC.Color.accent)
+                        .foregroundStyle(LC.Color.plum)
                 }
                 .chartYScale(domain: 0...1)
                 .chartYAxis { AxisMarks(values: [0, 0.5, 1]) { v in AxisGridLine(); AxisValueLabel(format: .percent) } }
@@ -69,6 +69,7 @@ struct ProgressScreen: View {
             }
             ForEach(rows, id: \.scenarioId) { r in
                 HStack {
+                    TintTile(tint: Tint.topic(nil, title: r.title), size: 28)
                     Text(r.title).font(.lcBody)
                     Spacer()
                     Text(r.before.map(String.init) ?? "–").foregroundStyle(LC.Color.textSecondary)
@@ -87,20 +88,21 @@ struct ProgressScreen: View {
 
     private func words(_ w: WordStats) -> some View {
         HStack(spacing: Space.s) {
-            stat(w.met, "words met")
-            stat(w.kept, "kept")
-            stat(w.due, "due now")
+            stat(w.met, "words met", .sea)
+            stat(w.kept, "kept", .sage)
+            stat(w.due, "due now", .sand)
         }
     }
 
-    private func stat(_ n: Int, _ label: String) -> some View {
+    private func stat(_ n: Int, _ label: String, _ tint: Tint) -> some View {
         VStack(spacing: 2) {
             Text("\(n)").font(.title2.weight(.bold)).monospacedDigit()
-            Text(label).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            Text(label).font(.lcCaption)
         }
+        .foregroundStyle(tint.fg)
         .frame(maxWidth: .infinity)
         .padding(.vertical, Space.m)
-        .background(LC.Color.sunken, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(tint.bg, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 

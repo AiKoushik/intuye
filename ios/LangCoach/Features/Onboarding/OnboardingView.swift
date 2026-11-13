@@ -42,6 +42,12 @@ struct OnboardingView: View {
                 .font(.lcBody).foregroundStyle(LC.Color.textSecondary)
             InterlinearLine(pairs: example).lcCard()
             Text("Tap a word to see its partner.").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            VStack(alignment: .leading, spacing: Space.m) {
+                promise(.sea, "text.bubble", "Say anything, in any mix", "English, Spanish or both at once")
+                promise(.sage, "calendar", "Get ready for what's coming up", "The dentist, a meeting, dinner with friends")
+                promise(.sand, "rectangle.stack", "Keep 5 to 10 words a day", "Picked from what you actually say")
+            }
+            .padding(.top, Space.s)
             Button("Continue") { step = 1 }.buttonStyle(.lcPrimary).padding(.top, Space.l)
         }
     }
@@ -115,5 +121,16 @@ struct OnboardingView: View {
                 self.error = error.localizedDescription
             }
         }
+    }
+
+    private func promise(_ tint: Tint, _ symbol: String, _ title: String, _ sub: String) -> some View {
+        HStack(spacing: Space.m) {
+            TintTile(tint: tint, symbol: symbol, size: 36)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.lcBody.weight(.semibold))
+                Text(sub).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }

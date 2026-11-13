@@ -113,6 +113,7 @@ public struct DueCard: Codable, Sendable, Hashable, Identifiable {
     public let context: String?
     public let state: String
     public let reason: String?
+    public let reasonKind: String?
     public var id: String { lexemeId }
 }
 
@@ -255,7 +256,8 @@ public struct ConfidenceRow: Codable, Sendable, Hashable { public let scenarioId
 public struct WordStats: Codable, Sendable, Hashable { public let met: Int; public let kept: Int; public let due: Int }
 public struct ProgressDTO: Codable, Sendable { public let spanglishRatio: [WeekRatio]; public let confidence: [ConfidenceRow]; public let words: WordStats }
 
-public struct WordsReady: Codable, Sendable, Hashable { public let count: Int; public let preview: [String] }
+public struct PreviewWord: Codable, Sendable, Hashable { public let es: String; public let origin: String? }
+public struct WordsReady: Codable, Sendable, Hashable { public let count: Int; public let preview: [String]; public let previewItems: [PreviewWord]? }
 public struct RecentSentence: Codable, Sendable, Hashable, Identifiable { public let id: String; public let text: String; public let closeEs: String?; public let spokenAt: String }
 public struct TodayDTO: Codable, Sendable {
     public let nextScenario: ScenarioDTO?
