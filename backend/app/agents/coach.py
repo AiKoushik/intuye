@@ -1,4 +1,7 @@
-"""Coach graph (Say tab): route -> translate | answer -> brevity_guard.
+"""Coach pipeline (Say tab): route -> translate | answer -> brevity_guard.
+
+Routing and the brevity guard are deterministic; the model steps call the translator and explainer
+deep agents.
 
 Brevity contract: translations are one line with alignment and an optional 'natural' variant only
 when it differs; answers are at most three sentences / 320 characters. Nothing else is returned.
@@ -10,10 +13,10 @@ from typing import Literal, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
+from app.agents.runtime import AgentContext, ask, make_agent
 from app.agents.schemas import AnswerOut, TranslationOut
 from app.curation.text import fold, is_spanish_token, looks_spanish, normalize_es, tokens
 from app.llm import prompts
-from app.llm.provider import LLM
 
 Intent = Literal["to_es", "to_en", "ask"]
 
@@ -55,22 +58,35 @@ def route_input(text: str, direction: str) -> tuple[Intent, str]:
     return ("to_en" if looks_spanish(text) and not has_english else "to_es"), text
 
 
-def build_coach_graph(llm: LLM):
+def translator_prompt(ctx: AgentContext) -> str:
+    template = prompts.TRANSLATE_TO_ES if ctx.direction == "to_es" else prompts.TRANSLATE_TO_EN
+    return template.format(dialect=ctx.dialect_name, data_rule=prompts.DATA_RULE)
+
+
+def explainer_prompt(ctx: AgentContext) -> str:
+    return prompts.ANSWER.format(dialect=ctx.dialect_name, data_rule=prompts.DATA_RULE)
+
+
+def build_translator(model):
+    return make_agent(model, "translator", translator_prompt, TranslationOut)
+
+
+def build_explainer(model):
+    return make_agent(model, "explainer", explainer_prompt, AnswerOut)
+
+
+def build_coach_graph(agents):
     async def route(state: CoachState) -> CoachState:
         intent, payload = route_input(state["text"], state.get("direction", "auto"))
         return {"intent": intent, "payload": payload}
 
     async def translate(state: CoachState) -> CoachState:
-        dialect = prompts.DIALECT_NAMES.get(state.get("dialect", "es-419"), "Spanish")
-        to_es = state["intent"] == "to_es"
-        system = (prompts.TRANSLATE_TO_ES if to_es else prompts.TRANSLATE_TO_EN).format(dialect=dialect, data_rule=prompts.DATA_RULE)
-        out = await llm.structured(TranslationOut, system, f"DIRECTION: {state['intent']}\n{prompts.wrap(state['payload'])}")
+        ctx = AgentContext(dialect=state.get("dialect", "es-419"), direction=state["intent"])
+        out = await ask(agents.translator, TranslationOut, f"DIRECTION: {state['intent']}\n{prompts.wrap(state['payload'])}", ctx)
         return {"close": out.close, "natural": out.natural, "alignment": [p.model_dump() for p in out.alignment], "answer": None}
 
     async def answer(state: CoachState) -> CoachState:
-        dialect = prompts.DIALECT_NAMES.get(state.get("dialect", "es-419"), "Spanish")
-        out = await llm.structured(AnswerOut, prompts.ANSWER.format(dialect=dialect, data_rule=prompts.DATA_RULE),
-                                   prompts.wrap(state["payload"]), slot="smart")
+        out = await ask(agents.explainer, AnswerOut, prompts.wrap(state["payload"]), AgentContext(dialect=state.get("dialect", "es-419")))
         return {"answer": out.answer, "close": "", "natural": None, "alignment": []}
 
     async def brevity_guard(state: CoachState) -> CoachState:

@@ -42,7 +42,7 @@ def _aware(dt: datetime) -> datetime:
 async def ingest(body: BatchIn, request: Request, user: User = Depends(current_user),
                  db: AsyncSession = Depends(get_session)) -> dict:
     settings = await db.get(UserSettings, user.id)
-    state = await request.app.state.graphs.ingest.ainvoke({
+    state = await request.app.state.agents.ingest.ainvoke({
         "items": [{"text": i.text, "spoken_at": _aware(i.spoken_at), "source": i.source} for i in body.items],
         "dialect": settings.dialect if settings else "es-419"})
 

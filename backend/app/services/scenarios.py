@@ -3,16 +3,28 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.agents.runtime import AgentContext
+from app.agents.scene_builder import build_scene
+from app.agents.schemas import SceneCardOut
 from app.models import Readiness, Scenario, ScenarioPhrase, UserSettings
 from app.services.lexicon import upsert_lexeme
 
 
-async def prepare(db: AsyncSession, graphs, scenario: Scenario) -> None:
-    """Run the prep graph and store the pack; key phrases become lexemes tied to the scene."""
-    settings = await db.get(UserSettings, scenario.user_id)
-    state = await graphs.prep.ainvoke({"title": scenario.title, "dialect": settings.dialect if settings else "es-419",
-                                       "level": settings.level if settings else 0})
-    pack = state["pack"]
+async def context_for(db: AsyncSession, user_id: str, title: str = "") -> AgentContext:
+    settings = await db.get(UserSettings, user_id)
+    return AgentContext(dialect=settings.dialect if settings else "es-419", level=settings.level if settings else 0, title=title)
+
+
+async def prepare(db: AsyncSession, agents, scenario: Scenario, ctx: AgentContext | None = None) -> SceneCardOut:
+    """Run the scene builder agent and store the pack; key phrases become lexemes tied to the scene."""
+    ctx = ctx or await context_for(db, scenario.user_id, scenario.title)
+    pack, card = await build_scene(agents, ctx, scenario.title, scenario.details)
+    scenario.topic = scenario.topic or card.topic[:64]
+    await store_pack(db, scenario, pack.model_dump())
+    return card
+
+
+async def store_pack(db: AsyncSession, scenario: Scenario, pack: dict) -> None:
     for kind in ("key", "rescue", "hear"):
         for pos, p in enumerate(pack[kind]):
             db.add(ScenarioPhrase(scenario_id=scenario.id, kind=kind, en=p["en"][:300], es=p["es"][:300],

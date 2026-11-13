@@ -50,7 +50,7 @@ mispronounced, which is what the curation ranker reads.
 | `library_reports` | `id`, `template_id`, `user_id`, `reason` (`personal`/`offensive`/`wrong`/`other`), `at`, unique(`template_id`,`user_id`) | |
 | `scenario_phrases` | `id`, `scenario_id`, `kind` (`key`/`rescue`/`hear`), `en`, `es`, `alignment` (JSON), `position` | |
 | `readiness` | `id`, `scenario_id`, `user_id`, `value` (1–5), `phase` (`before`/`after`), `at` | Confidence map |
-| `rehearsals` | `id`, `user_id`, `scenario_id`, `difficulty`, `started_at`, `ended_at`, `summary` | LangGraph `thread_id` = `id` |
+| `rehearsals` | `id`, `user_id`, `scenario_id`, `difficulty`, `started_at`, `ended_at`, `summary` | Rehearsal partner's checkpointer `thread_id` = `id` |
 | `rehearsal_turns` | `id`, `rehearsal_id`, `role` (`coach`/`user`), `text`, `en`, `native`, `at` | |
 | `pronunciation_attempts` | `id`, `user_id`, `lexeme_id`, `expected`, `heard`, `score` (0–1), `at` | |
 

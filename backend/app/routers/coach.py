@@ -41,7 +41,7 @@ async def coach(body: CoachIn, request: Request, user: User = Depends(current_us
                 db: AsyncSession = Depends(get_session)) -> CoachOut:
     settings = await db.get(UserSettings, user.id)
     known = await known_es(db, user.id)
-    state = await request.app.state.graphs.coach.ainvoke(
+    state = await request.app.state.agents.coach.ainvoke(
         {"text": body.text, "direction": body.direction, "dialect": settings.dialect if settings else "es-419", "known": known})
 
     utterance_id = None

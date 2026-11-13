@@ -177,6 +177,7 @@ class Scenario(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     user_id: Mapped[str] = UserFK()
     title: Mapped[str] = mapped_column(String(160))
+    details: Mapped[str | None] = mapped_column(Text)  # the learner's own description; never shared
     kind: Mapped[str] = mapped_column(String(12))  # upcoming | recurring | manual
     topic: Mapped[str | None] = mapped_column(String(64))
     starts_at: Mapped[datetime | None] = mapped_column(TZDateTime())

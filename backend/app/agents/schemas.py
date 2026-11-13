@@ -42,6 +42,14 @@ class PrepPackOut(BaseModel):
     hear: list[PhraseOut] = Field(description="3-6 things they are likely to hear")
 
 
+class SceneCardOut(BaseModel):
+    """The scene builder's library card. Personal details never appear here."""
+    title: str = Field(description="General title anyone could use, e.g. 'At the dentist'; no names, places or dates")
+    situation: str = Field(description="One sentence describing the situation in general terms")
+    topic: str = Field(description="1-3 lowercase words, e.g. 'health', 'school', 'work'")
+    shareable: bool = Field(description="False if only meaningful to this one person, unsafe, sexual, hateful or identifying")
+
+
 class CoachTurnOut(BaseModel):
     native: str | None = Field(default=None, description="How a native would say the learner's line, only if theirs was wrong or not Spanish")
     reply_es: str = Field(description="The other person's next line, in Spanish, one or two short sentences")

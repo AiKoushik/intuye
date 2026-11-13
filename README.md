@@ -11,7 +11,7 @@ for the situations coming up in your life, not a fixed curriculum.
 | Part | State |
 |---|---|
 | Plan, UX, design system | Done: see `docs/` and the clickable prototype |
-| Backend (FastAPI + LangGraph) | Built; happy-path tests pass (`pytest`: 17) |
+| Backend (FastAPI + LangChain Deep Agents) | Built; happy-path tests pass (`pytest`) |
 | iOS app (SwiftUI, iOS 26) | All screens written; **not yet compiled**: first build on a Mac will need a round of fixes |
 
 Feature-by-feature status is in [`docs/02-feature-list.md`](docs/02-feature-list.md).
@@ -22,7 +22,7 @@ Feature-by-feature status is in [`docs/02-feature-list.md`](docs/02-feature-list
 |---|---|
 | `docs/` | Vision, feature list, UX, design system, architecture, security, data model, API, curation, roadmap |
 | `design/` | OKLCH colour source + generator (asset catalog, Swift, CSS, contrast report) and the HTML prototype |
-| `backend/` | API: Sign in with Apple, rotating sessions, App Attest, LangGraph graphs (coach, ingest, prep, rehearse), FSRS, curation |
+| `backend/` | API: Sign in with Apple, rotating sessions, App Attest, Deep Agents (translator, explainer, ingest analyst, scene builder + phrase writer, rehearsal partner, summariser), shared scene library, FSRS, curation |
 | `ios/` | XcodeGen project, `LangCoachKit` Swift package (models, API client, offline queue), SwiftUI app |
 
 ## Run it (conda)
@@ -65,9 +65,11 @@ pytest                                                   # happy-path tests, no 
 uvicorn app.main:app --reload                            # http://localhost:8000/web/
 ```
 
-**Models.** `LLM_PROVIDER=openai_compatible` points every LangGraph graph at any OpenAI-style endpoint
-(Hearth, vLLM, llama.cpp, Ollama) via `LLM_BASE_URL` and `LLM_FAST_MODEL` / `LLM_SMART_MODEL`.
-`anthropic` uses `ANTHROPIC_API_KEY`. `fake` is a tiny offline dictionary model for tests only.
+**Models.** `LLM_PROVIDER=openai_compatible` points every Deep Agent at any OpenAI-style endpoint
+(Hearth, vLLM, llama.cpp, Ollama) via `LLM_BASE_URL` and `LLM_FAST_MODEL` / `LLM_SMART_MODEL`. The
+model must support tool calling, because agents use tools for structured output and subagents.
+`anthropic` uses `ANTHROPIC_API_KEY`. `fake` is a tiny offline tool-calling model for tests only.
+Python 3.11+ is required (Deep Agents).
 
 **Database.** SQLite by default for development; set `DATABASE_URL` to Postgres
 (`postgresql+asyncpg://…`) for real use.

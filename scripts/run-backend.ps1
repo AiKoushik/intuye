@@ -79,7 +79,7 @@ Write-Note "python: $Python"
 # --- 3. Install dependencies (first run, -Update, or if something's missing) -----------------------
 # (Windows PowerShell 5.1 turns redirected native stderr into errors, so relax EAP for this probe.)
 $prevEap = $ErrorActionPreference; $ErrorActionPreference = "Continue"
-& $Python -c "import fastapi, langgraph, sqlalchemy, aiosqlite, cbor2" 2>$null | Out-Null
+& $Python -c "import fastapi, langgraph, deepagents, numpy, sqlalchemy, aiosqlite, cbor2" 2>$null | Out-Null
 if ($LASTEXITCODE -ne 0) { $Update = $true }
 $ErrorActionPreference = $prevEap
 if ($Update) {

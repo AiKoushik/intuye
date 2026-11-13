@@ -69,7 +69,7 @@ async def create(body: ScenarioIn, request: Request, user: User = Depends(curren
     s = Scenario(user_id=user.id, title=body.title.strip(), kind=body.kind, starts_at=_aware(body.starts_at))
     db.add(s)
     await db.commit()
-    await prepare(db, request.app.state.graphs, s)
+    await prepare(db, request.app.state.agents, s)
     return await serialise(db, s, with_phrases=True)
 
 
@@ -87,7 +87,7 @@ async def from_calendar(body: CalendarIn, request: Request, user: User = Depends
         s = Scenario(user_id=user.id, title=e.title.strip(), kind="upcoming", starts_at=starts)
         db.add(s)
         await db.commit()
-        await prepare(db, request.app.state.graphs, s)
+        await prepare(db, request.app.state.agents, s)
         created.append(await serialise(db, s))
     return {"created": created}
 
@@ -105,7 +105,7 @@ async def set_status(scenario_id: str, body: StatusIn, request: Request, user: U
     await db.commit()
     has_pack = (await db.execute(select(ScenarioPhrase.id).where(ScenarioPhrase.scenario_id == s.id).limit(1))).first()
     if body.status == "active" and not has_pack:  # accepting a suggested recurring scene
-        await prepare(db, request.app.state.graphs, s)
+        await prepare(db, request.app.state.agents, s)
     return await serialise(db, s, with_phrases=True)
 
 

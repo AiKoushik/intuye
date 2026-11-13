@@ -67,6 +67,6 @@ Parameters can be refitted per user from the `reviews` log once a user has 1,000
    *spoken* or *scenario* reason (target ≥ 60% after week 1); duplicate rate (target 0).
 3. **Online metrics:** batch open rate, "Got it" rate on first review (target 60–80% — too high means
    too easy), 30-day retention of introduced items.
-4. **Prompt evals for the LangGraph graphs:** close-translation fidelity (alignment coverage ≥ 90% of
+4. **Prompt evals for the agents:** close-translation fidelity (alignment coverage ≥ 90% of
    source tokens), brevity (translations single-line, answers ≤ 3 sentences), no unrequested
    explanation (regex + LLM judge), run on every prompt change.

@@ -1,4 +1,4 @@
-"""Ingest graph (ambient capture): normalise -> analyse (batched LLM) -> extract lexeme candidates."""
+"""Ingest pipeline (ambient capture): normalise -> analyse (ingest analyst agent, batches of 25) -> extract lexeme candidates."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -6,10 +6,10 @@ from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
+from app.agents.runtime import AgentContext, ask, make_agent
 from app.agents.schemas import IngestOut
 from app.curation.text import english_share
 from app.llm import prompts
-from app.llm.provider import LLM
 from app.services.lexicon import candidates_from_alignment
 
 CHUNK = 25
@@ -31,7 +31,15 @@ class IngestState(TypedDict, total=False):
     dialect: str
 
 
-def build_ingest_graph(llm: LLM):
+def analyst_prompt(ctx: AgentContext) -> str:
+    return prompts.INGEST.format(dialect=ctx.dialect_name, data_rule=prompts.DATA_RULE)
+
+
+def build_ingest_analyst(model):
+    return make_agent(model, "ingest-analyst", analyst_prompt, IngestOut)
+
+
+def build_ingest_graph(agents):
     async def normalise(state: IngestState) -> IngestState:
         seen, out = set(), []
         for it in state["items"]:
@@ -44,13 +52,12 @@ def build_ingest_graph(llm: LLM):
         return {"items": out}
 
     async def analyse(state: IngestState) -> IngestState:
-        dialect = prompts.DIALECT_NAMES.get(state.get("dialect", "es-419"), "Spanish")
-        system = prompts.INGEST.format(dialect=dialect, data_rule=prompts.DATA_RULE)
+        ctx = AgentContext(dialect=state.get("dialect", "es-419"))
         items = list(state["items"])
         for start in range(0, len(items), CHUNK):
             chunk = items[start:start + CHUNK]
             numbered = "\n".join(f"[{i}] {it['text']}" for i, it in enumerate(chunk))
-            out = await llm.structured(IngestOut, system, prompts.wrap(numbered))
+            out = await ask(agents.ingest_analyst, IngestOut, prompts.wrap(numbered), ctx)
             for r in out.items:
                 if 0 <= r.index < len(chunk):
                     topic = (r.topic or "").strip().lower()[:64] or None

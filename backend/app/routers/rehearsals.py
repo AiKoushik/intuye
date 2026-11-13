@@ -7,7 +7,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agents.rehearse import summarise
+from app.agents import rehearse
+from app.agents.runtime import AgentContext
 from app.curation.text import english_share
 from app.db import get_session
 from app.errors import APIError
@@ -39,8 +40,8 @@ async def _dialect(db: AsyncSession, user_id: str) -> str:
     return s.dialect if s else "es-419"
 
 
-def _config(rehearsal_id: str) -> dict:
-    return {"configurable": {"thread_id": rehearsal_id}}
+async def _ctx(db: AsyncSession, user_id: str, title: str, difficulty: str) -> AgentContext:
+    return AgentContext(dialect=await _dialect(db, user_id), title=title, difficulty=difficulty)
 
 
 @router.post("")
@@ -51,13 +52,10 @@ async def start(body: StartIn, request: Request, user: User = Depends(current_us
     r = Rehearsal(user_id=user.id, scenario_id=scen.id, difficulty=body.difficulty)
     db.add(r)
     await db.flush()
-    state = await request.app.state.graphs.rehearse.ainvoke(
-        {"title": scen.title, "dialect": await _dialect(db, user.id), "difficulty": body.difficulty, "turns": [],
-         "user_text": None}, _config(r.id))
-    coach = state["last"]
-    db.add(RehearsalTurn(rehearsal_id=r.id, role="coach", text=coach["text"], en=coach["en"]))
+    coach = await rehearse.opening(request.app.state.agents, r.id, await _ctx(db, user.id, scen.title, body.difficulty))
+    db.add(RehearsalTurn(rehearsal_id=r.id, role="coach", text=coach.reply_es, en=coach.reply_en))
     await db.commit()
-    return {"rehearsal_id": r.id, "coach": {"es": coach["text"], "en": coach["en"]}}
+    return {"rehearsal_id": r.id, "coach": {"es": coach.reply_es, "en": coach.reply_en}}
 
 
 @router.post("/{rehearsal_id}/turns")
@@ -66,21 +64,16 @@ async def turn(rehearsal_id: str, body: TurnIn, request: Request, user: User = D
     r, scen = await _owned(db, user.id, rehearsal_id)
     if r.ended_at:
         raise APIError(409, "ended", "This rehearsal has ended.")
-    graph = request.app.state.graphs.rehearse
-    snapshot = await graph.aget_state(_config(r.id))
-    seed: dict = {"user_text": body.text}
-    if not snapshot.values:  # checkpoint lost (restart): rebuild from the durable transcript
-        turns = (await db.execute(select(RehearsalTurn).where(RehearsalTurn.rehearsal_id == r.id).order_by(RehearsalTurn.at))).scalars()
-        seed |= {"title": scen.title, "dialect": await _dialect(db, user.id), "difficulty": r.difficulty,
-                 "turns": [{"role": t.role, "text": t.text, "en": t.en, "native": t.native} for t in turns]}
-    state = await graph.ainvoke(seed, _config(r.id))
-    user_turn, coach = state["turns"][-2], state["turns"][-1]
-    db.add(RehearsalTurn(rehearsal_id=r.id, role="user", text=body.text, native=user_turn.get("native")))
-    db.add(RehearsalTurn(rehearsal_id=r.id, role="coach", text=coach["text"], en=coach["en"]))
+    history = [{"role": t.role, "text": t.text} for t in (await db.execute(
+        select(RehearsalTurn).where(RehearsalTurn.rehearsal_id == r.id).order_by(RehearsalTurn.at))).scalars()]
+    native, coach, done = await rehearse.turn(request.app.state.agents, r.id, await _ctx(db, user.id, scen.title, r.difficulty),
+                                              body.text, history)
+    db.add(RehearsalTurn(rehearsal_id=r.id, role="user", text=body.text, native=native))
+    db.add(RehearsalTurn(rehearsal_id=r.id, role="coach", text=coach.reply_es, en=coach.reply_en))
     db.add(Utterance(user_id=user.id, text=body.text, source="rehearsal", lang_mix=english_share(body.text),
-                     close_es=user_turn.get("native") or body.text))
+                     close_es=native or body.text))
     await db.commit()
-    return {"native": user_turn.get("native"), "coach": {"es": coach["text"], "en": coach["en"]}, "done": state["done"]}
+    return {"native": native, "coach": {"es": coach.reply_es, "en": coach.reply_en}, "done": done}
 
 
 @router.post("/{rehearsal_id}/end")
@@ -88,7 +81,7 @@ async def end(rehearsal_id: str, request: Request, user: User = Depends(current_
     r, scen = await _owned(db, user.id, rehearsal_id)
     turns = [{"role": t.role, "text": t.text} for t in (await db.execute(
         select(RehearsalTurn).where(RehearsalTurn.rehearsal_id == r.id).order_by(RehearsalTurn.at))).scalars()]
-    out = await summarise(request.app.state.graphs.llm, scen.title, await _dialect(db, user.id), turns)
+    out = await rehearse.summarise(request.app.state.agents, await _ctx(db, user.id, scen.title, r.difficulty), turns)
     r.ended_at, r.summary = utcnow(), out.went_well
     await db.commit()
     return {"summary": out.went_well, "keep_phrases": [p.model_dump() for p in out.keep]}

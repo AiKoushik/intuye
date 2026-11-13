@@ -51,7 +51,7 @@ PY="$("$CONDA" run -n "$ENV_NAME" python -c 'import sys; print(sys.executable)' 
 note "python: $PY"
 
 # 3. Install dependencies (first run, --update, or if something's missing).
-"$PY" -c "import fastapi, langgraph, sqlalchemy, aiosqlite, cbor2" 2>/dev/null || UPDATE=1
+"$PY" -c "import fastapi, langgraph, deepagents, numpy, sqlalchemy, aiosqlite, cbor2" 2>/dev/null || UPDATE=1
 if [[ "$UPDATE" == 1 ]]; then
   step "Installing backend dependencies"
   "$PY" -m pip install --upgrade pip --quiet
