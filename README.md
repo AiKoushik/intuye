@@ -4,7 +4,8 @@ A Spanish confidence coach for iPhone. It listens to how *you* actually talk, sa
 Spanish close to your own phrasing (and Spanish back to English, just as briefly), and prepares you
 for the situations coming up in your life, not a fixed curriculum.
 
-> Working name. The repo folder is `langcoach`; the product name is still open.
+> The repo folder and the GitHub repo ([AiKoushik/intuye](https://github.com/AiKoushik/intuye)) are `intuye`. Inside the code the
+> app is still called LangCoach (iOS target, Swift package, Python package); renaming those is a separate step.
 
 ## Status
 

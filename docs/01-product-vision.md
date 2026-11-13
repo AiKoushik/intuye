@@ -85,5 +85,6 @@ Two things are missing:
 
 ## Name
 
-"LangCoach" is the working name (the repo folder). Shortlist to test later: *Ensayo* ("rehearsal"),
-*Listo* ("ready"), *Parla*.
+The repository is `intuye` (Spanish for "senses it"; also "sense it!"). "LangCoach" remains the code
+name inside the project (iOS target, packages). Other names considered: *Entrelíneas* ("between the
+lines"), *Ensayo* ("rehearsal"), *Listo* ("ready"), *Parla*.
