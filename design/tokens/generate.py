@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -162,7 +163,12 @@ def resolve_oklch(L: float, C: float, h: float) -> dict:
     }
 
 
+OKLCH_LITERAL = re.compile(r"^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)$")
+
+
 def resolve_ref(ref: str, ramps: dict) -> dict:
+    if m := OKLCH_LITERAL.match(ref):
+        return resolve_oklch(float(m.group(1)), float(m.group(2)), float(m.group(3)))
     if ref.startswith("#"):
         rgb = hex_to_rgb(ref)
         L, C, h = srgb_to_oklch(rgb)
@@ -177,10 +183,25 @@ def rgb_srgb_to_p3(rgb: tuple[float, float, float]) -> tuple[float, float, float
     return tuple(encode(v) for v in linear_srgb_to_linear_p3(*lin))  # type: ignore[return-value]
 
 
+def expand_tints(src: dict) -> dict:
+    """Turn the tint recipes into semantic tokens: {name}, {name}Subtle, {name}Wash, {name}Ambient."""
+    out = {}
+    tints = src.get("tints", {})
+    for name, hue in tints.get("hues", {}).items():
+        for suffix, recipe in tints.get("recipes", {}).items():
+            out[f"{name}{suffix}"] = {"role": recipe["role"],
+                                     **{ap: f"oklch({recipe[ap][0]} {recipe[ap][1]} {hue})" for ap in APPEARANCES}}
+    return out
+
+
+TINT_NAMES: list[str] = []
+
+
 def resolve(src: dict) -> tuple[dict, dict]:
     ramps = build_ramps(src)
     tokens: dict[str, dict] = {}
-    for name, spec in src["semantic"].items():
+    TINT_NAMES[:] = list(src.get("tints", {}).get("hues", {}))
+    for name, spec in {**src["semantic"], **expand_tints(src)}.items():
         tokens[name] = {"role": spec["role"], "on": spec.get("on"),
                         **{ap: {"ref": spec[ap], **resolve_ref(spec[ap], ramps)} for ap in APPEARANCES}}
     return ramps, tokens
@@ -193,11 +214,24 @@ EXTRA_PAIRS = [  # (foreground, background, required role)
     ("textPrimary", "accentSubtle", "text"),
     ("textPrimary", "sunken", "text"),
     ("textSecondary", "sunken", "text"),
+    ("textPrimary", "surfaceRaised", "text"),
+    ("textSecondary", "surfaceRaised", "text"),
+    ("accent", "surfaceRaised", "text"),
+    ("borderStrong", "surfaceRaised", "ui"),
     ("success", "surface", "text"),
     ("danger", "surface", "text"),
     ("warning", "surface", "text"),
-] + [(t, f"{t}Subtle", "text") for t in ("sage", "sea", "sand", "rose", "plum")] \
-  + [("textPrimary", f"{t}Subtle", "text") for t in ("sage", "sea", "sand", "rose", "plum")]
+]
+
+
+def tint_pairs() -> list[tuple[str, str, str]]:
+    pairs = []
+    for t in TINT_NAMES:
+        pairs += [(t, f"{t}Subtle", "text"), (t, f"{t}Wash", "text"), (t, "surface", "text"), (t, "canvas", "text"),
+                  ("textPrimary", f"{t}Subtle", "text"), ("textPrimary", f"{t}Wash", "text"), ("textPrimary", f"{t}Ambient", "text"),
+                  ("textSecondary", f"{t}Wash", "text"), ("textSecondary", f"{t}Ambient", "text"),
+                  ("accent", f"{t}Wash", "text"), ("borderStrong", f"{t}Wash", "ui")]
+    return pairs
 
 
 def required(role: str, appearance: str) -> float | None:
@@ -208,11 +242,12 @@ def required(role: str, appearance: str) -> float | None:
 def contrast_rows(tokens: dict) -> list[dict]:
     rows = []
     pairs: list[tuple[str, str, str]] = []
+    tint_text = set(TINT_NAMES)
     for name, t in tokens.items():
-        if t["role"] in ("text", "largeText", "ui"):
+        if t["role"] in ("text", "largeText", "ui") and name not in tint_text:
             backs = [t["on"]] if t["on"] else ["canvas", "surface"]
             pairs += [(name, b, t["role"]) for b in backs]
-    pairs += EXTRA_PAIRS
+    pairs += EXTRA_PAIRS + tint_pairs()
     for fg, bg, role in pairs:
         for ap in APPEARANCES:
             need = required(role, ap)

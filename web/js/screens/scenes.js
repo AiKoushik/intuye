@@ -8,6 +8,7 @@ const usedLabel = (n) => (n === 1 ? "1 use" : `${n} uses`);
 const topicLabel = (tint) => ({ sage: "Health and body", sea: "Work and study", sand: "Home and family", rose: "Food and friends", plum: "Travel and errands" })[tint];
 
 export class Scenes extends Screen {
+  ambient() { return ["sage", "sea"]; }
   constructor(app) { super(app); this.title = "Scenes"; this.list = null; this.q = ""; this.results = null; this.popular = []; this.listening = false; }
   async load() { [this.list, this.popular] = await Promise.all([this.api.scenarios(), this.api.library("", 5)]); }
   navRight() { return [navButton("", () => this.newScene(""), { iconName: "plus", aria: "Something coming up" })]; }
@@ -114,6 +115,7 @@ export class Scenes extends Screen {
 }
 
 export class SceneDetail extends Screen {
+  ambient() { return ["sand", "sea"]; }
   constructor(app, id) { super(app); this.id = id; this.title = ""; this.large = false; this.scene = null; }
   async load() { this.scene = await this.api.scenario(this.id); this.title = this.scene.title; }
 
@@ -131,9 +133,9 @@ export class SceneDetail extends Screen {
         interlinear(ph.alignment.map((a) => ({ src: a.src, tgt: a.tgt }))),
         h("button", { class: "iconbtn", type: "button", "aria-label": `Play ${ph.es}`, onclick: () => speak(ph.es, this.app.dialect) }, icon("speaker"))))),
       h("p", { class: "section-label" }, "If you get stuck"),
-      h("div", { class: "card" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.es, this.app.dialect, true) }, r.es))),
+      h("div", { class: "card wash t-rose" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.es, this.app.dialect, true) }, r.es))),
       h("p", { class: "section-label" }, "You might hear"),
-      h("div", { class: "card" }, p.hear.map((x) => h("div", { style: "padding:6px 0" },
+      h("div", { class: "card wash t-sea" }, p.hear.map((x) => h("div", { style: "padding:6px 0" },
         h("button", { class: "rescue", style: "padding:0", type: "button", onclick: () => speak(x.es, this.app.dialect, true) }, x.es),
         h("p", { class: "meta" }, x.en)))),
       h("button", { class: "btn", type: "button", onclick: () => this.app.push(new Rehearse(this.app, s)) }, "Rehearse"),
@@ -148,6 +150,7 @@ export class SceneDetail extends Screen {
 
 /** A library scene before you add it: what it covers, who shared it, its phrases. */
 export class LibraryScene extends Screen {
+  ambient() { return ["sage", "plum"]; }
   constructor(app, id, onUsed) { super(app); this.id = id; this.onUsed = onUsed; this.title = ""; this.large = false; this.t = null; }
   async load() { this.t = await this.api.libraryScene(this.id); this.title = this.t.title; this.renderNav(); }
 
@@ -166,7 +169,7 @@ export class LibraryScene extends Screen {
         interlinear((ph.alignment || []).map((a) => ({ src: a.src, tgt: a.tgt }))),
         h("button", { class: "iconbtn", type: "button", "aria-label": `Play ${ph.es}`, onclick: () => speak(ph.es, this.app.dialect) }, icon("speaker"))))),
       h("p", { class: "section-label" }, "If you get stuck"),
-      h("div", { class: "card" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.es, this.app.dialect, true) }, r.es))),
+      h("div", { class: "card wash t-rose" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.es, this.app.dialect, true) }, r.es))),
       h("button", { class: "btn quiet", type: "button", onclick: () => this.app.present(new ReportSheet(this.app, t)) }, icon("flag"), "Report this scene"),
     ];
   }

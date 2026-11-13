@@ -48,8 +48,8 @@ enum Tint: CaseIterable {
 
     private static let keywords: [(Tint, [String])] = [
         (.sage, ["health", "dentist", "doctor", "medic", "pharmac", "hospital", "body", "tooth", "clinic", "sport", "fitness"]),
-        (.sea, ["work", "job", "office", "meeting", "study", "science", "neuro", "tech", "career", "universit", "interview", "class"]),
         (.sand, ["home", "family", "kid", "son", "daughter", "child", "school", "parent", "landlord", "house", "neighbo"]),
+        (.sea, ["work", "job", "office", "meeting", "study", "science", "neuro", "tech", "career", "universit", "interview", "class"]),
         (.rose, ["food", "restaurant", "cook", "dinner", "lunch", "breakfast", "friend", "party", "social", "café", "cafe", "order"]),
         (.plum, ["travel", "errand", "bank", "shop", "ticket", "train", "bus", "airport", "hotel", "plumber", "repair", "admin", "taxi"]),
     ]

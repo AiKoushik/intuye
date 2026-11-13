@@ -202,7 +202,7 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 /* Sheets */
 .sheet-layer { position: absolute; inset: 0; z-index: 50; display: flex; align-items: flex-end; background: rgba(0,0,0,.28); animation: fade .2s; }
 @keyframes fade { from { opacity: 0; } }
-.sheet { width: 100%; background: var(--lc-sunken); border-radius: var(--r-sheet) var(--r-sheet) 0 0; max-height: 94%; display: flex; flex-direction: column; animation: rise .35s var(--spring); }
+.sheet { width: 100%; background: var(--lc-canvas); border-radius: var(--r-sheet) var(--r-sheet) 0 0; max-height: 94%; display: flex; flex-direction: column; animation: rise .35s var(--spring); }
 .sheet.medium { height: 56%; } .sheet.large { height: 94%; }
 .grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--lc-border-strong); opacity: .5; margin: 6px auto 0; flex: none; }
 .sheet .navbar { margin-top: 2px; }
@@ -254,11 +254,18 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 .lib-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 /* Sober tints: what something is about, or why it's here. Always next to a label. */
-.t-sage { --t-fg: var(--lc-sage); --t-bg: var(--lc-sage-subtle); }
-.t-sea { --t-fg: var(--lc-sea); --t-bg: var(--lc-sea-subtle); }
-.t-sand { --t-fg: var(--lc-sand); --t-bg: var(--lc-sand-subtle); }
-.t-rose { --t-fg: var(--lc-rose); --t-bg: var(--lc-rose-subtle); }
-.t-plum { --t-fg: var(--lc-plum); --t-bg: var(--lc-plum-subtle); }
+.t-sage { --t-fg: var(--lc-sage); --t-bg: var(--lc-sage-subtle); --t-wash: var(--lc-sage-wash); }
+.t-sea { --t-fg: var(--lc-sea); --t-bg: var(--lc-sea-subtle); --t-wash: var(--lc-sea-wash); }
+.t-sand { --t-fg: var(--lc-sand); --t-bg: var(--lc-sand-subtle); --t-wash: var(--lc-sand-wash); }
+.t-rose { --t-fg: var(--lc-rose); --t-bg: var(--lc-rose-subtle); --t-wash: var(--lc-rose-wash); }
+.t-plum { --t-fg: var(--lc-plum); --t-bg: var(--lc-plum-subtle); --t-wash: var(--lc-plum-wash); }
+/* Layers: page (canvas) < card (surface or a tint wash) < sheet. Each screen glows faintly at the top in two tints. */
+.card.wash { background: var(--t-wash); border-color: color-mix(in oklab, var(--t-fg) 14%, transparent); }
+.card.wash .section-label, .card.wash .meta { color: var(--lc-text-secondary); }
+.ambient { background:
+    radial-gradient(150% 46% at 0% 0%, var(--a1) 0%, transparent 72%),
+    radial-gradient(120% 40% at 100% 0%, var(--a2) 0%, transparent 66%),
+    var(--lc-canvas); }
 .tile { width: 32px; height: 32px; border-radius: 9px; flex: none; display: grid; place-items: center; background: var(--t-bg); color: var(--t-fg); }
 .tile svg { width: 17px; height: 17px; }
 .tile.lg { width: 36px; height: 36px; border-radius: 10px; }

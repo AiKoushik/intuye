@@ -1,3 +1,4 @@
+import { applyAmbient } from "./base.js";
 import { h, icon, parseDate, relativeDay } from "../dom.js";
 import { errorBanner, holdToTalk, ratingButtons, reasonTint, spinner, tintChip } from "../components.js";
 import { localeFor, speak } from "../speech.js";
@@ -22,6 +23,7 @@ export class ReviewCover {
 
   mountCover() {
     this.el = h("div", { class: "cover", role: "dialog", "aria-modal": "true", "aria-label": "Review" });
+    applyAmbient(this.el, ["sea", "sage"]);
     this.render();
     this.load();
     return this.el;

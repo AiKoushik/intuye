@@ -18,6 +18,7 @@ export const Phrasebook = {
 };
 
 export class Say extends Screen {
+  ambient() { return ["sea", "plum"]; }
   constructor(app) {
     super(app);
     this.title = "Say";
@@ -76,7 +77,7 @@ export class Say extends Screen {
   }
 
   answerCard(r) {
-    return h("div", { class: "card" }, h("p", { class: "answer-q", style: "display:flex;align-items:center;gap:8px" }, chipDir("ask"), r.source),
+    return h("div", { class: "card wash t-sand" }, h("p", { class: "answer-q", style: "display:flex;align-items:center;gap:8px" }, chipDir("ask"), r.source),
       h("p", { class: "body" }, r.answer));
   }
 

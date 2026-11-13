@@ -23,8 +23,8 @@ export function interlinear(pairs, { toEn = false } = {}) {
    Topic -> tint by keyword (topic first, then title); unknown topics get a stable tint from their name. */
 const TOPIC_TINTS = [
   ["sage", "heart", /health|dentist|doctor|medic|pharmac|hospital|body|tooth|clinic|sport|fitness/],
-  ["sea", "briefcase", /work|job|office|meeting|study|science|neuro|tech|career|universit|interview|class/],
   ["sand", "home", /home|family|kid|son|daughter|child|school|parent|landlord|house|neighbo/],
+  ["sea", "briefcase", /work|job|office|meeting|study|science|neuro|tech|career|universit|interview|class/],
   ["rose", "food", /food|restaurant|cook|dinner|lunch|breakfast|friend|party|social|café|cafe|bar\b|order/],
   ["plum", "pin", /travel|errand|bank|shop|ticket|train|bus|airport|hotel|plumber|repair|admin|post office|taxi/],
 ];

@@ -3,6 +3,7 @@ import { spinner, topicTile } from "../components.js";
 import { Screen } from "./base.js";
 
 export class ProgressScreen extends Screen {
+  ambient() { return ["plum", "sea"]; }
   constructor(app) { super(app); this.title = "Progress"; this.data = null; }
   async load() { this.data = await this.api.progress(); }
 
@@ -29,7 +30,7 @@ export class ProgressScreen extends Screen {
       svg("polyline", { points: pts, fill: "none", stroke: "var(--lc-plum)", "stroke-width": 2.5, "stroke-linecap": "round", "stroke-linejoin": "round" }),
       ...weeks.map((w, i) => svg("circle", { cx: xs(i), cy: ys(w.ratio), r: 3.5, fill: "var(--lc-plum)" })));
     chart.style.cssText = "width:100%;height:90px;margin-top:10px";
-    return h("div", { class: "card" }, h("h3", {}, "English in your Spanish"),
+    return h("div", { class: "card wash t-plum" }, h("h3", {}, "English in your Spanish"),
       h("div", { class: "split", style: "align-items:flex-end;margin-top:6px" }, h("span", { class: "big" }, pct(last.ratio)),
         prev != null ? h("span", { class: "meta" }, `${last.ratio <= prev ? "down" : "up"} from ${pct(prev)} last week`) : h("span", { class: "meta" }, `${last.sentences} sentences this week`)),
       chart);

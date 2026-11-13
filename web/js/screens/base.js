@@ -18,6 +18,8 @@ export class Screen {
   navRight() { return []; }
   largeTitle() { return h("h1", { class: "large-title" }, this.title); }
   bottomBar() { return null; }
+  /** Two tint names for the soft glow at the top of the screen, or null for a plain page. */
+  ambient() { return null; }
   content() { return []; }
   async load() {}
 
@@ -25,6 +27,7 @@ export class Screen {
     this.back = back;
     this.isSheet = isSheet;
     this.el = h("div", { class: "screen" });
+    applyAmbient(this.el, this.ambient());
     this.navbarEl = h("div", { class: "navbar" });
     this.scrollEl = h("div", { class: "scroll" });
     this.el.append(this.navbarEl, this.scrollEl);
@@ -79,6 +82,13 @@ export class Screen {
   scrollToBottom() {
     requestAnimationFrame(() => this.scrollEl?.scrollTo({ top: this.scrollEl.scrollHeight, behavior: "smooth" }));
   }
+}
+
+export function applyAmbient(el, tints) {
+  if (!tints) return;
+  el.classList.add("ambient");
+  el.style.setProperty("--a1", `var(--lc-${tints[0]}-ambient)`);
+  el.style.setProperty("--a2", `var(--lc-${tints[1]}-ambient)`);
 }
 
 export function navButton(label, onclick, { strong = false, disabled = false, iconName = null, aria = null } = {}) {

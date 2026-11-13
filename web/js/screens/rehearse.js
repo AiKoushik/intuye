@@ -5,6 +5,7 @@ import { Screen, navButton } from "./base.js";
 
 /** Voice role-play: the coach plays the other person in Spanish. Tap a coach line for its English. */
 export class Rehearse extends Screen {
+  ambient() { return ["sage", "sand"]; }
   constructor(app, scene) {
     super(app);
     this.scene = scene;

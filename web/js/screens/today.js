@@ -7,6 +7,7 @@ import { SettingsSheet } from "./settings.js";
 
 export class Today extends Screen {
   constructor(app) { super(app); this.title = "Today"; this.data = null; }
+  ambient() { return ["sand", "rose"]; }
 
   async load() { this.data = await this.api.today(); }
 
@@ -27,7 +28,7 @@ export class Today extends Screen {
     const out = [];
     const s = d.next_scenario;
     if (s) {
-      out.push(h("button", { class: "card tap", type: "button", onclick: () => this.app.push(new SceneDetail(this.app, s.id)) },
+      out.push(h("button", { class: `card tap wash t-${topicTint(s.topic, s.title)}`, type: "button", onclick: () => this.app.push(new SceneDetail(this.app, s.id)) },
         h("div", { class: "split", style: "align-items:flex-start" },
           h("div", { class: "lead" }, topicTile(s.topic, s.title), h("div", {}, h("h3", {}, s.title), h("p", { class: "meta" }, whenLabel(s)))),
           dots(s.readiness.current, topicTint(s.topic, s.title))),
@@ -41,7 +42,7 @@ export class Today extends Screen {
         icon("sparkles"), d.suggested_scenarios === 1 ? "1 scene suggested from what you talk about" : `${d.suggested_scenarios} scenes suggested from what you talk about`));
     }
     const n = d.words_ready.count;
-    out.push(h("div", { class: "card" },
+    out.push(h("div", { class: "card wash t-sea" },
       h("div", { class: "lead" }, tile("sea", "cards"), h("div", {},
         h("h3", {}, n > 0 ? `${n} words ready` : "Your words"),
         h("p", { class: "meta" }, n > 0 ? "From what you said and what's coming up" : "Get 5–10 words picked from your week"))),

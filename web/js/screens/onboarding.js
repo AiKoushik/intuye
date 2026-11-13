@@ -1,3 +1,4 @@
+import { applyAmbient } from "./base.js";
 import { append, h, icon } from "../dom.js";
 import { errorBanner, interlinear, tile } from "../components.js";
 
@@ -19,6 +20,7 @@ export class Onboarding {
 
   mountOnboarding() {
     this.el = h("div", { class: "screen" });
+    applyAmbient(this.el, ["sea", "plum"]);
     this.render();
     return this.el;
   }
