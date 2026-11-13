@@ -105,6 +105,7 @@ export class Scenes extends Screen {
     if (s.status === "suggested") {
       return h("div", { class: "row" }, topicTile(s.topic, s.title),
         h("span", { class: "grow" }, h("span", { style: "display:block" }, s.title), h("span", { class: "meta" }, "Suggested from what you talk about")),
+        h("button", { class: "btn inline subtle", type: "button", onclick: async () => { await this.api.setScenarioStatus(s.id, "done"); this.refresh(); } }, "Not now"),
         h("button", { class: "btn inline", type: "button", onclick: async () => { await this.api.setScenarioStatus(s.id, "active"); this.refresh(); } }, "Add"));
     }
     return h("button", { class: "row", type: "button", onclick: () => this.app.push(new SceneDetail(this.app, s.id)) },
@@ -139,7 +140,18 @@ export class SceneDetail extends Screen {
         h("button", { class: "rescue", style: "padding:0", type: "button", onclick: () => speak(x.es, this.app.dialect, true) }, x.es),
         h("p", { class: "meta" }, x.en)))),
       h("button", { class: "btn", type: "button", onclick: () => this.app.push(new Rehearse(this.app, s)) }, "Rehearse"),
+      h("button", { class: "btn quiet", type: "button", onclick: () => this.finish() }, icon("check"), "I'm done with this scene"),
     ];
+  }
+
+  async finish() {
+    try {
+      await this.api.setScenarioStatus(this.scene.id, "done");
+      this.app.pop();
+      this.app.stacks[this.app.tab].at(-1)?.refresh?.();
+      this.app.toast("Scene moved out of your list");
+    }
+    catch (e) { this.error = e.message; this.update(); }
   }
 
   async rate(v) {

@@ -3,6 +3,7 @@ import { dots, emptyCard, reasonTint, spinner, tile, tintChip, topicTile, topicT
 import { Screen, navButton } from "./base.js";
 import { SceneDetail } from "./scenes.js";
 import { ReviewCover } from "./review.js";
+import { Moments } from "./moments.js";
 import { SettingsSheet } from "./settings.js";
 
 export class Today extends Screen {
@@ -52,7 +53,8 @@ export class Today extends Screen {
       h("button", { class: "btn subtle", type: "button", onclick: () => this.app.presentCover(new ReviewCover(this.app, () => this.refresh())) },
         n > 0 ? "Start review" : "Get today's words")));
     if (d.recent.length) {
-      out.push(h("p", { class: "section-label" }, "Recent sentences"));
+      out.push(h("div", { class: "section-head" }, h("p", { class: "section-label" }, "Recent sentences"),
+        h("button", { class: "link", type: "button", onclick: () => this.app.push(new Moments(this.app)) }, "See all")));
       for (const r of d.recent) {
         const at = r.spoken_at ? new Date(r.spoken_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : null;
         out.push(h("div", { class: "card" }, at ? h("p", { style: "margin-bottom:6px" }, tintChip("sand", `Heard at ${at}`)) : null,

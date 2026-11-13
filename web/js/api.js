@@ -89,6 +89,8 @@ export class API {
   coach(text, direction = "auto") { return this.send("POST", "/v1/coach", { text, direction }); }
   upload(items) { return this.send("POST", "/v1/utterances", { items }); }
   forget(minutes) { return this.send("POST", "/v1/utterances/forget", { minutes }); }
+  moments(day) { return this.send("GET", `/v1/utterances?day=${encodeURIComponent(day)}`); }
+  deleteMoment(id) { return this.send("DELETE", `/v1/utterances/${id}`); }
   nextBatch(size = 7) { return this.send("POST", "/v1/batches/next", { size }); }
   async dueCards() { return (await this.send("GET", "/v1/reviews/due")).items; }
   review(lexeme_id, rating) { return this.send("POST", "/v1/reviews", { lexeme_id, rating }); }

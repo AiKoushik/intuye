@@ -1,5 +1,6 @@
 import { h, icon } from "../dom.js";
 import { Screen, navButton } from "./base.js";
+import { Moments } from "./moments.js";
 
 /** Settings and privacy centre. */
 export class SettingsSheet extends Screen {
@@ -31,7 +32,13 @@ export class SettingsSheet extends Screen {
           h("span", { class: "stepper" },
             h("button", { type: "button", "aria-label": "Fewer", onclick: () => this.save({ daily_notification_budget: Math.max(0, s.daily_notification_budget - 1) }) }, "−"),
             h("button", { type: "button", "aria-label": "More", onclick: () => this.save({ daily_notification_budget: Math.min(6, s.daily_notification_budget + 1) }) }, "+"))),
-        h("div", { class: "row" }, h("span", { class: "grow" }, "Quiet hours"), h("span", { class: "secondary" }, `${s.quiet_start}–${s.quiet_end}`))),
+        h("div", { class: "row", style: "flex-wrap:wrap;row-gap:4px" }, h("span", { class: "grow", style: "min-width:100%" }, "Quiet hours"),
+          h("span", { style: "display:flex;align-items:center;gap:8px;margin-left:auto;font-size:15px" },
+            h("input", { type: "time", class: "input", style: "width:auto;font-size:15px", "aria-label": "Quiet hours start", value: s.quiet_start,
+              onchange: (e) => e.target.value && this.save({ quiet_start: e.target.value }) }),
+            h("span", { class: "secondary" }, "to"),
+            h("input", { type: "time", class: "input", style: "width:auto;font-size:15px", "aria-label": "Quiet hours end", value: s.quiet_end,
+              onchange: (e) => e.target.value && this.save({ quiet_end: e.target.value }) })))),
       h("p", { class: "group-footer" }, "Never more than one an hour. Each one says why it's there."),
       h("p", { class: "group-title" }, "Capture"),
       h("div", { class: "group" }, h("button", { class: "row", type: "button", onclick: () => this.app.present(new CaptureSheet(this.app)) },
@@ -39,7 +46,11 @@ export class SettingsSheet extends Screen {
       h("p", { class: "group-title" }, "Your data"),
       h("div", { class: "group" },
         h("div", { class: "row" }, h("span", { class: "grow" }, "Audio"), h("span", { class: "secondary" }, "Stays on your iPhone")),
-        h("div", { class: "row" }, h("span", { class: "grow" }, "Sentences"), h("span", { class: "secondary" }, `Kept ${s.moment_retention_days} days`)),
+        h("div", { class: "row" }, h("span", { class: "grow" }, "Keep sentences for"),
+          select(s.moment_retention_days, [[7, "7 days"], [30, "30 days"], [90, "90 days"], [365, "A year"]],
+            (e) => this.save({ moment_retention_days: Number(e.target.value) }))),
+        h("button", { class: "row", type: "button", onclick: () => this.app.present(new Moments(this.app)) },
+          h("span", { class: "grow" }, "See your sentences"), icon("chevron", "chev")),
         h("button", { class: "row action", type: "button", onclick: () => this.export() }, "Export my data"),
         this.confirm
           ? h("button", { class: "row destructive", type: "button", onclick: () => this.deleteAccount() }, "Tap again to delete everything")
@@ -79,7 +90,10 @@ export class CaptureSheet extends Screen {
       h("div", { class: "group" }, opt("off", "Off"), opt("windows", "During my windows"), opt("always", "Always")),
       h("p", { class: "group-footer" }, c.error ?? "Windows: 9–12 and 18–21. In this web build the browser's speech service transcribes; on iPhone it stays on device."),
       h("p", { class: "group-title" }, " "),
-      h("div", { class: "group" }, h("button", { class: "row destructive", type: "button", onclick: () => this.forget() }, "Forget last 10 minutes")),
+      h("div", { class: "group" },
+        h("button", { class: "row", type: "button", onclick: () => this.app.present(new Moments(this.app)) },
+          h("span", { class: "grow" }, "See today's sentences"), icon("chevron", "chev")),
+        h("button", { class: "row destructive", type: "button", onclick: () => this.forget() }, "Forget last 10 minutes")),
       this.note ? h("p", { class: "group-footer" }, this.note) : null,
       h("p", { class: "group-title" }, "Test: pretend capture heard these"),
       h("div", { class: "group" }, h("div", { class: "row" }, this.area),

@@ -64,6 +64,8 @@ if [[ ! -f "$BACKEND/.env" ]]; then
   step "Created backend/.env from .env.development"
   note "Edit backend/.env to point LLM_BASE_URL / LLM_FAST_MODEL at Hearth, then run with --model local."
 fi
+# Local testing clicks fast; production limits stay in config.py.
+export RATE_LIMIT_PER_MINUTE="${RATE_LIMIT_PER_MINUTE:-600}" COACH_RATE_LIMIT_PER_MINUTE="${COACH_RATE_LIMIT_PER_MINUTE:-120}"
 case "$MODEL" in
   fake) export LLM_PROVIDER=fake ;;
   local) export LLM_PROVIDER=openai_compatible ;;

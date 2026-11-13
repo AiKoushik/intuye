@@ -253,6 +253,15 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
 .lib-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
 
+/* Moments */
+.day-nav { display: flex; align-items: center; gap: 8px; margin: 4px 0 2px; font-size: 17px; font-weight: 600; }
+.day-nav .flip svg { transform: scaleX(-1); }
+.day-nav .iconbtn:disabled { opacity: .3; }
+.row.moment { align-items: flex-start; }
+.moment-es { display: block; text-align: left; font-size: 19px; line-height: 25px; margin-top: 2px; color: var(--lc-text-primary); }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; }
+.section-head .link { color: var(--lc-accent); font-size: 15px; min-height: 36px; padding: 0 4px; }
+
 /* Sober tints: what something is about, or why it's here. Always next to a label. */
 .t-sage { --t-fg: var(--lc-sage); --t-bg: var(--lc-sage-subtle); --t-wash: var(--lc-sage-wash); }
 .t-sea { --t-fg: var(--lc-sea); --t-bg: var(--lc-sea-subtle); --t-wash: var(--lc-sea-wash); }
@@ -278,3 +287,8 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 .promise { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
 .promise b { display: block; font-size: 16px; font-weight: 600; }
 .promise span.sub { font-size: 14px; line-height: 19px; color: var(--lc-text-secondary); }
+
+.try { margin: 14px 0; font-size: 14px; line-height: 1.45; }
+.try summary { font-weight: 600; cursor: pointer; margin-bottom: 6px; }
+.try ol { margin: 0 0 8px; padding-left: 18px; display: grid; gap: 6px; }
+.try p { margin: 0; color: var(--lc-text-secondary); }

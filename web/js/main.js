@@ -202,7 +202,7 @@ class App {
     layer.append(sheet);
     layer.addEventListener("click", (e) => { if (e.target === layer) this.dismiss(screen); });
     screen.layer = layer;
-    screen.el.style.background = "var(--lc-sunken)";
+    screen.el.style.background = "var(--lc-canvas)";
     this.root.append(layer);
     return screen;
   }

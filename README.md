@@ -56,6 +56,13 @@ the backend at `/web` in development. Sign-in is a dev-only name field (`DEV_LOG
 is off locally, speech uses the browser (Chrome or Edge), and the Capture sheet has a
 "pretend capture heard these" box for testing curation without a mic.
 
+Everything the backend does can be tried from it: Say (both directions and questions), capture and
+Moments (sentences by hour, delete, forget the last 10 minutes), word batches and review with spoken
+answers, scenes (build, library search by text or voice, use, share, report, rehearse, archive),
+Progress, and Settings (variety, level, notifications, quiet hours, retention, export, delete). The
+side panel has a short "Try this" list. Open a private window and sign in with another name to see
+shared library scenes from a second learner's side.
+
 ### Manual setup (without the scripts)
 
 ```bash

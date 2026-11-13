@@ -96,6 +96,9 @@ if (-not (Test-Path $EnvFile)) {
     Write-Step "Created backend\.env from .env.development"
     Write-Note "Edit backend\.env to point LLM_BASE_URL / LLM_FAST_MODEL at Hearth, then run with -Model local."
 }
+# Local testing clicks fast; production limits stay in config.py.
+if (-not $env:RATE_LIMIT_PER_MINUTE) { $env:RATE_LIMIT_PER_MINUTE = "600" }
+if (-not $env:COACH_RATE_LIMIT_PER_MINUTE) { $env:COACH_RATE_LIMIT_PER_MINUTE = "120" }
 switch ($Model) {
     "fake"      { $env:LLM_PROVIDER = "fake" }
     "local"     { $env:LLM_PROVIDER = "openai_compatible" }
