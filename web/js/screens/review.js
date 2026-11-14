@@ -2,6 +2,7 @@ import { applyAmbient } from "./base.js";
 import { h, icon, parseDate, relativeDay } from "../dom.js";
 import { errorBanner, holdToTalk, ratingButtons, reasonTint, spinner, tintChip } from "../components.js";
 import { localeFor, speak } from "../speech.js";
+import { LessonScreen } from "./lesson.js";
 
 /** Full-screen review session (fullScreenCover on iPhone). */
 export class ReviewCover {
@@ -65,6 +66,9 @@ export class ReviewCover {
         ? h("div", {},
           h("button", { class: "es-xl", type: "button", onclick: (e) => { e.stopPropagation(); speak(c.es, this.app.dialect); }, "aria-label": `Play ${c.es}` }, c.es),
           c.reason ? h("p", { style: "margin-top:10px" }, tintChip(reasonTint(c.reason_kind), c.reason)) : null,
+          c.lesson_id ? h("button", { class: "link", type: "button", style: "margin-top:10px",
+            onclick: (e) => { e.stopPropagation(); this.app.present(new LessonScreen(this.app, c.lesson_id, { sheet: true })); } },
+            "Why it's built this way") : null,
           this.pron ? h("p", { class: `pron ${this.pron.ok ? "ok" : "no"}`, style: "margin-top:8px" }, icon(this.pron.ok ? "check" : "ear"),
             this.pron.ok ? "Sounded right" : "Close — listen and try again") : null)
         : h("div", { class: "hint" }, "Tap to show, or hold the mic and say it"),

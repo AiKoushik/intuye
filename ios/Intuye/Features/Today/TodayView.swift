@@ -7,6 +7,7 @@ struct TodayView: View {
     @State private var error: String?
     @State private var showReview = false
     @State private var showSettings = false
+    @State private var reflection: Reflection?
 
     var body: some View {
         ScrollView {
@@ -29,6 +30,7 @@ struct TodayView: View {
                               systemImage: "sparkles").font(.lcCaption)
                     }
                 }
+                if let reflection { ReflectionCard(reflection: reflection) }
                 words
                 if let recent = today?.recent, !recent.isEmpty {
                     Text("Recent sentences").font(.lcCaption).foregroundStyle(LC.Color.textSecondary).padding(.top, Space.l)
@@ -103,7 +105,11 @@ struct TodayView: View {
     }
 
     private func load() async {
-        do { today = try await app.api.today(); error = nil } catch { self.error = error.localizedDescription }
+        do {
+            today = try await app.api.today(); error = nil
+            // The weekly reflection shows on Mondays, in the learner's own calendar.
+            reflection = Calendar.current.component(.weekday, from: .now) == 2 ? (try? await app.api.progress())?.reflection : nil
+        } catch { self.error = error.localizedDescription }
     }
 }
 

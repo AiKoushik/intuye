@@ -19,8 +19,7 @@ struct SettingsView: View {
                             Text("Latin America").tag("es-419"); Text("Mexico").tag("es-MX"); Text("Spain").tag("es-ES")
                         }
                         Picker("Level", selection: levelBinding(s.level)) {
-                            Text("Just starting").tag(0); Text("Beginner").tag(1); Text("I get by").tag(2)
-                            Text("Intermediate").tag(3); Text("Conversational").tag(4); Text("Fluent").tag(5)
+                            ForEach(Levels.names.indices, id: \.self) { Text(Levels.names[$0]).tag($0) }
                         }
                     }
                     Section {

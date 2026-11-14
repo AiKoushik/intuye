@@ -5,6 +5,7 @@ import SwiftUI
 struct ProgressScreen: View {
     @Environment(AppModel.self) private var app
     @State private var data: ProgressDTO?
+    @State private var lessons: [LessonSummary] = []
     @State private var error: String?
 
     var body: some View {
@@ -12,9 +13,12 @@ struct ProgressScreen: View {
             VStack(alignment: .leading, spacing: Space.m) {
                 if let error { ErrorBanner(message: error) { Task { await load() } } }
                 if let d = data {
+                    if let r = d.reflection { ReflectionCard(reflection: r) }
                     spanglish(d.spanglishRatio)
+                    if let est = d.levelEstimate { level(est) }
                     confidence(d.confidence)
                     words(d.words)
+                    lessonList
                 } else if error == nil {
                     ProgressView().frame(maxWidth: .infinity).padding(.top, Space.xxxl)
                 }
@@ -26,6 +30,59 @@ struct ProgressScreen: View {
         .navigationTitle("Progress")
         .refreshable { await load() }
         .task(id: app.refreshToken) { await load() }
+        .navigationDestination(for: LessonRef.self) { LessonView(ref: $0) }
+    }
+
+    private func level(_ est: LevelEstimate) -> some View {
+        let b = est.basis
+        let why = ["\(b.wordsKept) \(b.wordsKept == 1 ? "word" : "words") kept",
+                   b.spanishShare.map { "\($0.formatted(.percent.precision(.fractionLength(0)))) Spanish in what you tried this month" },
+                   b.avgSpanishWords.map { "about \(Int($0.rounded())) words a sentence" }].compactMap { $0 }.joined(separator: ", ")
+        return VStack(alignment: .leading, spacing: Space.xs) {
+            Text("Your level, roughly").font(.lcHeadline)
+            HStack(alignment: .firstTextBaseline) {
+                Text(est.band).font(.system(.largeTitle, weight: .bold))
+                Spacer()
+                Text(Levels.name(est.level)).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            }
+            Text("From \(why).").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            if est.level == est.currentSetting {
+                Text("Matches your setting.").font(.lcCaption).foregroundStyle(LC.Color.textSecondary).padding(.top, Space.xs)
+            } else {
+                Button("Use this level (you're set to \(Levels.name(est.currentSetting)))") { Task { await useLevel(est.level) } }
+                    .buttonStyle(.lcSubtle).padding(.top, Space.s)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .lcCard(wash: .sand)
+    }
+
+    @ViewBuilder private var lessonList: some View {
+        if !lessons.isEmpty {
+            Text("Grammar from your sentences").font(.lcCaption).foregroundStyle(LC.Color.textSecondary).padding(.top, Space.s)
+            VStack(spacing: 0) {
+                ForEach(lessons) { l in
+                    NavigationLink(value: LessonRef(id: l.id, youSaid: l.youSaid)) {
+                        HStack(spacing: Space.m) {
+                            TintTile(tint: .plum, symbol: "sparkles", size: 28)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(l.title).font(.lcBody).foregroundStyle(LC.Color.textPrimary)
+                                Text(l.pattern).font(.system(.footnote, design: .serif)).foregroundStyle(LC.Color.textSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(LC.Color.textTertiary)
+                        }
+                        .padding(.vertical, Space.s)
+                    }
+                    if l.id != lessons.last?.id { Divider().overlay(LC.Color.hairline) }
+                }
+            }
+            .lcCard()
+        }
+    }
+
+    private func useLevel(_ level: Int) async {
+        do { _ = try await app.api.updateLevel(level); await app.loadMe(); await load() } catch { self.error = error.localizedDescription }
     }
 
     private func spanglish(_ weeks: [WeekRatio]) -> some View {
@@ -107,6 +164,58 @@ struct ProgressScreen: View {
     }
 
     private func load() async {
-        do { data = try await app.api.progress(); error = nil } catch { self.error = error.localizedDescription }
+        do {
+            async let p = app.api.progress()
+            async let l = app.api.lessons()
+            (data, lessons) = (try await p, (try? await l) ?? [])
+            error = nil
+        } catch { self.error = error.localizedDescription }
+    }
+}
+
+/// Level names shared by Settings, onboarding and Progress (same 0–5 scale as the estimate).
+enum Levels {
+    static let names = ["Just starting", "Beginner", "I get by", "Intermediate", "Conversational", "Fluent"]
+    static func name(_ i: Int) -> String { names[max(0, min(i, names.count - 1))] }
+}
+
+/// The weekly reflection: one calm card. On Progress always, on Today on Mondays.
+struct ReflectionCard: View {
+    let reflection: Reflection
+
+    var body: some View {
+        let r = reflection
+        VStack(alignment: .leading, spacing: Space.s) {
+            HStack(spacing: Space.m) {
+                TintTile(tint: .sage, symbol: "calendar", size: 34)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Your week").font(.lcHeadline)
+                    Text("The last seven days").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+                }
+            }
+            Text(r.line).font(.lcBody)
+            if let best = r.bestSpanish {
+                TintChip(tint: .sage, text: "Your best Spanish this week")
+                Text(best).font(.system(.title3, design: .serif))
+            }
+            HStack(alignment: .top) {
+                fact("\(r.sentences)", r.sentences == 1 ? "sentence" : "sentences")
+                fact(r.spanishShare.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? "–", "in Spanish")
+                fact("\(r.wordsKept)", r.wordsKept == 1 ? "word stuck" : "words stuck")
+                fact("\(r.scenesRehearsed)", r.scenesRehearsed == 1 ? "scene rehearsed" : "scenes rehearsed")
+            }
+            .padding(.top, Space.xs)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .lcCard(wash: .sage)
+    }
+
+    private func fact(_ n: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(n).font(.title3.weight(.bold)).monospacedDigit()
+            Text(label).font(.caption).foregroundStyle(LC.Color.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 }

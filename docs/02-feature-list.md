@@ -69,11 +69,11 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 | ID | Feature | Phase | Priority | Happy-path acceptance | Status |
 |---|---|---|---|---|---|
 | G1 | ★ **Base backbone** — high-frequency core blended in by level (beginner ≈ 60% base, advanced ≈ 20%) | P1 | Must | A new user's first batch contains base items; base share falls as level rises | ✅ |
-| G2 | ★ **Grammar on demand** — patterns in your own sentences trigger 60-second micro-lessons | P2 | Should | "I want that you come" → subjunctive micro-lesson | 🟡 feeds batches, no lesson UI |
-| G3 | **Level estimate** — rough CEFR band from vocabulary known and sentence complexity | P2 | Should | Level updates weekly | ⬜ |
+| G2 | ★ **Grammar on demand** — patterns in your own sentences trigger 60-second micro-lessons | P2 | Should | "I want that you come" → subjunctive micro-lesson | ✅ 7 hand-written lessons; from review cards and Progress |
+| G3 | **Level estimate** — rough CEFR band from vocabulary known and sentence complexity | P2 | Should | Level updates weekly | ✅ on Progress, with "Use this level" |
 | G4 | ★ **Confidence map** — can-do rating per scenario, before and after rehearsal | P2 | Must | Each rehearsed scenario shows before/after ratings | ✅ |
 | G5 | ★ **Spanglish ratio** — share of English in your Spanish attempts, trended weekly | P2 | Must | Progress shows this week vs last week | ✅ |
-| G6 | **Weekly reflection** — one calm summary card, no guilt | P3 | Should | Monday card summarises the past week | ⬜ |
+| G6 | **Weekly reflection** — one calm summary card, no guilt | P3 | Should | Monday card summarises the past week | ✅ Today on Mondays, Progress always |
 
 ## Platform — account, security, quality
 

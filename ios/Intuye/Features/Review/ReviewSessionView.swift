@@ -46,6 +46,7 @@ struct ReviewSessionView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var model = ReviewModel()
     @State private var ratingTrigger = 0
+    @State private var lesson: LessonRef?
 
     var body: some View {
         VStack(spacing: Space.l) {
@@ -77,6 +78,7 @@ struct ReviewSessionView: View {
         .animation(Motion.spring, value: model.revealed)
         .sensoryFeedback(.success, trigger: ratingTrigger)
         .task { await model.load(api: app.api) }
+        .sheet(item: $lesson) { ref in NavigationStack { LessonView(ref: ref, asSheet: true) } }
     }
 
     private func cardView(_ card: DueCard) -> some View {
@@ -93,6 +95,9 @@ struct ReviewSessionView: View {
                     }
                     .accessibilityHint("Plays the Spanish")
                     if let reason = card.reason { TintChip(tint: Tint.reason(card.reasonKind), text: reason) }
+                    if let id = card.lessonId {
+                        Button("Why it's built this way") { lesson = LessonRef(id: id) }.font(.lcCaption.weight(.semibold))
+                    }
                     if let p = model.pronunciation {
                         Label(p.ok ? "Sounded right" : "Close — listen and try again", systemImage: p.ok ? "checkmark" : "ear")
                             .font(.lcCaption).foregroundStyle(p.ok ? LC.Color.success : LC.Color.warning)

@@ -101,6 +101,8 @@ public struct BatchItemDTO: Codable, Sendable, Hashable, Identifiable {
     public let reason: String
     public let reasonKind: String
     public let context: String?
+    /// Set when this item is a grammar pattern with a 60-second lesson behind it.
+    public let lessonId: String?
     public var id: String { lexemeId }
 }
 
@@ -114,6 +116,7 @@ public struct DueCard: Codable, Sendable, Hashable, Identifiable {
     public let state: String
     public let reason: String?
     public let reasonKind: String?
+    public let lessonId: String?
     public var id: String { lexemeId }
 }
 
@@ -254,7 +257,30 @@ public struct RehearsalEnd: Codable, Sendable { public let summary: String; publ
 public struct WeekRatio: Codable, Sendable, Hashable { public let week: String; public let ratio: Double; public let sentences: Int }
 public struct ConfidenceRow: Codable, Sendable, Hashable { public let scenarioId: String; public let title: String; public let before: Int?; public let after: Int? }
 public struct WordStats: Codable, Sendable, Hashable { public let met: Int; public let kept: Int; public let due: Int }
-public struct ProgressDTO: Codable, Sendable { public let spanglishRatio: [WeekRatio]; public let confidence: [ConfidenceRow]; public let words: WordStats }
+public struct LevelBasis: Codable, Sendable, Hashable { public let wordsKept: Int; public let spanishShare: Double?; public let avgSpanishWords: Double? }
+/// Rough CEFR band (0 Pre-A1 … 5 C1) and the level the learner has set, which use the same 0–5 scale.
+public struct LevelEstimate: Codable, Sendable, Hashable {
+    public let level: Int; public let band: String; public let basis: LevelBasis; public let currentSetting: Int
+}
+public struct Reflection: Codable, Sendable, Hashable {
+    public let sentences: Int; public let spanishShare: Double?; public let spanishShareBefore: Double?
+    public let wordsKept: Int; public let scenesRehearsed: Int; public let bestSpanish: String?; public let line: String
+}
+public struct ProgressDTO: Codable, Sendable {
+    public let spanglishRatio: [WeekRatio]; public let confidence: [ConfidenceRow]; public let words: WordStats
+    public let levelEstimate: LevelEstimate?; public let reflection: Reflection?
+}
+
+// MARK: Lessons
+
+public struct LessonSummary: Codable, Sendable, Hashable, Identifiable { public let id: String; public let title: String; public let pattern: String; public let youSaid: String }
+public struct LessonsDTO: Codable, Sendable { public let lessons: [LessonSummary] }
+public struct LessonExample: Codable, Sendable, Hashable { public let en: String; public let es: String }
+public struct LessonCheck: Codable, Sendable, Hashable { public let prompt: String; public let options: [String]; public let answer: Int }
+public struct Lesson: Codable, Sendable, Hashable, Identifiable {
+    public let id: String; public let title: String; public let pattern: String; public let rule: String
+    public let examples: [LessonExample]; public let check: LessonCheck
+}
 
 public struct PreviewWord: Codable, Sendable, Hashable { public let es: String; public let origin: String? }
 public struct WordsReady: Codable, Sendable, Hashable { public let count: Int; public let preview: [String]; public let previewItems: [PreviewWord]? }

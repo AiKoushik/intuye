@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.curation.lessons import lesson_id_for
 from app.curation import fsrs
 from app.db import get_session
 from app.errors import APIError
@@ -28,7 +29,7 @@ class ReviewIn(BaseModel):
 async def next_batch(body: BatchIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_session)) -> dict:
     batch, picks = await build_batch(db, user.id, body.size)
     return {"batch_id": batch.id, "items": [
-        {"lexeme_id": lx.id, "es": lx.es, "en": lx.en, "reason": p.reason, "reason_kind": p.reason_kind,
+        {"lexeme_id": lx.id, "es": lx.es, "en": lx.en, "reason": p.reason, "reason_kind": p.reason_kind, "lesson_id": lesson_id_for(lx.es),
          "context": lx.context} for p, lx in picks]}
 
 
@@ -44,7 +45,8 @@ async def due(user: User = Depends(current_user), db: AsyncSession = Depends(get
                 Batch.user_id == user.id, BatchItem.lexeme_id.in_(ids)).order_by(Batch.created_at))).scalars():
             reasons[item.lexeme_id] = (item.reason, item.reason_kind)
     return {"items": [{"lexeme_id": lx.id, "es": lx.es, "en": lx.en, "context": lx.context, "state": c.state,
-                       "reason": reasons.get(lx.id, (None, None))[0], "reason_kind": reasons.get(lx.id, (None, lx.origin))[1]}
+                       "reason": reasons.get(lx.id, (None, None))[0], "reason_kind": reasons.get(lx.id, (None, lx.origin))[1],
+                       "lesson_id": lesson_id_for(lx.es)}
                       for c, lx in rows]}
 
 

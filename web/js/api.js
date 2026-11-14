@@ -112,5 +112,7 @@ export class API {
   rehearsalTurn(id, text) { return this.send("POST", `/v1/rehearsals/${id}/turns`, { text }); }
   endRehearsal(id) { return this.send("POST", `/v1/rehearsals/${id}/end`); }
   progress() { return this.send("GET", "/v1/progress"); }
+  async lessons() { return (await this.send("GET", "/v1/lessons")).lessons; }
+  lesson(id) { return this.send("GET", `/v1/lessons/${id}`); }
   today() { return this.send("GET", "/v1/today"); }
 }

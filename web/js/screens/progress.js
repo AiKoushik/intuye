@@ -1,16 +1,37 @@
 import { h, icon, pct, svg } from "../dom.js";
-import { spinner, topicTile } from "../components.js";
+import { spinner, tile, tintChip, topicTile } from "../components.js";
 import { Screen } from "./base.js";
+import { LessonScreen } from "./lesson.js";
+
+export const LEVELS = ["Just starting", "Beginner", "I get by", "Intermediate", "Conversational", "Fluent"];
+
+/** The weekly reflection card, shared with Today (shown there on Mondays). */
+export function reflectionCard(r) {
+  if (!r) return null;
+  const facts = [
+    [r.sentences, r.sentences === 1 ? "sentence" : "sentences"],
+    [r.spanish_share == null ? "–" : pct(r.spanish_share), "in Spanish"],
+    [r.words_kept, r.words_kept === 1 ? "word stuck" : "words stuck"],
+    [r.scenes_rehearsed, r.scenes_rehearsed === 1 ? "scene rehearsed" : "scenes rehearsed"],
+  ];
+  return h("div", { class: "card wash t-sage" },
+    h("div", { class: "lead" }, tile("sage", "calendar"), h("div", {}, h("h3", {}, "Your week"), h("p", { class: "meta" }, "The last seven days"))),
+    h("p", { class: "body", style: "margin-top:8px" }, r.line),
+    r.best_spanish ? h("div", {}, h("p", { style: "margin-top:10px" }, tintChip("sage", "Your best Spanish this week")),
+      h("p", { class: "reflect-best" }, r.best_spanish)) : null,
+    h("div", { class: "mini-stats" }, facts.map(([n, l]) => h("span", {}, h("b", {}, n), l))));
+}
 
 export class ProgressScreen extends Screen {
   ambient() { return ["plum", "sea"]; }
-  constructor(app) { super(app); this.title = "Progress"; this.data = null; }
-  async load() { this.data = await this.api.progress(); }
+  constructor(app) { super(app); this.title = "Progress"; this.data = null; this.lessons = []; }
+  async load() { [this.data, this.lessons] = await Promise.all([this.api.progress(), this.api.lessons()]); }
 
   content() {
     const d = this.data;
     if (!d) return this.loaded ? [] : [spinner()];
-    return [this.spanglish(d.spanglish_ratio), this.confidence(d.confidence), this.words(d.words)];
+    return [reflectionCard(d.reflection), this.spanglish(d.spanglish_ratio), this.level(d.level_estimate), this.confidence(d.confidence),
+      this.words(d.words), this.lessonList()];
   }
 
   spanglish(weeks) {
@@ -49,5 +70,36 @@ export class ProgressScreen extends Screen {
       h("div", { class: "t-sea" }, h("b", {}, w.met), h("span", {}, "words met")),
       h("div", { class: "t-sage" }, h("b", {}, w.kept), h("span", {}, "kept")),
       h("div", { class: "t-sand" }, h("b", {}, w.due), h("span", {}, "due now")));
+  }
+
+  level(est) {
+    if (!est) return null;
+    const same = est.level === est.current_setting;
+    const b = est.basis;
+    const why = [`${b.words_kept} ${b.words_kept === 1 ? "word" : "words"} kept`,
+      b.spanish_share != null ? `${pct(b.spanish_share)} Spanish in what you tried this month` : null,
+      b.avg_spanish_words != null ? `about ${Math.round(b.avg_spanish_words)} words a sentence` : null].filter(Boolean).join(", ");
+    return h("div", { class: "card wash t-sand level-card" },
+      h("h3", {}, "Your level, roughly"),
+      h("div", { class: "split", style: "align-items:flex-end;margin-top:4px" },
+        h("span", { class: "band" }, est.band), h("span", { class: "meta" }, LEVELS[est.level])),
+      h("p", { class: "meta", style: "margin-top:4px" }, `From ${why}.`),
+      same ? h("p", { class: "meta", style: "margin-top:6px" }, "Matches your setting.")
+        : h("button", { class: "btn subtle", type: "button", style: "margin-top:10px", onclick: () => this.useLevel(est.level) },
+          `Use this level (you're set to ${LEVELS[est.current_setting]})`));
+  }
+
+  async useLevel(level) {
+    try { await this.api.updateSettings({ level }); await this.app.loadMe(); this.app.toast(`Level set to ${LEVELS[level]}`); await this.refresh(); }
+    catch (e) { this.error = e.message; this.update(); }
+  }
+
+  lessonList() {
+    if (!this.lessons.length) return null;
+    return [h("p", { class: "section-label" }, "Grammar from your sentences"),
+      h("div", { class: "group" }, this.lessons.map((l) => h("button", { class: "row tap", type: "button",
+        "aria-label": `${l.title}. ${l.pattern}`, onclick: () => this.app.push(new LessonScreen(this.app, l.id, { youSaid: l.you_said })) },
+        tile("plum", "sparkles"), h("span", { class: "grow" }, h("span", { style: "display:block" }, l.title), h("span", { class: "meta es" }, l.pattern)),
+        icon("chevron", "chev"))))];
   }
 }

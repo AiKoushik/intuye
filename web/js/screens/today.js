@@ -5,12 +5,18 @@ import { SceneDetail } from "./scenes.js";
 import { ReviewCover } from "./review.js";
 import { Moments } from "./moments.js";
 import { SettingsSheet } from "./settings.js";
+import { reflectionCard } from "./progress.js";
 
 export class Today extends Screen {
   constructor(app) { super(app); this.title = "Today"; this.data = null; }
   ambient() { return ["sand", "rose"]; }
 
-  async load() { this.data = await this.api.today(); }
+  /** The weekly reflection shows on Mondays (local time), or any day with ?reflect in the URL. */
+  get reflectDay() { return new Date().getDay() === 1 || new URLSearchParams(location.search).has("reflect"); }
+  async load() {
+    const [today, progress] = await Promise.all([this.api.today(), this.reflectDay ? this.api.progress().catch(() => null) : null]);
+    this.data = today; this.reflection = progress?.reflection ?? null;
+  }
 
   navRight() { return [navButton("", () => this.app.present(new SettingsSheet(this.app)), { iconName: "person", aria: "Settings" })]; }
 
@@ -42,6 +48,7 @@ export class Today extends Screen {
       out.push(h("button", { class: "row action", type: "button", style: "padding-left:4px", onclick: () => this.app.selectTab("scenes") },
         icon("sparkles"), d.suggested_scenarios === 1 ? "1 scene suggested from what you talk about" : `${d.suggested_scenarios} scenes suggested from what you talk about`));
     }
+    if (this.reflection) out.push(reflectionCard(this.reflection));
     const n = d.words_ready.count;
     out.push(h("div", { class: "card wash t-sea" },
       h("div", { class: "lead" }, tile("sea", "cards"), h("div", {},

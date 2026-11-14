@@ -8,11 +8,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.curation import fsrs
+from app.curation import fsrs, level
 from app.curation.phonemes import compare
 from app.db import get_session
 from app.errors import APIError
-from app.models import (Card, Lexeme, LexemeEvent, PronunciationAttempt, Scenario, User, UserSettings, Utterance,
+from app.models import (Card, Lexeme, LexemeEvent, PronunciationAttempt, Rehearsal, Review, Scenario, User, UserSettings, Utterance,
                         utcnow)
 from app.security.deps import current_user
 from app.services.scenarios import serialise
@@ -65,7 +65,37 @@ async def progress(user: User = Depends(current_user), db: AsyncSession = Depend
                fsrs.retrievability((now - c.last_review_at).total_seconds() / 86400, c.stability) >= 0.9)
     met = (await db.execute(select(func.count()).select_from(Lexeme).where(Lexeme.user_id == user.id))).scalar_one()
     due = sum(1 for c in cards if c.due_at <= now)
-    return {"spanglish_ratio": ratio, "confidence": confidence, "words": {"met": met, "kept": kept, "due": due}}
+
+    # Level estimate from the last 30 days of Spanish attempts plus words kept.
+    attempts = [u for u in (await db.execute(select(Utterance).where(
+        Utterance.user_id == user.id, Utterance.spoken_at >= now - timedelta(days=30)))).scalars() if u.lang_mix < 0.9]
+    share = round(1 - sum(u.lang_mix for u in attempts) / len(attempts), 3) if attempts else None
+    avg_words = round(sum(len((u.close_es or u.text).split()) for u in attempts) / len(attempts), 1) if attempts else None
+    settings = await db.get(UserSettings, user.id)
+    est = level.estimate(kept, share, avg_words)
+    est["current_setting"] = settings.level if settings else 0
+    return {"spanglish_ratio": ratio, "confidence": confidence, "words": {"met": met, "kept": kept, "due": due},
+            "level_estimate": est, "reflection": await _reflection(db, user.id, now, cards)}
+
+
+async def _reflection(db: AsyncSession, user_id: str, now, cards) -> dict:
+    """The last seven days in one calm card."""
+    week_ago, two_weeks = now - timedelta(days=7), now - timedelta(days=14)
+    utts = list((await db.execute(select(Utterance).where(Utterance.user_id == user_id, Utterance.spoken_at >= two_weeks))).scalars())
+    this = [u for u in utts if u.spoken_at >= week_ago]
+    before = [u for u in utts if u.spoken_at < week_ago]
+    def share(us):
+        tries = [u for u in us if u.lang_mix < 0.9]
+        return round(1 - sum(u.lang_mix for u in tries) / len(tries), 3) if tries else None
+    rehearsed = (await db.execute(select(func.count()).select_from(Rehearsal).where(
+        Rehearsal.user_id == user_id, Rehearsal.ended_at.is_not(None), Rehearsal.ended_at >= week_ago))).scalar_one()
+    kept_new = (await db.execute(select(func.count(func.distinct(Review.lexeme_id))).where(
+        Review.user_id == user_id, Review.reviewed_at >= week_ago, Review.rating >= 3))).scalar_one()
+    best = next((u.text for u in sorted(this, key=lambda u: (u.lang_mix, -len(u.text))) if u.lang_mix < 0.2 and len(u.text.split()) >= 3), None)
+    s_now, s_before = share(this), share(before)
+    return {"sentences": len(this), "spanish_share": s_now, "spanish_share_before": s_before, "words_kept": kept_new,
+            "scenes_rehearsed": rehearsed, "best_spanish": best,
+            "line": level.reflection_line(len(this), s_now, s_before, kept_new, rehearsed)}
 
 
 @router.get("/today")
