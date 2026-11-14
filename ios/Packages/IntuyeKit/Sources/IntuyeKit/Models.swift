@@ -291,3 +291,19 @@ public enum LCDate {
         return nil
     }
 }
+
+// MARK: Practice (rescue drill, shadowing, pronunciation)
+
+public struct PracticePhoneme: Codable, Sendable, Hashable { public let p: String; public let ok: Bool; public let heard: String? }
+public struct PracticeWord: Codable, Sendable, Hashable {
+    public let word: String
+    public let heard: String?
+    public let ok: Bool
+    public let phonemes: [PracticePhoneme]
+}
+public struct PracticeResult: Codable, Sendable, Hashable {
+    public let score: Double
+    public let ok: Bool
+    public let words: [PracticeWord]
+    public let tips: [String]
+}

@@ -3,6 +3,7 @@ import { dots, interlinear, readyDots, spinner, tintChip, topicTile, topicTint }
 import { localeFor, speak } from "../speech.js";
 import { Screen, navButton } from "./base.js";
 import { Rehearse } from "./rehearse.js";
+import { Practice } from "./practice.js";
 
 const usedLabel = (n) => (n === 1 ? "1 use" : `${n} uses`);
 const topicLabel = (tint) => ({ sage: "Health and body", sea: "Work and study", sand: "Home and family", rose: "Food and friends", plum: "Travel and errands" })[tint];
@@ -133,8 +134,10 @@ export class SceneDetail extends Screen {
       h("div", { class: "card" }, p.key.map((ph) => h("div", { class: "phrase-row" },
         interlinear(ph.alignment.map((a) => ({ src: a.src, tgt: a.tgt }))),
         h("button", { class: "iconbtn", type: "button", "aria-label": `Play ${ph.es}`, onclick: () => speak(ph.es, this.app.dialect) }, icon("speaker"))))),
+      h("button", { class: "btn quiet", type: "button", onclick: () => this.app.push(new Practice(this.app, s, "shadow")) }, icon("speaker"), "Shadow these: hear them, say them back"),
       h("p", { class: "section-label" }, "If you get stuck"),
       h("div", { class: "card wash t-rose" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.es, this.app.dialect, true) }, r.es))),
+      h("button", { class: "btn quiet", type: "button", onclick: () => this.app.push(new Practice(this.app, s, "drill")) }, icon("bolt"), "Drill these until they're automatic"),
       h("p", { class: "section-label" }, "You might hear"),
       h("div", { class: "card wash t-sea" }, p.hear.map((x) => h("div", { style: "padding:6px 0" },
         h("button", { class: "rescue", style: "padding:0", type: "button", onclick: () => speak(x.es, this.app.dialect, true) }, x.es),
@@ -180,6 +183,7 @@ export class LibraryScene extends Screen {
       h("div", { class: "card" }, p.key.map((ph) => h("div", { class: "phrase-row" },
         interlinear((ph.alignment || []).map((a) => ({ src: a.src, tgt: a.tgt }))),
         h("button", { class: "iconbtn", type: "button", "aria-label": `Play ${ph.es}`, onclick: () => speak(ph.es, this.app.dialect) }, icon("speaker"))))),
+      h("button", { class: "btn quiet", type: "button", onclick: () => this.app.push(new Practice(this.app, s, "shadow")) }, icon("speaker"), "Shadow these: hear them, say them back"),
       h("p", { class: "section-label" }, "If you get stuck"),
       h("div", { class: "card wash t-rose" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.es, this.app.dialect, true) }, r.es))),
       h("button", { class: "btn quiet", type: "button", onclick: () => this.app.present(new ReportSheet(this.app, t)) }, icon("flag"), "Report this scene"),

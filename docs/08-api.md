@@ -63,7 +63,8 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 | POST | `/v1/batches/next` | `{size?: 5–10}` → `{batch_id, items: [{lexeme_id, es, en, reason, reason_kind, context}]}` |
 | GET | `/v1/reviews/due` | → cards due now |
 | POST | `/v1/reviews` | `{lexeme_id, rating: 1–4}` → `{due_at, scheduled_days, state}` |
-| POST | `/v1/pronunciation` | `{lexeme_id, expected, heard}` → `{score}` |
+| POST | `/v1/pronunciation` | `{lexeme_id, expected, heard}` → `{score, ok, words: [{word, heard, ok, phonemes: [{p, ok, heard?}]}], tips}` |
+| POST | `/v1/practice/compare` | `{expected, heard}` → same shape; used by the rescue drill and shadowing |
 
 ## Scenarios and rehearsal
 

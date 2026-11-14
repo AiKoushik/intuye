@@ -210,6 +210,10 @@ public actor APIClient {
         struct R: Decodable { let ok: Bool }
         _ = try await send("POST", "/v1/library/\(id)/report", body: ["reason": reason.rawValue], as: R.self)
     }
+    /// Phoneme-level comparison of what you were asked to say with what recognition heard.
+    public func practiceCompare(expected: String, heard: String) async throws -> PracticeResult {
+        try await send("POST", "/v1/practice/compare", body: ["expected": expected, "heard": heard])
+    }
     public func setScenarioStatus(_ id: String, _ status: String) async throws -> ScenarioDTO {
         try await send("PATCH", "/v1/scenarios/\(id)", body: ["status": status])
     }

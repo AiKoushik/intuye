@@ -94,6 +94,7 @@ export class API {
   nextBatch(size = 7) { return this.send("POST", "/v1/batches/next", { size }); }
   async dueCards() { return (await this.send("GET", "/v1/reviews/due")).items; }
   review(lexeme_id, rating) { return this.send("POST", "/v1/reviews", { lexeme_id, rating }); }
+  practiceCompare(expected, heard) { return this.send("POST", "/v1/practice/compare", { expected, heard }); }
   pronunciation(lexeme_id, expected, heard) { return this.send("POST", "/v1/pronunciation", { lexeme_id, expected, heard }); }
   scenarios() { return this.send("GET", "/v1/scenarios"); }
   scenario(id) { return this.send("GET", `/v1/scenarios/${id}`); }

@@ -50,9 +50,9 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 |---|---|---|---|---|---|
 | R1 | **Voice role-play** — the coach plays the other person; difficulty dial (gentle / real / fast) | P2 | Must | A 6-turn dentist role-play completes with a summary | ✅ |
 | R2 | **Hints and escape hatch** — "say it in English" any time, get the Spanish back | P2 | Must | Saying an English line mid-role-play returns its Spanish and continues | ✅ |
-| R3 | ★ **Rescue-phrase drill** — "¿Puede repetir?", "Más despacio, por favor", "¿Cómo se dice…?" | P2 | Should | Drill covers the pack's rescue phrases with speak-to-answer | 🟡 listed + playback, no drill |
+| R3 | ★ **Rescue-phrase drill** — "¿Puede repetir?", "Más despacio, por favor", "¿Cómo se dice…?" | P2 | Should | Drill covers the pack's rescue phrases with speak-to-answer | ✅ |
 | R4 | ★ **Live lifeline** — whisper "¿cómo se dice…?" in a real conversation, hear the word in AirPods | P3 | Could | Whispered English word returns Spanish audio in < 1.5 s | ⬜ |
-| R5 | **Shadowing** — listen, repeat, compare | P2 | Should | Word-level match shown after each attempt | ⬜ |
+| R5 | **Shadowing** — listen, repeat, compare | P2 | Should | Word-level match shown after each attempt | ✅ |
 
 ## Retain — keep what you learn
 
@@ -61,7 +61,7 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 | T1 | ★ **Word batches with reasons** — 5–10 items, each with a why ("you said *mind* 9× this week") | P1 | Must | Batch returns 5–10 items, each with a non-empty reason and source | ✅ |
 | T2 | **FSRS scheduling** — every item reviewed at its optimal moment | P1 | Must | Rating "Good" on a new item schedules the next review days later; "Again" schedules it sooner | ✅ |
 | T3 | **Review session** — see English → recall → reveal → rate; or speak the answer | P1 | Must | A 10-card session completes and updates every card's schedule | ✅ |
-| T4 | **Pronunciation feedback** — per-word score; misses feed the next batch | P2 | Must | A mispronounced word gets a lower score and reappears in the next batch | 🟡 word-level proxy |
+| T4 | **Pronunciation feedback** — per-word score; misses feed the next batch | P2 | Must | A mispronounced word gets a lower score and reappears in the next batch | ✅ phoneme-level from transcripts (rule-based Spanish G2P); acoustic GOP ⬜ |
 | T5 | **Notification budget** — max 3/day, quiet hours 22:00–08:00 by default | P2 | Must | A 4th notification in a day is suppressed | 🟡 scene reminders only |
 
 ## Grow — raise the level, not just the niche

@@ -27,11 +27,19 @@ struct SceneDetailView: View {
                             }
                         }
                         .lcCard()
+                        NavigationLink { PracticeView(scene: s, mode: .shadow) } label: {
+                            Label("Shadow these: hear them, say them back", systemImage: "speaker.wave.2")
+                        }
+                        .font(.lcCaption)
                         header("If you get stuck")
                         VStack(alignment: .leading, spacing: Space.s) {
                             ForEach(p.rescue) { r in spanishButton(r.es) }
                         }
                         .lcCard(wash: .rose)
+                        NavigationLink { PracticeView(scene: s, mode: .drill) } label: {
+                            Label("Drill these until they're automatic", systemImage: "bolt")
+                        }
+                        .font(.lcCaption)
                         header("You might hear")
                         VStack(alignment: .leading, spacing: Space.m) {
                             ForEach(p.hear) { h in

@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.curation import fsrs, pronunciation
+from app.curation import fsrs
+from app.curation.phonemes import compare
 from app.db import get_session
 from app.errors import APIError
 from app.models import (Card, Lexeme, LexemeEvent, PronunciationAttempt, Scenario, User, UserSettings, Utterance,
@@ -32,12 +33,13 @@ async def pronounce(body: PronunciationIn, user: User = Depends(current_user), d
     if lx is None:
         raise APIError(404, "not_found", "That word isn't in your list.")
     settings = await db.get(UserSettings, user.id)
-    s = pronunciation.score(body.expected, body.heard, settings.dialect if settings else "es-419")
+    result = compare(body.expected, body.heard, settings.dialect if settings else "es-419")
+    s = result["score"]
     db.add(PronunciationAttempt(user_id=user.id, lexeme_id=lx.id, expected=body.expected, heard=body.heard, score=s))
     if s < MISPRONOUNCED_BELOW:
         db.add(LexemeEvent(user_id=user.id, lexeme_id=lx.id, kind="mispronounced"))
     await db.commit()
-    return {"score": s, "ok": s >= MISPRONOUNCED_BELOW}
+    return {**result, "ok": s >= MISPRONOUNCED_BELOW}
 
 
 @router.get("/progress")
