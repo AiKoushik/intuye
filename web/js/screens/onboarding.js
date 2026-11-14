@@ -35,6 +35,7 @@ export class Onboarding {
     const add = (...kids) => append(body, kids);  // skips nulls (Element.append would print "null")
     if (this.step === 0) {
       add(
+        h("div", { class: "brand" }, h("b", {}, "Intuye"), h("span", {}, "in-TOO-yeh: “sense it”. Spanish in your own words.")),
         h("h1", {}, "Say it your way."),
         h("p", { class: "body secondary" }, "Speak English, Spanish or a mix. Get Spanish back that stays close to what you said."),
         h("div", { class: "card" }, interlinear(EXAMPLE)),

@@ -29,7 +29,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         yield
         await db.dispose()
 
-    app = FastAPI(title="LangCoach API", version="0.1.0", lifespan=lifespan,
+    app = FastAPI(title="Intuye API", version="0.1.0", lifespan=lifespan,
+                  license_info={"name": "AGPL-3.0-or-later", "identifier": "AGPL-3.0-or-later"},
                   docs_url=None if settings.env == "production" else "/docs")
     app.state.settings = settings
     app.state.db = db
@@ -46,6 +47,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/health")
     async def health() -> dict:
         return {"ok": True}
+
+    @app.get("/about")
+    async def about() -> dict:
+        """Name, licence and where to get the source (AGPL-3.0-or-later, section 13)."""
+        return {"name": "Intuye", "slogan": "Sense it. Say it.", "version": app.version,
+                "license": "AGPL-3.0-or-later", "source": settings.source_url}
 
     from app.routers import register
 

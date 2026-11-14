@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sets up the 'langcoach' conda environment (first run) and starts the LangCoach backend, which also
+# Sets up the 'intuye' conda environment (first run) and starts the Intuye backend, which also
 # serves the web test build at http://localhost:<port>/web/.  macOS, Linux and WSL.
 #
 #   scripts/run-backend.sh                    # create env if needed, start on :8000
@@ -10,7 +10,7 @@
 #   scripts/run-backend.sh --host 0.0.0.0     # reachable from your iPhone on the same Wi-Fi
 set -euo pipefail
 
-ENV_NAME="langcoach"; PORT=8000; HOST="127.0.0.1"; MODEL=""; UPDATE=0; TEST=0; RELOAD=1
+ENV_NAME="intuye"; PORT=8000; HOST="127.0.0.1"; MODEL=""; UPDATE=0; TEST=0; RELOAD=1
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --env) ENV_NAME="$2"; shift 2 ;;

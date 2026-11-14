@@ -4,7 +4,7 @@
 
 **Feel ready for the Spanish you'll actually need this week.**
 
-LangCoach is not a course. It is a coach that pays attention to your life — what you say, what you
+Intuye is not a course. It is a coach that pays attention to your life — what you say, what you
 talk about, what's on your calendar — and turns it into a small, steady stream of Spanish you can use
 tomorrow.
 
@@ -85,6 +85,14 @@ Two things are missing:
 
 ## Name
 
-The repository is `intuye` (Spanish for "senses it"; also "sense it!"). "LangCoach" remains the code
-name inside the project (iOS target, packages). Other names considered: *Entrelíneas* ("between the
-lines"), *Ensayo* ("rehearsal"), *Listo* ("ready"), *Parla*.
+**Intuye**: Spanish for "senses it", and "sense it!" as an encouragement. The coach senses what
+you'll need for what's coming up; you learn to sense what to say instead of translating word by word.
+
+| | |
+|---|---|
+| Slogan | **Sense it. Say it.** |
+| App Store subtitle (≤ 30 characters) | **Spanish in your own words** (25) |
+| Pronunciation | in-TOO-yeh; the welcome screen teaches it |
+
+The subtitle says what the app does for search; the slogan carries the name's meaning. Other names
+considered: *Entrelíneas* ("between the lines"), *Ensayo* ("rehearsal"), *Listo* ("ready"), *Parla*.

@@ -56,6 +56,12 @@ export class SettingsSheet extends Screen {
           ? h("button", { class: "row destructive", type: "button", onclick: () => this.deleteAccount() }, "Tap again to delete everything")
           : h("button", { class: "row destructive", type: "button", onclick: () => { this.confirm = true; this.update(); } }, "Delete account")),
       h("p", { class: "group-footer" }, "Deleting removes your sentences, words, scenes and progress from the server. It can't be undone."),
+      h("p", { class: "group-title" }, "About"),
+      h("div", { class: "group" },
+        h("div", { class: "row" }, h("span", { class: "grow" }, "Intuye"), h("span", { class: "secondary" }, "Sense it. Say it.")),
+        h("a", { class: "row action", href: "https://github.com/AiKoushik/intuye", target: "_blank", rel: "noopener" }, "Source code"),
+        h("div", { class: "row" }, h("span", { class: "grow" }, "Licence"), h("span", { class: "secondary" }, "GNU AGPL v3 or later"))),
+      h("p", { class: "group-footer" }, "Intuye is free software. You can read, change and share its code."),
       h("p", { class: "group-title" }, " "),
       h("div", { class: "group" }, h("button", { class: "row action", type: "button", onclick: async () => { this.app.dismiss(this); await this.app.signOut(); } }, "Sign out")),
     ];
@@ -64,7 +70,7 @@ export class SettingsSheet extends Screen {
   async export() {
     try {
       const blob = await this.api.exportAccount();
-      const a = h("a", { href: URL.createObjectURL(blob), download: "langcoach-export.json" });
+      const a = h("a", { href: URL.createObjectURL(blob), download: "intuye-export.json" });
       document.body.append(a); a.click(); a.remove();
     } catch (e) { this.error = e.message; this.update(); }
   }

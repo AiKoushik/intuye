@@ -1,6 +1,6 @@
 # Security model
 
-Goal: every request proves **who** (user session) and **what** (the genuine LangCoach app on a real
+Goal: every request proves **who** (user session) and **what** (the genuine Intuye app on a real
 device), carries the minimum data, and can only touch that user's rows. Audit target: OWASP MASVS v2
 (2023) for the app and the OWASP API Security Top 10 (2023) for the server.
 

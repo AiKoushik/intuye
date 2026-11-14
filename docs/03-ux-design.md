@@ -2,7 +2,7 @@
 
 ## Design concept: the interlinear line
 
-The memorable thing in LangCoach is one element, used everywhere: **the interlinear line.** Your
+The memorable thing in Intuye is one element, used everywhere: **the interlinear line.** Your
 sentence sits on top in the UI face; the Spanish sits directly beneath it in a serif; tapping any word
 lights up its partner in the other line with a saffron highlighter mark. Linguists have glossed
 languages this way for centuries (the Leipzig Glossing Rules standardise it); we make it tappable.

@@ -1,7 +1,7 @@
 """App Attest: one-time key attestation and per-request assertions.
 
 Follows Apple's "Validating apps that connect to your server" procedure. Client-data conventions
-shared with the iOS app (ios/LangCoach/Services/AttestService.swift):
+shared with the iOS app (ios/Intuye/Services/AttestService.swift):
 
 * Attestation: clientDataHash = SHA256(challenge string as UTF-8).
 * Assertion:   clientData = "METHOD\\nPATH?QUERY\\nSHA256_HEX(body)\\nUNIX_TIMESTAMP",
@@ -31,7 +31,7 @@ from app.errors import APIError
 from app.models import AttestChallenge, AttestKey
 from app.security.apple_root import APPLE_APP_ATTEST_ROOT_PEM
 
-log = logging.getLogger("langcoach.attest")
+log = logging.getLogger("intuye.attest")
 
 NONCE_OID = x509.ObjectIdentifier("1.2.840.113635.100.8.2")
 AAGUID_DEV = b"appattestdevelop"

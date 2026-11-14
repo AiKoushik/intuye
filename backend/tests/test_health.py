@@ -9,3 +9,8 @@ async def test_health_has_security_headers(client):
     assert r.headers["cache-control"] == "no-store"
     assert r.headers["x-content-type-options"] == "nosniff"
     assert "x-request-id" in r.headers
+
+
+async def test_about_names_licence_and_source(client):
+    r = (await client.get("/about")).json()
+    assert r["license"] == "AGPL-3.0-or-later" and r["source"].startswith("https://github.com/") and r["name"] == "Intuye"

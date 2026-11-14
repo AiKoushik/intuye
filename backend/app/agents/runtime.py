@@ -1,4 +1,4 @@
-"""LangChain Deep Agents runtime: every model call in LangCoach runs through an agent built here.
+"""LangChain Deep Agents runtime: every model call in Intuye runs through an agent built here.
 
 Agents get a lean harness: Deep Agents' filesystem and shell tools are hidden and its general-purpose
 subagent is off, because no agent here touches files. What remains is our per-call system prompt (a

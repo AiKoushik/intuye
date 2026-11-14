@@ -51,7 +51,7 @@ async def test_dev_sign_in_and_web_client_served(settings, apple):
         me = await c.get("/v1/me", headers={"authorization": f"Bearer {r.json()['access_token']}"})
         assert me.status_code == 200
         page = await c.get("/web/")
-        assert page.status_code == 200 and "LangCoach" in page.text
+        assert page.status_code == 200 and "Intuye" in page.text
     await dev_app.state.db.dispose()
 
 

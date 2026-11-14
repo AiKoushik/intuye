@@ -11,19 +11,19 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     env: Literal["development", "test", "production"] = "development"
-    database_url: str = "sqlite+aiosqlite:///./langcoach.db"
+    database_url: str = "sqlite+aiosqlite:///./intuye.db"
 
     # Session tokens
     jwt_private_key_pem: str = ""
-    jwt_issuer: str = "langcoach"
-    jwt_audience: str = "langcoach-api"
+    jwt_issuer: str = "intuye"
+    jwt_audience: str = "intuye-api"
     access_ttl_seconds: int = 600
     refresh_idle_days: int = 14
     refresh_absolute_days: int = 60
 
     # Apple
     apple_team_id: str = "TEAMID1234"
-    apple_bundle_id: str = "com.example.langcoach"
+    apple_bundle_id: str = "com.example.intuye"
     apple_jwks_url: str = "https://appleid.apple.com/auth/keys"
     apple_issuer: str = "https://appleid.apple.com"
     app_attest_mode: Literal["enforce", "report", "off"] = "enforce"
@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     assertion_max_skew_seconds: int = 300
 
     # LLM
+    # AGPL section 13: people using the service over a network can get its source here.
+    source_url: str = "https://github.com/AiKoushik/intuye"
+
     llm_provider: Literal["fake", "openai_compatible", "anthropic"] = "fake"
     llm_base_url: str = "http://localhost:8000/v1"
     llm_api_key: str = "not-needed"

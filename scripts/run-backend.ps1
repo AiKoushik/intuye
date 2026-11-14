@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Sets up the 'langcoach' conda environment (first run) and starts the LangCoach backend,
+  Sets up the 'intuye' conda environment (first run) and starts the Intuye backend,
   which also serves the web test build at http://localhost:<port>/web/.
 
 .EXAMPLE
@@ -18,7 +18,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$EnvName = "langcoach",
+    [string]$EnvName = "intuye",
     [int]$Port = 8000,
     [string]$BindHost = "127.0.0.1",
     [ValidateSet("", "fake", "local", "anthropic")]

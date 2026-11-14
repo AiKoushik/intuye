@@ -1,4 +1,4 @@
-// API client mirroring ios/Packages/LangCoachKit/APIClient.swift: bearer auth, single-flight refresh
+// API client mirroring ios/Packages/IntuyeKit/APIClient.swift: bearer auth, single-flight refresh
 // rotation, sign-out on revoked sessions. Web test build only: tokens live in localStorage.
 const KEY = "lc.session";
 const SIGN_OUT_CODES = new Set(["invalid_refresh", "session_revoked", "refresh_reuse", "refresh_expired", "invalid_token"]);

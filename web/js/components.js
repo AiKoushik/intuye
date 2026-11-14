@@ -1,4 +1,4 @@
-// Web versions of ios/LangCoach/DesignSystem/Components.swift.
+// Web versions of ios/Intuye/DesignSystem/Components.swift.
 import { h, icon } from "./dom.js";
 
 /** The interlinear line: your words on top, the other language beneath; tap a group to pair it. */

@@ -12,7 +12,7 @@ from app.agents.runtime import AgentContext, ask, make_agent, subagent
 from app.agents.schemas import PhraseOut, PrepPackOut, SceneCardOut
 from app.llm import prompts
 
-log = logging.getLogger("langcoach.scene_builder")
+log = logging.getLogger("intuye.scene_builder")
 DEFAULT_RESCUE = [("Can you repeat that, please?", "¿Puede repetirlo, por favor?"), ("Slower, please", "Más despacio, por favor"),
                   ("How do you say ...?", "¿Cómo se dice ...?")]
 

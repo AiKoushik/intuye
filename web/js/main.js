@@ -1,4 +1,4 @@
-// LangCoach web test build: the iPhone app's screens running against the local backend.
+// Intuye web test build: the iPhone app's screens running against the local backend.
 import { API } from "./api.js";
 import { h, icon } from "./dom.js";
 import { Recognizer } from "./speech.js";

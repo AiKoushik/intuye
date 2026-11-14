@@ -3,9 +3,10 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "langcoach-backend"
+name = "intuye-backend"
+license = {text = "AGPL-3.0-or-later"}
 version = "0.1.0"
-description = "LangCoach API: auth, App Attest, LangChain Deep Agents, shared scene library, curation and FSRS"
+description = "Intuye API: auth, App Attest, LangChain Deep Agents, shared scene library, curation and FSRS"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115",

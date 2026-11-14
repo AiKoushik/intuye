@@ -142,10 +142,10 @@ class FakeChatModel(BaseChatModel):
 
     @property
     def _llm_type(self) -> str:
-        return "langcoach-fake"
+        return "intuye-fake"
 
     def _get_ls_params(self, stop: list[str] | None = None, **kwargs: Any) -> dict:
-        return {"ls_provider": "langcoach", "ls_model_name": self.model_name, "ls_model_type": "chat"}
+        return {"ls_provider": "intuye", "ls_model_name": self.model_name, "ls_model_type": "chat"}
 
     def bind_tools(self, tools, *, tool_choice=None, **kwargs):  # type: ignore[override]
         return self.bind(tools=[convert_to_openai_tool(t) for t in tools], tool_choice=tool_choice, **kwargs)

@@ -1,4 +1,4 @@
-/* LangCoach web test build — mirrors the SwiftUI design system (docs/04-design-system.md). */
+/* Intuye web test build — mirrors the SwiftUI design system (docs/04-design-system.md). */
 :root {
   --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
   --es: "New York", ui-serif, "Newsreader", Georgia, serif;
@@ -292,3 +292,9 @@ textarea.input { min-height: 90px; resize: vertical; line-height: 22px; }
 .try summary { font-weight: 600; cursor: pointer; margin-bottom: 6px; }
 .try ol { margin: 0 0 8px; padding-left: 18px; display: grid; gap: 6px; }
 .try p { margin: 0; color: var(--lc-text-secondary); }
+
+.side .tagline { display: block; font-size: 15px; font-weight: 500; color: var(--lc-text-secondary); margin-top: 2px; }
+.side .sub { margin-bottom: 12px; }
+.brand { display: flex; flex-direction: column; gap: 2px; margin-bottom: 18px; }
+.brand b { font-size: 17px; font-weight: 700; letter-spacing: 0.01em; color: var(--lc-accent); }
+.brand span { font-size: 13px; color: var(--lc-text-secondary); }

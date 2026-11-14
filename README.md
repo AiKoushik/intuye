@@ -1,11 +1,13 @@
-# LangCoach
+# Intuye
+
+**Sense it. Say it.** Spanish in your own words.
 
 A Spanish confidence coach for iPhone. It listens to how *you* actually talk, says it back in
 Spanish close to your own phrasing (and Spanish back to English, just as briefly), and prepares you
 for the situations coming up in your life, not a fixed curriculum.
 
-> The repo folder and the GitHub repo ([AiKoushik/intuye](https://github.com/AiKoushik/intuye)) are `intuye`. Inside the code the
-> app is still called LangCoach (iOS target, Swift package, Python package); renaming those is a separate step.
+*Intuye* is Spanish for "senses it", and "sense it!": the coach senses what you need for what's
+coming up, and you learn to sense what to say. Licensed under the GNU AGPL v3 or later (see [Licence](#licence)).
 
 ## Status
 
@@ -24,11 +26,11 @@ Feature-by-feature status is in [`docs/02-feature-list.md`](docs/02-feature-list
 | `docs/` | Vision, feature list, UX, design system, architecture, security, data model, API, curation, roadmap |
 | `design/` | OKLCH colour source + generator (asset catalog, Swift, CSS, contrast report) and the HTML prototype |
 | `backend/` | API: Sign in with Apple, rotating sessions, App Attest, Deep Agents (translator, explainer, ingest analyst, scene builder + phrase writer, rehearsal partner, summariser), shared scene library, FSRS, curation |
-| `ios/` | XcodeGen project, `LangCoachKit` Swift package (models, API client, offline queue), SwiftUI app |
+| `ios/` | XcodeGen project, `IntuyeKit` Swift package (models, API client, offline queue), SwiftUI app |
 
 ## Run it (conda)
 
-One command sets up the `langcoach` conda env on first run, installs dependencies, creates
+One command sets up the `intuye` conda env on first run, installs dependencies, creates
 `backend/.env` from `backend/.env.development`, starts the API, and opens the **web test build**:
 
 ```powershell
@@ -67,7 +69,7 @@ shared library scenes from a second learner's side.
 ### Manual setup (without the scripts)
 
 ```bash
-conda env create -f backend/environment.yml && conda activate langcoach
+conda env create -f backend/environment.yml && conda activate intuye
 cd backend && pip install -e ".[dev]" && cp .env.development .env
 pytest                                                   # happy-path tests, no model server needed
 uvicorn app.main:app --reload                            # http://localhost:8000/web/
@@ -86,7 +88,7 @@ Python 3.11+ is required (Deep Agents).
 
 ```bash
 brew install xcodegen
-cd ios && xcodegen generate && open LangCoach.xcodeproj
+cd ios && xcodegen generate && open Intuye.xcodeproj
 ```
 
 1. Set your Team ID in `ios/project.yml` (`DEVELOPMENT_TEAM`) and a real bundle id (also set
@@ -104,3 +106,13 @@ python design/tokens/generate.py --check   # rebuilds Swift, CSS, JSON, asset ca
 ```
 
 Open `design/prototype/index.html` in a browser for the clickable screens.
+
+## Licence
+
+Intuye is free software, licensed under the **GNU Affero General Public License v3.0 or later**
+(`AGPL-3.0-or-later`); see [LICENSE](LICENSE). If you run a modified version of the backend for other
+people over a network, the AGPL asks you to offer them its source. The app and the web build link to
+the source from Settings, and the API serves it at `GET /about`. Contributions are welcome under the
+same licence; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Copyright © 2026 Ahsan Iqbal.

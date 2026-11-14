@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""LangCoach colour-token generator.
+"""Intuye colour-token generator.
 
 Reads `source.json` (OKLCH tonal ramps + semantic tokens per appearance) and writes:
 
   design/tokens/build/tokens.json         resolved values (OKLCH, Display P3, sRGB hex)
   design/tokens/build/tokens.css          CSS custom properties (light/dark/high-contrast), also copied to web/
   design/tokens/build/contrast-report.md  WCAG 2.2 contrast for every text/UI pair
-  ios/LangCoach/Resources/Assets.xcassets/Colors/*.colorset   Display P3 colour sets
-  ios/LangCoach/DesignSystem/ColorTokens.swift                SwiftUI accessors
+  ios/Intuye/Resources/Assets.xcassets/Colors/*.colorset   Display P3 colour sets
+  ios/Intuye/DesignSystem/ColorTokens.swift                SwiftUI accessors
 
 Colour science
 --------------
@@ -30,8 +30,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 BUILD = HERE / "build"
-XCASSETS = ROOT / "ios" / "LangCoach" / "Resources" / "Assets.xcassets"
-SWIFT_OUT = ROOT / "ios" / "LangCoach" / "DesignSystem" / "ColorTokens.swift"
+XCASSETS = ROOT / "ios" / "Intuye" / "Resources" / "Assets.xcassets"
+SWIFT_OUT = ROOT / "ios" / "Intuye" / "DesignSystem" / "ColorTokens.swift"
 
 APPEARANCES = ("light", "dark", "lightHC", "darkHC")
 

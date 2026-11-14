@@ -4,7 +4,7 @@
 flowchart TB
   subgraph Phone["iPhone (SwiftUI, iOS 26+)"]
     Cap["Capture<br/>AVAudioEngine + SpeechAnalyzer"] --> Q["Offline queue"]
-    UI["Feature screens"] --> Kit["LangCoachKit<br/>APIClient + Session"]
+    UI["Feature screens"] --> Kit["IntuyeKit<br/>APIClient + Session"]
     Q --> Kit
     Att["App Attest<br/>DeviceCheck"] --> Kit
   end
@@ -33,9 +33,9 @@ they are cheap, testable and explainable.
 
 | Layer | Contents |
 |---|---|
-| `LangCoach` (app target) | `App/` entry + tab scaffold · `DesignSystem/` tokens, typography, components · `Features/` one folder per tab/flow · `Services/` platform integrations |
+| `Intuye` (app target) | `App/` entry + tab scaffold · `DesignSystem/` tokens, typography, components · `Features/` one folder per tab/flow · `Services/` platform integrations |
 | `Services/` | `CaptureService` (AVAudioEngine → `SpeechAnalyzer`/`SpeechTranscriber`, on-device), `AuthService` (Sign in with Apple), `AttestService` (`DCAppAttestService`), `KeychainStore`, `CalendarService` (EventKit, opt-in), `NotificationScheduler`, `Haptics` |
-| `LangCoachKit` (Swift package) | `Models` (Codable DTOs mirroring the API) · `APIClient` (async/await, single-flight token refresh, assertion signing hook) · `TokenStore` protocol · `OfflineQueue` |
+| `IntuyeKit` (Swift package) | `Models` (Codable DTOs mirroring the API) · `APIClient` (async/await, single-flight token refresh, assertion signing hook) · `TokenStore` protocol · `OfflineQueue` |
 
 - **State:** `@Observable` view models per feature, injected through the environment from one
   `AppModel`. No third-party dependencies in v1.
