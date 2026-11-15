@@ -124,8 +124,24 @@ public struct DueDTO: Codable, Sendable { public let items: [DueCard] }
 
 public enum Rating: Int, Codable, Sendable, CaseIterable { case forgot = 1, hard, gotIt, easy }
 
-public struct ReviewRequest: Codable, Sendable { public let lexemeId: String; public let rating: Int }
-public struct ReviewResult: Codable, Sendable { public let dueAt: String?; public let scheduledDays: Double; public let state: String }
+public struct ReviewRequest: Codable, Sendable { public let lexemeId: String; public let rating: Int; public var reviewedAt: String? = nil }
+public struct ReviewResult: Codable, Sendable {
+    public let dueAt: String?; public let scheduledDays: Double; public let state: String
+    /// False when an offline review arrived after a newer one for the same card and was ignored.
+    public let replayed: Bool?
+}
+
+// MARK: Notifications
+
+public struct PlannedNotification: Codable, Sendable, Hashable, Identifiable {
+    public let id: String; public let kind: String; public let fireAt: String; public let local: String
+    public let title: String; public let body: String; public let why: String; public let scenarioId: String?
+}
+public struct SuppressedNotification: Codable, Sendable, Hashable { public let id: String; public let kind: String; public let reason: String }
+public struct NotificationPlan: Codable, Sendable {
+    public let timezone: String; public let budget: Int
+    public let notifications: [PlannedNotification]; public let suppressed: [SuppressedNotification]
+}
 
 public struct PronunciationRequest: Codable, Sendable { public let lexemeId: String; public let expected: String; public let heard: String }
 public struct PronunciationResult: Codable, Sendable { public let score: Double; public let ok: Bool }

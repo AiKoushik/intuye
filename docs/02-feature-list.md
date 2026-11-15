@@ -33,7 +33,7 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 | A2 | ★ **Upcoming scenarios from Calendar** — opt-in; titles read on device, only title, time and a category sent | P2 | Must | "Dentist Thu 10:00" creates a "At the dentist" scenario due Wed evening | ✅ |
 | A3 | **"I have this coming up"** — create a scenario by typing or saying it, with optional details; the scene builder agent drafts the pack | P1 | Must | "Parent-teacher meeting next week" creates a scenario with a prep pack | ✅ |
 | A4 | ★ **Prep pack** — 8–12 key phrases, likely questions you'll hear, rescue phrases | P1 | Must | Every scenario has a pack with at least 8 phrases and 3 rescue phrases | ✅ |
-| A5 | **Prep timing** — reminder the evening before or 2 h before | P2 | Should | A calendar scenario schedules one reminder within the notification budget | 🟡 evening-before only |
+| A5 | **Prep timing** — reminder the evening before or 2 h before | P2 | Should | A calendar scenario schedules one reminder within the notification budget | ✅ server plan: evening before and 2 h before, moved out of quiet hours |
 
 ## Library — scenes other learners have built
 
@@ -62,7 +62,7 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 | T2 | **FSRS scheduling** — every item reviewed at its optimal moment | P1 | Must | Rating "Good" on a new item schedules the next review days later; "Again" schedules it sooner | ✅ |
 | T3 | **Review session** — see English → recall → reveal → rate; or speak the answer | P1 | Must | A 10-card session completes and updates every card's schedule | ✅ |
 | T4 | **Pronunciation feedback** — per-word score; misses feed the next batch | P2 | Must | A mispronounced word gets a lower score and reappears in the next batch | ✅ phoneme-level from transcripts (rule-based Spanish G2P); acoustic GOP ⬜ |
-| T5 | **Notification budget** — max 3/day, quiet hours 22:00–08:00 by default | P2 | Must | A 4th notification in a day is suppressed | 🟡 scene reminders only |
+| T5 | **Notification budget** — max 3/day, quiet hours 22:00–08:00 by default | P2 | Must | A 4th notification in a day is suppressed | ✅ one planner for scenes, reviews and the Monday card; one an hour; each says why |
 
 ## Grow — raise the level, not just the niche
 
@@ -84,7 +84,7 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 | P3 | **App Attest on every call** — only the genuine app can call the API | P1 | Must | Valid assertion passes; tampered signature is rejected | ✅ |
 | P4 | **Account deletion and data export** (App Store 5.1.1(v)) | P1 | Must | Delete removes all user rows; export returns JSON of all user data | ✅ |
 | P5 | **Dialect choice** — Spain, Mexico, neutral Latin American | P1 | Should | Translations follow the chosen variety (e.g. *ordenador* vs *computadora*) | ✅ |
-| P6 | **Offline mode** — queue utterances, run reviews offline, sync later | P2 | Should | Airplane-mode reviews sync on reconnect | 🟡 capture queue only |
+| P6 | **Offline mode** — queue utterances, run reviews offline, sync later | P2 | Should | Airplane-mode reviews sync on reconnect | ✅ capture queue, offline reviews replayed with their real time |
 | P7 | **Widgets + Live Activity** — today's batch widget; capture status in the Dynamic Island | P2 | Should | Widget shows due count | ⬜ |
 | P8 | **Accessibility** — Dynamic Type to AX5, VoiceOver labels, Reduce Motion, no colour-only states | P1 | Must | Every screen usable at AX3 with VoiceOver | 🟡 built in, not audited |
 | P9 | **Model routing** — every agent runs on LangChain Deep Agents (LangGraph underneath) over a provider-agnostic chat model: self-hosted (OpenAI-compatible, e.g. Hearth) or cloud; on-device Apple model for short offline translations | P1 | Should | Switching `LLM_PROVIDER` changes the backend model with no code change | ✅ backend; on-device ⬜ |

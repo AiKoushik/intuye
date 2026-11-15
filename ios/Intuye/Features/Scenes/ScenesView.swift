@@ -141,11 +141,9 @@ struct ScenesView: View {
         do {
             let events = try await app.calendar.upcomingEvents()
             let created = try await app.api.importCalendar(events)
-            _ = await app.notifications.requestPermission()
-            for s in created {
-                if let d = LCDate.parse(s.startsAt) {
-                    await app.notifications.scheduleSceneReminder(id: s.id, title: s.title, phrases: 8, startsAt: d)
-                }
+            if !created.isEmpty {
+                _ = await app.notifications.requestPermission()
+                await app.syncNotifications()
             }
             await load()
         } catch { self.error = error.localizedDescription }
@@ -234,7 +232,7 @@ struct NewSceneSheet: View {
                                                                  share: share, showName: showName))
             if hasDate {
                 _ = await app.notifications.requestPermission()
-                await app.notifications.scheduleSceneReminder(id: s.id, title: s.title, phrases: s.phrases?.key.count ?? 8, startsAt: date)
+                await app.syncNotifications()
             }
             app.refreshToken += 1
             dismiss()

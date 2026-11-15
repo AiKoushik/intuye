@@ -40,7 +40,7 @@ export class ReviewCover {
     this.loading = false; this.render();
   }
 
-  close() { this.el.remove(); this.onClose?.(); }
+  close() { this.el.remove(); this.app.syncReviews(); this.onClose?.(); }
 
   render() {
     const total = this.cards.length;
@@ -93,6 +93,7 @@ export class ReviewCover {
       const d = parseDate(r.due_at);
       if (d && value !== 1) this.nextDue = !this.nextDue || d < this.nextDue ? d : this.nextDue;
       this.reviewed += 1;
+      if (r.queued) this.offline = true;
       if (value === 1) this.cards.push(c);
       this.index += 1; this.revealed = false; this.pron = null;
     } catch (e) { this.error = e.message; }
@@ -103,6 +104,7 @@ export class ReviewCover {
     return h("div", { style: "flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px" },
       h("h1", { class: "large-title" }, this.reviewed ? `${this.reviewed} words done` : "Nothing to review right now"),
       this.nextDue ? h("p", { class: "body secondary" }, `Next review: ${relativeDay(this.nextDue).toLowerCase()}`) : null,
+      this.offline ? h("p", { class: "body secondary" }, "You're offline. These are saved on this device and sync when you're back.") : null,
       h("div", { style: "flex:1" }),
       h("button", { class: "btn", type: "button", onclick: () => this.close() }, "Done"));
   }

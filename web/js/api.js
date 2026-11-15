@@ -92,8 +92,45 @@ export class API {
   moments(day) { return this.send("GET", `/v1/utterances?day=${encodeURIComponent(day)}`); }
   deleteMoment(id) { return this.send("DELETE", `/v1/utterances/${id}`); }
   nextBatch(size = 7) { return this.send("POST", "/v1/batches/next", { size }); }
-  async dueCards() { return (await this.send("GET", "/v1/reviews/due")).items; }
-  review(lexeme_id, rating) { return this.send("POST", "/v1/reviews", { lexeme_id, rating }); }
+  /** Due cards. The last list is kept on this device so a review can run offline. */
+  async dueCards() {
+    try {
+      const items = (await this.send("GET", "/v1/reviews/due")).items;
+      store("lc.dueCache", items);
+      return items;
+    } catch (e) {
+      if (e.status !== 0) throw e;
+      const done = new Set(load("lc.reviewQueue").map((q) => q.lexeme_id));
+      const cached = load("lc.dueCache").filter((c) => !done.has(c.lexeme_id));
+      if (!cached.length) throw e;
+      return cached;
+    }
+  }
+  /** Rate a card. Offline, the rating is queued with the moment it happened and replayed later (P6). */
+  async review(lexeme_id, rating) {
+    try {
+      return await this.send("POST", "/v1/reviews", { lexeme_id, rating });
+    } catch (e) {
+      if (e.status !== 0) throw e;
+      store("lc.reviewQueue", [...load("lc.reviewQueue"), { lexeme_id, rating, reviewed_at: new Date().toISOString() }]);
+      return { queued: true, due_at: null, state: "queued" };
+    }
+  }
+  get queuedReviews() { return load("lc.reviewQueue").length; }
+  /** Replays offline reviews in the order they happened. Stops at the first network failure. */
+  async flushReviews() {
+    let q = load("lc.reviewQueue");
+    while (q.length && this.session) {
+      try { await this.send("POST", "/v1/reviews", q[0]); } catch (e) { if (e.status === 0) break; }
+      q = q.slice(1); store("lc.reviewQueue", q);
+    }
+    return q.length;
+  }
+  notificationPlan() {
+    let tz = "UTC";
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch {}
+    return this.send("GET", `/v1/notifications/plan?tz=${encodeURIComponent(tz)}`);
+  }
   practiceCompare(expected, heard) { return this.send("POST", "/v1/practice/compare", { expected, heard }); }
   pronunciation(lexeme_id, expected, heard) { return this.send("POST", "/v1/pronunciation", { lexeme_id, expected, heard }); }
   scenarios() { return this.send("GET", "/v1/scenarios"); }
@@ -116,3 +153,6 @@ export class API {
   lesson(id) { return this.send("GET", `/v1/lessons/${id}`); }
   today() { return this.send("GET", "/v1/today"); }
 }
+
+function load(key) { try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch { return []; } }
+function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }

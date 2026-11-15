@@ -5,11 +5,17 @@ import { Moments } from "./moments.js";
 /** Settings and privacy centre. */
 export class SettingsSheet extends Screen {
   constructor(app) { super(app); this.title = "Settings"; this.large = false; this.s = app.me?.settings ?? null; this.confirm = false; }
-  async load() { await this.app.loadMe(); this.s = this.app.me?.settings ?? null; }
+  async load() {
+    await this.app.loadMe(); this.s = this.app.me?.settings ?? null;
+    this.plan = await this.api.notificationPlan().catch(() => null);
+  }
   navRight() { return [navButton("Done", () => this.app.dismiss(this), { strong: true })]; }
 
   async save(patch) {
-    try { this.s = await this.api.updateSettings(patch); await this.app.loadMe(); this.error = null; } catch (e) { this.error = e.message; }
+    try {
+      this.s = await this.api.updateSettings(patch); await this.app.loadMe(); this.error = null;
+      if ("daily_notification_budget" in patch || "quiet_start" in patch || "quiet_end" in patch) this.plan = await this.api.notificationPlan().catch(() => this.plan);
+    } catch (e) { this.error = e.message; }
     this.update();
   }
 
@@ -40,6 +46,7 @@ export class SettingsSheet extends Screen {
             h("input", { type: "time", class: "input", style: "width:auto;font-size:15px", "aria-label": "Quiet hours end", value: s.quiet_end,
               onchange: (e) => e.target.value && this.save({ quiet_end: e.target.value }) })))),
       h("p", { class: "group-footer" }, "Never more than one an hour. Each one says why it's there."),
+      this.planList(),
       h("p", { class: "group-title" }, "Capture"),
       h("div", { class: "group" }, h("button", { class: "row", type: "button", onclick: () => this.app.present(new CaptureSheet(this.app)) },
         h("span", { class: "grow" }, "Capture and privacy"), icon("chevron", "chev"))),
@@ -65,6 +72,19 @@ export class SettingsSheet extends Screen {
       h("p", { class: "group-title" }, " "),
       h("div", { class: "group" }, h("button", { class: "row action", type: "button", onclick: async () => { this.app.dismiss(this); await this.app.signOut(); } }, "Sign out")),
     ];
+  }
+
+  planList() {
+    const items = this.plan?.notifications ?? [];
+    return [h("p", { class: "group-title" }, "Coming up"),
+      h("div", { class: "group" }, items.length
+        ? items.slice(0, 6).map((n) => h("div", { class: "row plan-row" },
+          h("span", { class: "plan-when" }, n.local),
+          h("span", { class: "grow" }, h("span", { style: "display:block" }, n.title), h("span", { class: "meta" }, n.why))))
+        : h("div", { class: "row" }, h("span", { class: "secondary" }, "Nothing planned. Add a scene with a date, or review a few words."))),
+      h("p", { class: "group-footer" }, items.length
+        ? `On iPhone these arrive as notifications${this.plan.suppressed.length ? `. ${this.plan.suppressed.length} more were left out to stay inside your limit and quiet hours` : ""}.`
+        : "")];
   }
 
   async export() {

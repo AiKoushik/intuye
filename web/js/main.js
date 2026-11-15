@@ -107,6 +107,7 @@ class App {
     this.tab = "today";
     this.stacks = {};
     this.api.onSignedOut = () => this.showOnboarding();
+    window.addEventListener("online", () => this.syncReviews());
   }
 
   get dialect() { return this.me?.settings?.dialect ?? "es-419"; }
@@ -117,6 +118,15 @@ class App {
     await this.loadMe();
     this.showTabs();
     this.capture.reconcile();
+    this.syncReviews();
+  }
+
+  /** Sends reviews done offline, then tells the learner once they're in. */
+  async syncReviews() {
+    const before = this.api.queuedReviews;
+    if (!before) return;
+    const left = await this.api.flushReviews();
+    if (left < before) this.toast(`Synced ${before - left} ${before - left === 1 ? "review" : "reviews"} done offline`);
   }
 
   async loadMe() { try { this.me = await this.api.me(); } catch { /* shown by screens */ } }

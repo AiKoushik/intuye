@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -23,6 +25,10 @@ class BatchIn(BaseModel):
 class ReviewIn(BaseModel):
     lexeme_id: str = Field(min_length=36, max_length=36)
     rating: int = Field(ge=1, le=4)
+    # Set when a review done offline is replayed later; scheduling uses the moment it actually happened.
+    reviewed_at: datetime | None = None
+
+OFFLINE_WINDOW = timedelta(days=14)
 
 
 @router.post("/batches/next")
@@ -56,6 +62,12 @@ async def review(body: ReviewIn, user: User = Depends(current_user), db: AsyncSe
     if card is None:
         raise APIError(404, "not_found", "That word isn't in your reviews.")
     now = utcnow()
+    if body.reviewed_at is not None:
+        at = body.reviewed_at if body.reviewed_at.tzinfo else body.reviewed_at.replace(tzinfo=timezone.utc)
+        if card.last_review_at and at <= card.last_review_at:
+            # Already superseded by a later review (e.g. the same card reviewed on another device): keep the newer one.
+            return {"due_at": card.due_at.isoformat() if card.due_at else None, "scheduled_days": 0, "state": card.state, "replayed": False}
+        now = min(max(at, now - OFFLINE_WINDOW), now)
     result = fsrs.schedule(to_state(card), body.rating, now)
     nc = result.card
     card.state, card.stability, card.difficulty = nc.state, nc.stability, nc.difficulty

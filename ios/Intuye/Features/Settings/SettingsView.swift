@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var exportURL: URL?
     @State private var confirmDelete = false
     @State private var error: String?
+    @State private var plan: NotificationPlan?
 
     var body: some View {
         NavigationStack {
@@ -24,8 +25,28 @@ struct SettingsView: View {
                     }
                     Section {
                         Stepper("At most \(s.dailyNotificationBudget) a day", value: budgetBinding(s.dailyNotificationBudget), in: 0...6)
-                        LabeledContent("Quiet hours", value: "\(s.quietStart)–\(s.quietEnd)")
+                        DatePicker("Quiet from", selection: timeBinding(s.quietStart, key: "quiet_start"), displayedComponents: .hourAndMinute)
+                        DatePicker("Quiet until", selection: timeBinding(s.quietEnd, key: "quiet_end"), displayedComponents: .hourAndMinute)
                     } header: { Text("Notifications") } footer: { Text("Never more than one an hour. Each one says why it's there.") }
+                    if let plan, !plan.notifications.isEmpty {
+                        Section {
+                            ForEach(plan.notifications.prefix(6)) { n in
+                                HStack(alignment: .firstTextBaseline, spacing: Space.m) {
+                                    Text(n.local).font(.footnote.weight(.semibold)).monospacedDigit().foregroundStyle(Tint.rose.fg)
+                                        .frame(width: 76, alignment: .leading)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(n.title)
+                                        Text(n.why).font(.footnote).foregroundStyle(LC.Color.textSecondary)
+                                    }
+                                }
+                                .accessibilityElement(children: .combine)
+                            }
+                        } header: { Text("Coming up") } footer: {
+                            if !plan.suppressed.isEmpty {
+                                Text("\(plan.suppressed.count) more were left out to stay inside your limit and quiet hours.")
+                            }
+                        }
+                    }
                 }
                 Section("Capture") {
                     NavigationLink("Capture and privacy") { CaptureSheet() }
@@ -53,7 +74,10 @@ struct SettingsView: View {
             .confirmationDialog("Delete your account and all your data?", isPresented: $confirmDelete, titleVisibility: .visible) {
                 Button("Delete account", role: .destructive) { Task { await deleteAccount() } }
             }
-            .task { settings = app.me?.settings; await app.loadMe(); settings = app.me?.settings }
+            .task {
+                settings = app.me?.settings; await app.loadMe(); settings = app.me?.settings
+                plan = try? await app.api.notificationPlan()
+            }
         }
     }
 
@@ -69,8 +93,23 @@ struct SettingsView: View {
         Binding(get: { value }, set: { v in Task { await save { try await app.api.send("PATCH", "/v1/me/settings", body: ["daily_notification_budget": v]) } } })
     }
 
+    /// "HH:mm" strings from the server shown as times; changes are saved as "HH:mm" again.
+    private func timeBinding(_ value: String, key: String) -> Binding<Date> {
+        let parts = value.split(separator: ":").compactMap { Int($0) }
+        let date = Calendar.current.date(bySettingHour: parts.first ?? 22, minute: parts.count > 1 ? parts[1] : 0, second: 0, of: .now) ?? .now
+        return Binding(get: { date }, set: { d in
+            let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+            let hm = String(format: "%02d:%02d", c.hour ?? 0, c.minute ?? 0)
+            Task { await save { try await app.api.updateSettings([key: hm]) } }
+        })
+    }
+
     private func save(_ op: () async throws -> SettingsDTO) async {
-        do { settings = try await op(); await app.loadMe(); error = nil } catch { self.error = error.localizedDescription }
+        do {
+            settings = try await op(); await app.loadMe(); error = nil
+            await app.syncNotifications()
+            plan = try? await app.api.notificationPlan()
+        } catch { self.error = error.localizedDescription }
     }
 
     private func export() async {

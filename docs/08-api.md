@@ -62,7 +62,7 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 |---|---|---|
 | POST | `/v1/batches/next` | `{size?: 5–10}` → `{batch_id, items: [{lexeme_id, es, en, reason, reason_kind, context}]}` |
 | GET | `/v1/reviews/due` | → cards due now |
-| POST | `/v1/reviews` | `{lexeme_id, rating: 1–4}` → `{due_at, scheduled_days, state}` |
+| POST | `/v1/reviews` | `{lexeme_id, rating: 1–4, reviewed_at?}` → `{due_at, scheduled_days, state, replayed?}`. `reviewed_at` replays an offline review (up to 14 days old); one older than the card's last review is ignored |
 | POST | `/v1/pronunciation` | `{lexeme_id, expected, heard}` → `{score, ok, words: [{word, heard, ok, phonemes: [{p, ok, heard?}]}], tips}` |
 | POST | `/v1/practice/compare` | `{expected, heard}` → same shape; used by the rescue drill and shadowing |
 
@@ -93,6 +93,7 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 | Method | Path | Response |
 |---|---|---|
 | GET | `/v1/progress` | `{spanglish_ratio: [{week, ratio}], confidence: [{scenario, before, after}], words: {met, kept, due}, level_estimate: {level 0–5, band, basis, current_setting}, reflection: {sentences, spanish_share, words_kept, scenes_rehearsed, best_spanish, line}}` |
+| GET | `/v1/notifications/plan?days=7&tz=Area/City` | `{timezone, budget, notifications: [{id, kind, fire_at, local, title, body, why, scenario_id}], suppressed: [{id, kind, reason}]}`; kinds `scene_soon`, `scene_eve`, `review`, `reflection` |
 | GET | `/v1/lessons` | Lessons triggered by your sentences in the last 30 days: `{lessons: [{id, title, pattern, you_said}]}` |
 | GET | `/v1/lessons/{id}` | `{id, title, pattern, rule, examples: [{en, es}], check: {prompt, options[3], answer}}` (options shuffled) |
 | GET | `/v1/today` | `{next_scenario, words_ready, recent: [utterance]}` |

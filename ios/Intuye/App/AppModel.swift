@@ -21,6 +21,7 @@ final class AppModel {
     let speaker = Speaker()
     let calendar = CalendarService()
     var notifications = NotificationScheduler()
+    let reviewQueue: ReviewQueue
 
     var dialect: String { me?.settings.dialect ?? "es-419" }
     var firstName: String? { me?.user.displayName?.split(separator: " ").first.map(String.init) }
@@ -31,6 +32,23 @@ final class AppModel {
         attest = AttestService(baseURL: baseURL)
         api = APIClient(baseURL: baseURL, tokens: KeychainStore(), signer: attest)
         capture = AmbientCapture(transcriber: transcriber, api: api)
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
+        reviewQueue = ReviewQueue(fileURL: support.appendingPathComponent("review-queue.json"))
+    }
+
+    /// On launch and whenever the app comes back: replay offline reviews, then refresh the notification plan.
+    func syncOffline() async {
+        guard phase == .signedIn else { return }
+        let sent = await reviewQueue.flush { r in _ = try await self.api.replay(r) }
+        if sent > 0 { refreshToken += 1 }
+        await syncNotifications()
+    }
+
+    /// Replaces every planned local notification with the server's plan (budget, quiet hours and spacing applied there).
+    func syncNotifications() async {
+        guard let plan = try? await api.notificationPlan() else { return }
+        await notifications.apply(plan)
     }
 
     func boot() async {
@@ -39,14 +57,12 @@ final class AppModel {
         phase = .signedIn
         await loadMe()
         capture.startTicker()
+        await syncOffline()
     }
 
     func loadMe() async {
         if let me = try? await api.me() {
             self.me = me
-            notifications.budget = me.settings.dailyNotificationBudget
-            notifications.quietStart = Int(me.settings.quietStart.prefix(2)) ?? 22
-            notifications.quietEnd = Int(me.settings.quietEnd.prefix(2)) ?? 8
         }
     }
 
@@ -54,6 +70,7 @@ final class AppModel {
         phase = .signedIn
         await loadMe()
         capture.startTicker()
+        await syncOffline()
     }
 
     func signedOut() {

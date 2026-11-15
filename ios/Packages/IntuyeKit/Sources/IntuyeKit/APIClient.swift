@@ -187,6 +187,14 @@ public actor APIClient {
     public func review(_ lexemeId: String, _ rating: Rating) async throws -> ReviewResult {
         try await send("POST", "/v1/reviews", body: ReviewRequest(lexemeId: lexemeId, rating: rating.rawValue))
     }
+    public func replay(_ r: PendingReview) async throws -> ReviewResult {
+        try await send("POST", "/v1/reviews", body: ReviewRequest(lexemeId: r.lexemeId, rating: r.rating, reviewedAt: r.reviewedAt))
+    }
+    /// What to notify about in the next week, already inside the learner's budget and quiet hours.
+    public func notificationPlan(timeZone: String = TimeZone.current.identifier, days: Int = 7) async throws -> NotificationPlan {
+        let tz = timeZone.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "UTC"
+        return try await send("GET", "/v1/notifications/plan?days=\(days)&tz=\(tz)")
+    }
     public func pronunciation(_ lexemeId: String, expected: String, heard: String) async throws -> PronunciationResult {
         try await send("POST", "/v1/pronunciation", body: PronunciationRequest(lexemeId: lexemeId, expected: expected, heard: heard))
     }

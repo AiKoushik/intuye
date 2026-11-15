@@ -12,11 +12,13 @@ final class ReviewModel {
     var pronunciation: PronunciationResult?
     var nextDue: Date?
     var reviewed = 0
+    /// True once a rating had to be saved on the device because the server wasn't reachable.
+    var savedOffline = false
 
     var current: DueCard? { cards.indices.contains(index) ? cards[index] : nil }
     var finished: Bool { !loading && current == nil }
 
-    func load(api: APIClient) async {
+    func load(api: APIClient, queue: ReviewQueue) async {
         loading = true; defer { loading = false }
         do {
             var due = try await api.dueCards()
@@ -25,18 +27,25 @@ final class ReviewModel {
                 due = try await api.dueCards()
             }
             cards = due
+            await queue.cache(due)
+        } catch let e as APIError where e.status == 0 {
+            cards = await queue.cachedDue()  // airplane mode: review what was due last time we were online
+            if cards.isEmpty { self.error = e.message }
         } catch { self.error = error.localizedDescription }
     }
 
-    func rate(_ rating: Rating, api: APIClient) async {
+    func rate(_ rating: Rating, api: APIClient, queue: ReviewQueue) async {
         guard let card = current else { return }
         do {
             let r = try await api.review(card.lexemeId, rating)
             if let d = LCDate.parse(r.dueAt), rating != .forgot { nextDue = min(nextDue ?? d, d) }
-            reviewed += 1
-            if rating == .forgot { cards.append(card) }  // see it again at the end of this session
-            index += 1; revealed = false; pronunciation = nil
-        } catch { self.error = error.localizedDescription }
+        } catch let e as APIError where e.status == 0 {
+            await queue.append(PendingReview(lexemeId: card.lexemeId, rating: rating.rawValue, reviewedAt: LCDate.string(.now)))
+            savedOffline = true
+        } catch { self.error = error.localizedDescription; return }
+        reviewed += 1
+        if rating == .forgot { cards.append(card) }  // see it again at the end of this session
+        index += 1; revealed = false; pronunciation = nil
     }
 }
 
@@ -61,7 +70,7 @@ struct ReviewSessionView: View {
             if model.loading {
                 Spacer(); ProgressView(); Spacer()
             } else if let e = model.error {
-                ErrorBanner(message: e) { Task { model.error = nil; await model.load(api: app.api) } }
+                ErrorBanner(message: e) { Task { model.error = nil; await model.load(api: app.api, queue: app.reviewQueue) } }
                 Spacer()
             } else if let card = model.current {
                 cardView(card)
@@ -77,8 +86,9 @@ struct ReviewSessionView: View {
         .animation(reduceMotion ? .easeInOut(duration: 0.15) : Motion.spring, value: model.index)
         .animation(Motion.spring, value: model.revealed)
         .sensoryFeedback(.success, trigger: ratingTrigger)
-        .task { await model.load(api: app.api) }
+        .task { await model.load(api: app.api, queue: app.reviewQueue) }
         .sheet(item: $lesson) { ref in NavigationStack { LessonView(ref: ref, asSheet: true) } }
+        .onDisappear { Task { await app.syncOffline() } }
     }
 
     private func cardView(_ card: DueCard) -> some View {
@@ -128,7 +138,7 @@ struct ReviewSessionView: View {
             ForEach(Rating.allCases, id: \.self) { r in
                 RatingButton(rating: r) {
                     if r == .gotIt || r == .easy { ratingTrigger += 1 }
-                    Task { await model.rate(r, api: app.api) }
+                    Task { await model.rate(r, api: app.api, queue: app.reviewQueue) }
                 }
             }
         }
@@ -143,6 +153,10 @@ struct ReviewSessionView: View {
             Text(model.reviewed == 0 ? "Nothing to review right now" : "\(model.reviewed) words done").font(.lcDisplay)
             if let next = model.nextDue {
                 Text("Next review \(next.formatted(.relative(presentation: .named)))").font(.lcBody).foregroundStyle(LC.Color.textSecondary)
+            }
+            if model.savedOffline {
+                Text("You're offline. These are saved on your iPhone and sync when you're back.")
+                    .font(.lcBody).foregroundStyle(LC.Color.textSecondary)
             }
             Spacer()
             Button("Done") { dismiss() }.buttonStyle(.lcPrimary)

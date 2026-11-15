@@ -33,43 +33,33 @@ final class Speaker {
     }
 }
 
-/// Local notifications with a daily budget and quiet hours (defaults: 3/day, 22:00–08:00).
+/// Local notifications. The server plans them (budget, quiet hours, one an hour, a reason on each);
+/// this only asks permission and mirrors the plan into the system's schedule.
 struct NotificationScheduler {
-    var budget = 3
-    var quietStart = 22
-    var quietEnd = 8
+    static let prefix = "plan-"
 
     func requestPermission() async -> Bool {
         (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])) ?? false
     }
 
-    /// Scene reminder the evening before (19:00), or 2 hours before if that's sooner and still ahead.
-    func scheduleSceneReminder(id: String, title: String, phrases: Int, startsAt: Date) async {
-        let cal = Calendar.current
-        var fire = cal.date(bySettingHour: 19, minute: 0, second: 0, of: startsAt.addingTimeInterval(-86400)) ?? startsAt
-        if fire < Date() { fire = startsAt.addingTimeInterval(-7200) }
-        guard fire > Date(), await allowed(at: fire) else { return }
-        let content = UNMutableNotificationContent()
-        content.title = "\(title) \(cal.isDate(startsAt, inSameDayAs: fire) ? "today" : "tomorrow")"
-        content.body = "\(phrases) phrases ready"
-        content.sound = .default
-        content.userInfo = ["scenario_id": id]
-        let comps = cal.dateComponents([.year, .month, .day, .hour, .minute], from: fire)
-        let req = UNNotificationRequest(identifier: "scene-\(id)", content: content,
-                                        trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false))
-        try? await UNUserNotificationCenter.current().add(req)
-    }
-
-    private func allowed(at date: Date) async -> Bool {
-        let hour = Calendar.current.component(.hour, from: date)
-        let quiet = quietStart > quietEnd ? (hour >= quietStart || hour < quietEnd) : (hour >= quietStart && hour < quietEnd)
-        if quiet { return false }
-        let pending = await UNUserNotificationCenter.current().pendingNotificationRequests()
-        let sameDay = pending.filter {
-            guard let t = $0.trigger as? UNCalendarNotificationTrigger, let d = t.nextTriggerDate() else { return false }
-            return Calendar.current.isDate(d, inSameDayAs: date)
+    func apply(_ plan: NotificationPlan) async {
+        let center = UNUserNotificationCenter.current()
+        guard await center.notificationSettings().authorizationStatus == .authorized else { return }
+        let old = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(Self.prefix) || $0.hasPrefix("scene-") }
+        center.removePendingNotificationRequests(withIdentifiers: old)
+        for n in plan.notifications {
+            guard let fire = LCDate.parse(n.fireAt), fire > .now else { continue }
+            let content = UNMutableNotificationContent()
+            content.title = n.title
+            content.body = n.body
+            content.subtitle = n.why
+            content.sound = .default
+            content.threadIdentifier = n.kind
+            content.userInfo = ["kind": n.kind, "scenario_id": n.scenarioId ?? ""]
+            let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fire)
+            try? await center.add(UNNotificationRequest(identifier: Self.prefix + n.id, content: content,
+                                                        trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)))
         }
-        return sameDay.count < budget
     }
 }
 

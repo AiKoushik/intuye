@@ -13,6 +13,7 @@ struct IntuyeApp: App {
                 .task { await model.boot() }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .background { Task { await model.capture.flush() } }
+                    if phase == .active { Task { await model.syncOffline() } }
                 }
         }
     }
