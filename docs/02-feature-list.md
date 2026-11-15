@@ -21,7 +21,7 @@ P3 = polish + App Store (8–12 weeks). See [10-roadmap.md](10-roadmap.md).
 | H5 | **Quick capture** — Action Button, Lock Screen and Control Center controls, Siri "How do I say…" App Intent | P2 | Should | Pressing the Action Button starts hold-to-talk without opening the app | ⬜ |
 | H6 | ★ **Own-voice filter** — 30-second enrolment; only your voice is kept | P2 | Must | Background TV speech isn't stored | ⬜ |
 | H7 | **Privacy controls** — pause, "forget last 10 minutes", auto-delete after N days, never-record places | P2 | Must | "Forget last 10 min" removes those utterances locally and on the server | 🟡 pause + forget; no places |
-| H8 | **Moments** — day timeline of captured sentences; swipe to save or delete | P2 | Should | Today's moments render grouped by hour | 🟡 web build + API; iPhone screen ⬜ |
+| H8 | **Moments** — day timeline of captured sentences; swipe to save or delete | P2 | Should | Today's moments render grouped by hour | ✅ web and iPhone: by hour, day by day, swipe to delete, forget last 10 min |
 | H9 | **Phrasebook** — saved sentences with audio, searchable | P1 | Should | Saving a translation adds it to the Phrasebook | ✅ on device |
 | H10 | Pendant / Bluetooth mic input (e.g. Omi) | P3 | Could | Pendant audio flows into the same pipeline | ⬜ |
 

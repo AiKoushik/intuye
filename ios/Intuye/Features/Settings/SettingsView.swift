@@ -58,6 +58,7 @@ struct SettingsView: View {
                 Section {
                     LabeledContent("Audio", value: "Stays on this iPhone")
                     LabeledContent("Sentences", value: "Kept \(settings?.momentRetentionDays ?? 90) days")
+                    NavigationLink("See your sentences") { MomentsView() }
                     Button("Export my data") { Task { await export() } }
                     if let exportURL { ShareLink("Share export", item: exportURL) }
                     Button("Delete account", role: .destructive) { confirmDelete = true }

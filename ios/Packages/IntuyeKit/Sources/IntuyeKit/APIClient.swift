@@ -178,6 +178,9 @@ public actor APIClient {
     public func moments(day: String? = nil) async throws -> MomentsDTO {
         try await send("GET", "/v1/utterances" + (day.map { "?day=\($0)" } ?? ""))
     }
+    public func deleteMoment(_ id: String) async throws {
+        _ = try await send("DELETE", "/v1/utterances/\(id)", as: Empty.self)
+    }
     public func forget(minutes: Int) async throws -> Int {
         struct R: Decodable { let deleted: Int }
         return try await send("POST", "/v1/utterances/forget", body: ["minutes": minutes], as: R.self).deleted

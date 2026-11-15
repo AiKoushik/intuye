@@ -33,7 +33,12 @@ struct TodayView: View {
                 if let reflection { ReflectionCard(reflection: reflection) }
                 words
                 if let recent = today?.recent, !recent.isEmpty {
-                    Text("Recent sentences").font(.lcCaption).foregroundStyle(LC.Color.textSecondary).padding(.top, Space.l)
+                    HStack {
+                        Text("Recent sentences").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+                        Spacer()
+                        NavigationLink("See all") { MomentsView() }.font(.lcCaption.weight(.semibold))
+                    }
+                    .padding(.top, Space.l)
                     ForEach(recent) { r in
                         VStack(alignment: .leading, spacing: 2) {
                             Text(r.text).font(.lcSource).foregroundStyle(LC.Color.textSecondary)
