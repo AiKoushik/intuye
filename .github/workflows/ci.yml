@@ -76,7 +76,7 @@ jobs:
         working-directory: web/e2e
       - run: scripts/e2e.sh e2e-shots
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-screenshots
           path: e2e-shots
