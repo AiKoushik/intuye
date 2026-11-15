@@ -1,9 +1,9 @@
 import { h, icon } from "../dom.js";
 import { holdToTalk, tintChip } from "../components.js";
-import { localeFor, speak } from "../speech.js";
+import { speak } from "../speech.js";
 import { Screen } from "./base.js";
 
-/** Rescue-phrase drill (see the English, say the Spanish) and shadowing (hear it, say it back).
+/** Rescue-phrase drill (see the English, say it in the target language) and shadowing (hear it, say it back).
  *  Both are scored phoneme by phoneme on the server from what speech recognition heard. */
 export class Practice extends Screen {
   constructor(app, scene, mode) {
@@ -28,17 +28,17 @@ export class Practice extends Screen {
     const prompt = h("div", { class: `card wash ${drill ? "t-rose" : "t-sea"} practice-card` },
       h("p", { class: "meta" }, `${this.i + 1} of ${this.items.length}`),
       drill
-        ? [h("p", { class: "practice-cue" }, it.en), h("p", { class: "meta" }, "Say it in Spanish")]
-        : [h("p", { class: "es practice-es" }, it.es), h("p", { class: "meta" }, it.en),
+        ? [h("p", { class: "practice-cue" }, it.en), h("p", { class: "meta" }, `Say it in ${this.app.lang.name}`)]
+        : [h("p", { class: "tgt practice-tgt" }, it.target), h("p", { class: "meta" }, it.en),
           h("div", { style: "display:flex;gap:8px;margin-top:8px" },
-            h("button", { class: "btn inline subtle", type: "button", onclick: () => speak(it.es, this.app.dialect) }, icon("speaker"), "Listen"),
-            h("button", { class: "btn inline subtle", type: "button", onclick: () => speak(it.es, this.app.dialect, true) }, "Slowly"))]);
+            h("button", { class: "btn inline subtle", type: "button", onclick: () => speak(it.target, this.app.tts) }, icon("speaker"), "Listen"),
+            h("button", { class: "btn inline subtle", type: "button", onclick: () => speak(it.target, this.app.tts, true) }, "Slowly"))]);
     const out = [prompt];
     if (this.result) out.push(this.feedback());
     this.typed ??= h("input", { class: "text-input", placeholder: "Or type what you'd say", enterkeyhint: "done",
       onkeydown: (e) => { if (e.key === "Enter" && e.target.value.trim()) this.check(e.target.value.trim()); } });
     out.push(h("div", { class: "practice-mic" },
-      holdToTalk({ label: "Hold and say it in Spanish", onBegin: () => this.app.holdBegin(localeFor(this.app.dialect, true)).catch(() => {}),
+      holdToTalk({ label: `Hold and say it in ${this.app.lang.name}`, onBegin: () => this.app.holdBegin(this.app.stt(true)).catch(() => {}),
         onEnd: async () => { const t = await this.app.holdEnd(); if (t) this.check(t); } }),
       this.typed));
     if (this.result) {
@@ -57,15 +57,15 @@ export class Practice extends Screen {
         w.word, h("small", {}, w.phonemes.map((p) => p.ok ? p.p : `[${p.p}]`).join(""))))),
       this.heard ? h("p", { class: "meta", style: "margin-top:8px" }, `Heard: “${this.heard}”`) : null,
       ...r.tips.map((t) => h("p", { class: "meta", style: "margin-top:6px" }, t)),
-      this.mode === "drill" ? h("button", { class: "es practice-answer", type: "button", onclick: () => speak(it.es, this.app.dialect, true),
-        "aria-label": `Play ${it.es}` }, it.es, icon("speaker")) : null);
+      this.mode === "drill" ? h("button", { class: "tgt practice-answer", type: "button", onclick: () => speak(it.target, this.app.tts, true),
+        "aria-label": `Play ${it.target}` }, it.target, icon("speaker")) : null);
   }
 
   async check(text) {
     if (this.busy) return;
     this.busy = true; this.heard = text;
     try {
-      this.result = await this.api.practiceCompare(this.item.es, text);
+      this.result = await this.api.practiceCompare(this.item.target, text);
       if (this.result.ok) this.correct += 1;
       if (this.typed) this.typed.value = "";
     } catch (e) { this.error = e.message; }

@@ -25,10 +25,11 @@ export class SettingsSheet extends Screen {
     const select = (value, options, onchange) => h("select", { class: "input", style: "width:auto;text-align:right;color:var(--lc-text-secondary)", onchange },
       options.map(([v, label]) => h("option", { value: v, selected: String(v) === String(value) }, label)));
     return [
-      h("p", { class: "group-title" }, "Your Spanish"),
+      h("p", { class: "group-title" }, `Your ${this.app.lang.name}`),
       h("div", { class: "group" },
         h("div", { class: "row" }, h("span", { class: "grow" }, "Variety"),
-          select(s.dialect, [["es-419", "Latin America"], ["es-MX", "Mexico"], ["es-ES", "Spain"]], (e) => this.save({ dialect: e.target.value }))),
+          select(s.dialect, this.app.languages.all.flatMap((l) => l.varieties.map((v) => [v.code, this.app.languages.all.length > 1 ? `${l.name} (${v.label})` : v.label])),
+            (e) => this.save({ dialect: e.target.value }))),
         h("div", { class: "row" }, h("span", { class: "grow" }, "Level"),
           select(s.level, [[0, "Just starting"], [1, "Beginner"], [2, "I get by"], [3, "Intermediate"], [4, "Conversational"], [5, "Fluent"]],
             (e) => this.save({ level: Number(e.target.value) })))),

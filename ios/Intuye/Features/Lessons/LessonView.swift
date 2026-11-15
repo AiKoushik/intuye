@@ -48,10 +48,10 @@ struct LessonView: View {
         VStack(spacing: 0) {
             ForEach(Array(l.examples.enumerated()), id: \.offset) { i, x in
                 if i > 0 { Divider().overlay(LC.Color.hairline) }
-                Button { app.speaker.say(x.es, dialect: app.dialect) } label: {
+                Button { app.speaker.say(x.target, voice: app.tts) } label: {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(x.es).font(.system(.title3, design: .serif)).foregroundStyle(LC.Color.textPrimary)
+                            Text(x.target).font(.system(.title3, design: .serif)).foregroundStyle(LC.Color.textPrimary)
                             Text(x.en).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
                         }
                         Spacer()
@@ -59,8 +59,8 @@ struct LessonView: View {
                     }
                     .padding(.vertical, Space.s)
                 }
-                .accessibilityLabel("\(x.es). \(x.en)")
-                .accessibilityHint("Plays the Spanish")
+                .accessibilityLabel("\(x.target). \(x.en)")
+                .accessibilityHint("Plays the \(app.lang.name)")
             }
         }
         .lcCard()
@@ -77,7 +77,7 @@ struct LessonView: View {
                 Button {
                     guard picked == nil else { return }
                     picked = i
-                    if i == c.answer { app.speaker.say(option, dialect: app.dialect) }
+                    if i == c.answer { app.speaker.say(option, voice: app.tts) }
                 } label: {
                     HStack {
                         Text(option).font(.system(.body, design: .serif)).foregroundStyle(LC.Color.textPrimary)

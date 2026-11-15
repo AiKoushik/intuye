@@ -48,14 +48,14 @@ export class Today extends Screen {
       out.push(h("button", { class: "row action", type: "button", style: "padding-left:4px", onclick: () => this.app.selectTab("scenes") },
         icon("sparkles"), d.suggested_scenarios === 1 ? "1 scene suggested from what you talk about" : `${d.suggested_scenarios} scenes suggested from what you talk about`));
     }
-    if (this.reflection) out.push(reflectionCard(this.reflection));
+    if (this.reflection) out.push(reflectionCard(this.reflection, this.app.lang.name));
     const n = d.words_ready.count;
     out.push(h("div", { class: "card wash t-sea" },
       h("div", { class: "lead" }, tile("sea", "cards"), h("div", {},
         h("h3", {}, n > 0 ? `${n} words ready` : "Your words"),
         h("p", { class: "meta" }, n > 0 ? "From what you said and what's coming up" : "Get 5–10 words picked from your week"))),
       (d.words_ready.preview_items || []).length
-        ? h("div", { class: "chips" }, d.words_ready.preview_items.map((w) => h("span", { class: `chip t-${reasonTint(w.origin)}` }, w.es)))
+        ? h("div", { class: "chips" }, d.words_ready.preview_items.map((w) => h("span", { class: `chip t-${reasonTint(w.origin)}` }, w.target)))
         : null,
       h("button", { class: "btn subtle", type: "button", onclick: () => this.app.presentCover(new ReviewCover(this.app, () => this.refresh())) },
         n > 0 ? "Start review" : "Get today's words")));
@@ -66,7 +66,7 @@ export class Today extends Screen {
         const at = r.spoken_at ? new Date(r.spoken_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : null;
         out.push(h("div", { class: "card" }, at ? h("p", { style: "margin-bottom:6px" }, tintChip("sand", `Heard at ${at}`)) : null,
           h("p", { class: "secondary", style: "font-size:16px" }, r.text),
-          r.close_es ? h("p", { class: "es", style: "font-size:20px;margin-top:2px" }, r.close_es) : null));
+          r.close_target ? h("p", { class: "tgt", style: "font-size:20px;margin-top:2px" }, r.close_target) : null));
       }
     } else {
       out.push(emptyCard("Say anything in English to get started.", "Open Say", () => this.app.selectTab("say")));

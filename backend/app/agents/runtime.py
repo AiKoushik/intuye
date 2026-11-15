@@ -8,7 +8,7 @@ tool-call patching, summarisation and, on Anthropic, prompt caching.
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, TypeVar
 
 from deepagents import GeneralPurposeSubagentProfile, HarnessProfile, create_deep_agent, register_harness_profile
@@ -18,6 +18,8 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage
 from pydantic import BaseModel
 
+from app import languages
+from app.languages import LanguagePack
 from app.llm import prompts
 
 T = TypeVar("T", bound=BaseModel)
@@ -31,16 +33,22 @@ LibrarySearch = Callable[[str], Awaitable[list[dict]]]
 class AgentContext:
     """Run-scoped context. Subagents receive the same context as their parent."""
 
-    dialect: str = "es-419"
+    dialect: str = field(default_factory=lambda: languages.get(None).default_variety)  # the learner's variety code
     level: int = 0
     title: str = ""
     difficulty: str = "gentle"
-    direction: str = "to_es"
+    direction: str = "to_target"  # or "to_native"
     library_search: LibrarySearch | None = None
 
     @property
-    def dialect_name(self) -> str:
-        return prompts.DIALECT_NAMES.get(self.dialect, "Spanish")
+    def pack(self) -> LanguagePack:
+        return languages.for_variety(self.dialect)
+
+    def prompt(self, template: str, **extra: Any) -> str:
+        """Fill a prompt template with this run's language, variety, example and the data rule."""
+        pack = self.pack
+        return template.format(language=pack.name, variety=pack.variety(self.dialect).prompt_name,
+                               example=pack.prompt_examples.get(self.direction, ""), data_rule=prompts.DATA_RULE, **extra)
 
 
 PromptFn = Callable[[AgentContext], str]

@@ -9,7 +9,7 @@ final class SayModel {
     var draft = ""
     var busy = false
     var error: String?
-    var listenSpanish = false  // on-device speech is one language at a time; Spanglish works best with English
+    var listenTarget = false  // on-device speech is one language at a time; mixed sentences work best with English
 
     func send(_ text: String, api: APIClient, direction: CoachDirection = .auto) async {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -34,13 +34,17 @@ struct SayView: View {
     @State private var model = SayModel()
     @FocusState private var focused: Bool
 
+    private var emptyMessage: String {
+        let tries = (app.lang.ui?.trySaying ?? []).map { "“\($0)”" }.joined(separator: " or ")
+        return "Say anything in English, \(app.lang.name) or a mix" + (tries.isEmpty ? "." : ", like \(tries).")
+    }
+
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: Space.m) {
                     if model.results.isEmpty && !model.busy {
-                        EmptyState(message: "Say anything in English, Spanish or a mix — like “me gusta escuchar esto en mi mind” or “what does cómo te va mean?”",
-                                   actionTitle: nil)
+                        EmptyState(message: emptyMessage, actionTitle: nil)
                     }
                     ForEach(model.results) { item in
                         Group {
@@ -65,9 +69,9 @@ struct SayView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Picker("I'll speak", selection: $model.listenSpanish) {
-                        Text("English or Spanglish").tag(false)
-                        Text("Spanish").tag(true)
+                    Picker("I'll speak", selection: $model.listenTarget) {
+                        Text("English, or a mix").tag(false)
+                        Text(app.lang.name).tag(true)
                     }
                 } label: { Image(systemName: "globe").accessibilityLabel("Speech language") }
             }
@@ -101,7 +105,7 @@ struct SayView: View {
         focused = false
         await app.holdToTalkBegan()
         do {
-            try await app.transcriber.start(locale: Locale(identifier: model.listenSpanish ? (app.dialect == "es-ES" ? "es-ES" : "es-MX") : "en-US"))
+            try await app.transcriber.start(locale: app.sttLocale(target: model.listenTarget))
         } catch {
             model.error = error.localizedDescription
             await app.holdToTalkEnded()
@@ -126,10 +130,10 @@ struct ResultCard: View {
             HStack {
                 DirectionChip(intent: result.intent)
                 Spacer()
-                Button { app.speaker.say(result.intent == .toEs ? result.close : result.source, dialect: app.dialect) } label: {
+                Button { app.speaker.say(result.intent == .toTarget ? result.close : result.source, voice: app.tts) } label: {
                     Image(systemName: "speaker.wave.2")
                 }
-                .accessibilityLabel("Play Spanish")
+                .accessibilityLabel("Play the \(app.lang.name)")
                 Button {
                     saved.toggle()
                     Phrasebook.shared.toggle(result)
@@ -138,10 +142,10 @@ struct ResultCard: View {
                 .sensoryFeedback(.selection, trigger: saved)
             }
             .foregroundStyle(LC.Color.accent)
-            InterlinearLine(pairs: result.alignment, bottomIsEnglish: result.intent == .toEn)
+            InterlinearLine(pairs: result.alignment, bottomIsEnglish: result.intent == .toNative)
             if let natural = result.natural {
                 DisclosureGroup("More natural", isExpanded: $showNatural) {
-                    Text(natural).font(.lcSpanishBody).frame(maxWidth: .infinity, alignment: .leading).padding(.top, Space.xs)
+                    Text(natural).font(.lcTargetBody).frame(maxWidth: .infinity, alignment: .leading).padding(.top, Space.xs)
                 }
                 .font(.lcCaption)
                 .foregroundStyle(LC.Color.textSecondary)

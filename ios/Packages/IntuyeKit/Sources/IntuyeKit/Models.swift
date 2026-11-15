@@ -32,8 +32,8 @@ public struct MeDTO: Codable, Sendable {
 
 // MARK: Say it my way
 
-public enum CoachDirection: String, Codable, Sendable { case auto, toEs = "to_es", toEn = "to_en" }
-public enum CoachIntent: String, Codable, Sendable { case toEs = "to_es", toEn = "to_en", ask }
+public enum CoachDirection: String, Codable, Sendable { case auto, toTarget = "to_target", toNative = "to_native" }
+public enum CoachIntent: String, Codable, Sendable { case toTarget = "to_target", toNative = "to_native", ask }
 
 public struct AlignedPair: Codable, Hashable, Sendable, Identifiable {
     public let src: String
@@ -84,7 +84,7 @@ public struct SuggestedScenario: Codable, Sendable, Hashable { public let id: St
 public struct Moment: Codable, Sendable, Hashable, Identifiable {
     public let id: String
     public let text: String
-    public let closeEs: String?
+    public let closeTarget: String?
     public let topic: String?
     public let source: String
     public let spokenAt: String
@@ -96,7 +96,7 @@ public struct MomentsDTO: Codable, Sendable { public let day: String; public let
 
 public struct BatchItemDTO: Codable, Sendable, Hashable, Identifiable {
     public let lexemeId: String
-    public let es: String
+    public let target: String
     public let en: String
     public let reason: String
     public let reasonKind: String
@@ -110,7 +110,7 @@ public struct BatchDTO: Codable, Sendable { public let batchId: String; public l
 
 public struct DueCard: Codable, Sendable, Hashable, Identifiable {
     public let lexemeId: String
-    public let es: String
+    public let target: String
     public let en: String
     public let context: String?
     public let state: String
@@ -151,7 +151,7 @@ public struct PronunciationResult: Codable, Sendable { public let score: Double;
 public struct PhraseDTO: Codable, Sendable, Hashable, Identifiable {
     public let id: String
     public let en: String
-    public let es: String
+    public let target: String
     public let alignment: [PhrasePair]
 }
 
@@ -207,7 +207,7 @@ public struct LibrarySearchResult: Codable, Sendable { public let results: [Libr
 
 public struct LibraryPhrase: Codable, Sendable, Hashable {
     public let en: String
-    public let es: String
+    public let target: String
     public let alignment: [PhrasePair]?
 }
 
@@ -245,11 +245,11 @@ public struct LibraryShareResult: Codable, Sendable, Hashable {
 public struct UseLibrarySceneRequest: Codable, Sendable { public let startsAt: String?; public let kind: String }
 public enum LibraryReportReason: String, Codable, Sendable, CaseIterable {
     case personal, offensive, wrong, other
-    public var label: String {
+    public func label(language: String) -> String {
         switch self {
         case .personal: "It has someone's personal details"
         case .offensive: "It's offensive or unsafe"
-        case .wrong: "The Spanish is wrong"
+        case .wrong: "The \(language) is wrong"
         case .other: "Something else"
         }
     }
@@ -262,10 +262,10 @@ public struct CalendarResult: Codable, Sendable { public let created: [ScenarioD
 
 public struct ReadinessRequest: Codable, Sendable { public let value: Int; public let phase: String }
 
-public struct CoachLine: Codable, Sendable, Hashable { public let es: String; public let en: String }
+public struct CoachLine: Codable, Sendable, Hashable { public let target: String; public let en: String }
 public struct RehearsalStart: Codable, Sendable { public let rehearsalId: String; public let coach: CoachLine }
 public struct RehearsalTurnResult: Codable, Sendable { public let native: String?; public let coach: CoachLine; public let done: Bool }
-public struct KeepPhrase: Codable, Sendable, Hashable { public let en: String; public let es: String }
+public struct KeepPhrase: Codable, Sendable, Hashable { public let en: String; public let target: String }
 public struct RehearsalEnd: Codable, Sendable { public let summary: String; public let keepPhrases: [KeepPhrase] }
 
 // MARK: Progress & today
@@ -273,14 +273,14 @@ public struct RehearsalEnd: Codable, Sendable { public let summary: String; publ
 public struct WeekRatio: Codable, Sendable, Hashable { public let week: String; public let ratio: Double; public let sentences: Int }
 public struct ConfidenceRow: Codable, Sendable, Hashable { public let scenarioId: String; public let title: String; public let before: Int?; public let after: Int? }
 public struct WordStats: Codable, Sendable, Hashable { public let met: Int; public let kept: Int; public let due: Int }
-public struct LevelBasis: Codable, Sendable, Hashable { public let wordsKept: Int; public let spanishShare: Double?; public let avgSpanishWords: Double? }
+public struct LevelBasis: Codable, Sendable, Hashable { public let wordsKept: Int; public let targetShare: Double?; public let avgTargetWords: Double? }
 /// Rough CEFR band (0 Pre-A1 … 5 C1) and the level the learner has set, which use the same 0–5 scale.
 public struct LevelEstimate: Codable, Sendable, Hashable {
     public let level: Int; public let band: String; public let basis: LevelBasis; public let currentSetting: Int
 }
 public struct Reflection: Codable, Sendable, Hashable {
-    public let sentences: Int; public let spanishShare: Double?; public let spanishShareBefore: Double?
-    public let wordsKept: Int; public let scenesRehearsed: Int; public let bestSpanish: String?; public let line: String
+    public let sentences: Int; public let targetShare: Double?; public let targetShareBefore: Double?
+    public let wordsKept: Int; public let scenesRehearsed: Int; public let bestTarget: String?; public let line: String
 }
 public struct ProgressDTO: Codable, Sendable {
     public let spanglishRatio: [WeekRatio]; public let confidence: [ConfidenceRow]; public let words: WordStats
@@ -291,16 +291,16 @@ public struct ProgressDTO: Codable, Sendable {
 
 public struct LessonSummary: Codable, Sendable, Hashable, Identifiable { public let id: String; public let title: String; public let pattern: String; public let youSaid: String }
 public struct LessonsDTO: Codable, Sendable { public let lessons: [LessonSummary] }
-public struct LessonExample: Codable, Sendable, Hashable { public let en: String; public let es: String }
+public struct LessonExample: Codable, Sendable, Hashable { public let en: String; public let target: String }
 public struct LessonCheck: Codable, Sendable, Hashable { public let prompt: String; public let options: [String]; public let answer: Int }
 public struct Lesson: Codable, Sendable, Hashable, Identifiable {
     public let id: String; public let title: String; public let pattern: String; public let rule: String
     public let examples: [LessonExample]; public let check: LessonCheck
 }
 
-public struct PreviewWord: Codable, Sendable, Hashable { public let es: String; public let origin: String? }
+public struct PreviewWord: Codable, Sendable, Hashable { public let target: String; public let origin: String? }
 public struct WordsReady: Codable, Sendable, Hashable { public let count: Int; public let preview: [String]; public let previewItems: [PreviewWord]? }
-public struct RecentSentence: Codable, Sendable, Hashable, Identifiable { public let id: String; public let text: String; public let closeEs: String?; public let spokenAt: String }
+public struct RecentSentence: Codable, Sendable, Hashable, Identifiable { public let id: String; public let text: String; public let closeTarget: String?; public let spokenAt: String }
 public struct TodayDTO: Codable, Sendable {
     public let nextScenario: ScenarioDTO?
     public let suggestedScenarios: Int

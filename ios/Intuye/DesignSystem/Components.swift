@@ -107,13 +107,15 @@ struct FlowLayout: Layout {
 // MARK: Interlinear line — the signature component
 
 /// Your words on top (SF Pro, secondary), the other language beneath (New York serif). Tap a group to pair it;
-/// new-to-you Spanish carries a saffron highlighter mark.
+/// new-to-you target-language words carry a saffron highlighter mark.
 struct InterlinearLine: View {
     let pairs: [AlignedPair]
-    /// True when the bottom line is English (Spanish → English results), so "new" marks the top line.
+    /// True when the bottom line is English (target → English results), so "new" marks the top line.
     var bottomIsEnglish = false
     @State private var selected: Int?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(AppModel.self) private var app
+    private var language: String { app.lang.name }
 
     var body: some View {
         FlowLayout(spacing: 10, lineSpacing: 12) {
@@ -129,10 +131,10 @@ struct InterlinearLine: View {
         let isOn = selected == index
         return VStack(alignment: .leading, spacing: 1) {
             Text(pair.src)
-                .font(bottomIsEnglish ? .lcSpanishBody : .lcSource)
+                .font(bottomIsEnglish ? .lcTargetBody : .lcSource)
                 .foregroundStyle(isOn ? LC.Color.onHighlight : LC.Color.textSecondary)
             Text(pair.tgt)
-                .font(bottomIsEnglish ? .lcSource : .lcSpanish)
+                .font(bottomIsEnglish ? .lcSource : .lcTarget)
                 .foregroundStyle(isOn ? LC.Color.onHighlight : LC.Color.textPrimary)
                 .background(alignment: .bottom) {
                     if pair.new && !isOn {
@@ -149,7 +151,7 @@ struct InterlinearLine: View {
         }
         .sensoryFeedback(.selection, trigger: selected)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(pair.src), \(bottomIsEnglish ? "English" : "Spanish"): \(pair.tgt)\(pair.new ? ", new word" : "")")
+        .accessibilityLabel("\(pair.src), \(bottomIsEnglish ? "English" : language): \(pair.tgt)\(pair.new ? ", new word" : "")")
         .accessibilityAddTraits(.isButton)
     }
 }
@@ -162,7 +164,7 @@ struct WordChip: View {
     var tint: Tint? = nil
     var body: some View {
         Text(text)
-            .font(.lcSpanishBody)
+            .font(.lcTargetBody)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(tint?.bg ?? LC.Color.sunken, in: Capsule())
@@ -175,9 +177,11 @@ struct WordChip: View {
 
 struct DirectionChip: View {
     let intent: CoachIntent
+    @Environment(AppModel.self) private var app
     var body: some View {
-        let tint: Tint = intent == .toEn ? .plum : intent == .toEs ? .sea : .sand
-        TintChip(tint: tint, text: intent == .toEn ? "Spanish → English" : intent == .toEs ? "English → Spanish" : "You asked")
+        let language = app.lang.name
+        let tint: Tint = intent == .toNative ? .plum : intent == .toTarget ? .sea : .sand
+        TintChip(tint: tint, text: intent == .toNative ? "\(language) → English" : intent == .toTarget ? "English → \(language)" : "You asked")
     }
 }
 

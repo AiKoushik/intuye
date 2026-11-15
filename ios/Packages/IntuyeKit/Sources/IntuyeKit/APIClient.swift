@@ -204,7 +204,7 @@ public actor APIClient {
     public func importCalendar(_ events: [CalendarEventUpload]) async throws -> [ScenarioDTO] {
         try await send("POST", "/v1/scenarios/calendar", body: CalendarUpload(events: events), as: CalendarResult.self).created
     }
-    /// Library search by meaning, in the learner's Spanish variety. An empty query lists the most-used scenes.
+    /// Library search by meaning, in the learner's language variety. An empty query lists the most-used scenes.
     public func library(_ query: String = "", limit: Int = 8) async throws -> [LibraryCard] {
         var allowed = CharacterSet.alphanumerics; allowed.insert(charactersIn: "-._~")
         let q = query.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
@@ -236,6 +236,7 @@ public actor APIClient {
     }
     public func endRehearsal(_ id: String) async throws -> RehearsalEnd { try await send("POST", "/v1/rehearsals/\(id)/end") }
     public func progress() async throws -> ProgressDTO { try await send("GET", "/v1/progress") }
+    public func languages() async throws -> LanguageCatalog { try await send("GET", "/v1/languages", authorized: false) }
     public func lessons() async throws -> [LessonSummary] { (try await send("GET", "/v1/lessons") as LessonsDTO).lessons }
     public func lesson(_ id: String) async throws -> Lesson { try await send("GET", "/v1/lessons/\(id)") }
     public func today() async throws -> TodayDTO { try await send("GET", "/v1/today") }

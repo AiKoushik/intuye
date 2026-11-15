@@ -1,7 +1,7 @@
 """Rehearsal partner deep agent: plays the other person; one checkpointer thread per rehearsal.
 
 The database transcript is the durable record. If the thread is gone (a restart), `turn` rebuilds the
-conversation from it. English lines go through the translator first so the learner gets the Spanish.
+conversation from it. English lines go through the translator first so the learner gets the target language.
 """
 from __future__ import annotations
 
@@ -27,11 +27,11 @@ class Turn(TypedDict, total=False):
 
 
 def partner_prompt(ctx: AgentContext) -> str:
-    return prompts.COACH.format(title=ctx.title, dialect=ctx.dialect_name, difficulty=ctx.difficulty, data_rule=prompts.DATA_RULE)
+    return ctx.prompt(prompts.COACH, title=ctx.title, difficulty=ctx.difficulty)
 
 
 def summary_prompt(ctx: AgentContext) -> str:
-    return prompts.SUMMARY.format(title=ctx.title, dialect=ctx.dialect_name, data_rule=prompts.DATA_RULE)
+    return ctx.prompt(prompts.SUMMARY, title=ctx.title)
 
 
 def build_partner(model, checkpointer=None):
@@ -60,9 +60,9 @@ async def opening(agents, rehearsal_id: str, ctx: AgentContext) -> CoachTurnOut:
 async def turn(agents, rehearsal_id: str, ctx: AgentContext, text: str, history: list[Turn]) -> tuple[str | None, CoachTurnOut, bool]:
     """One learner turn -> (native version of their line, partner reply, scene done)."""
     escape_es = None
-    if english_share(text) >= 0.6:  # escape hatch: they switched to English, give the Spanish back
-        tr = await ask(agents.translator, TranslationOut, f"DIRECTION: to_es\n{prompts.wrap(text)}",
-                       AgentContext(dialect=ctx.dialect, direction="to_es"))
+    if english_share(text, ctx.pack) >= 0.6:  # escape hatch: they switched to English, give the Spanish back
+        tr = await ask(agents.translator, TranslationOut, f"DIRECTION: to_target\n{prompts.wrap(text)}",
+                       AgentContext(dialect=ctx.dialect, direction="to_target"))
         escape_es = tr.close
     snapshot = await agents.partner.aget_state(_config(rehearsal_id))
     messages = [] if snapshot.values else _rebuild(history)

@@ -26,7 +26,7 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 { "text": "me gusta escuchar este en mi mind", "direction": "auto" }
 // response (translation)
 {
-  "intent": "to_es",
+  "intent": "to_target",
   "source": "me gusta escuchar este en mi mind",
   "close": "Me gusta escuchar esto en mi mente.",
   "natural": null,
@@ -43,7 +43,7 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 }
 ```
 
-`direction`: `auto` | `to_es` | `to_en`. For `"como te va"` the response has `intent: "to_en"`,
+`direction`: `auto` | `to_target` | `to_native`. For `"como te va"` the response has `intent: "to_native"`,
 `close: "How's it going?"`. For an explicit question (`"when do I use usted?"`), `intent: "ask"`,
 `answer` is set (≤ 3 sentences) and `close`/`alignment` are empty.
 
@@ -60,7 +60,7 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 
 | Method | Path | Body → Response |
 |---|---|---|
-| POST | `/v1/batches/next` | `{size?: 5–10}` → `{batch_id, items: [{lexeme_id, es, en, reason, reason_kind, context}]}` |
+| POST | `/v1/batches/next` | `{size?: 5–10}` → `{batch_id, items: [{lexeme_id, target, en, reason, reason_kind, lesson_id, context}]}` |
 | GET | `/v1/reviews/due` | → cards due now |
 | POST | `/v1/reviews` | `{lexeme_id, rating: 1–4, reviewed_at?}` → `{due_at, scheduled_days, state, replayed?}`. `reviewed_at` replays an offline review (up to 14 days old); one older than the card's last review is ignored |
 | POST | `/v1/pronunciation` | `{lexeme_id, expected, heard}` → `{score, ok, words: [{word, heard, ok, phonemes: [{p, ok, heard?}]}], tips}` |
@@ -75,8 +75,8 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 | POST | `/v1/scenarios/calendar` | `{events: [{title, starts_at}]}` (titles read on device) → created/updated scenarios |
 | GET | `/v1/scenarios/{id}` | → scenario + phrases + readiness |
 | POST | `/v1/scenarios/{id}/readiness` | `{value: 1–5, phase}` → readiness |
-| POST | `/v1/rehearsals` | `{scenario_id, difficulty}` → `{rehearsal_id, coach: {es, en}}` |
-| POST | `/v1/rehearsals/{id}/turns` | `{text}` → `{native?, coach: {es, en}, done}` |
+| POST | `/v1/rehearsals` | `{scenario_id, difficulty}` → `{rehearsal_id, coach: {target, en}}` |
+| POST | `/v1/rehearsals/{id}/turns` | `{text}` → `{native?, coach: {target, en}, done}` |
 | POST | `/v1/rehearsals/{id}/end` | → `{summary, keep_phrases}` |
 
 ## Scene library
@@ -92,8 +92,16 @@ Base path `/v1`. JSON in and out. Every endpoint except `/health`, `/v1/attest/c
 
 | Method | Path | Response |
 |---|---|---|
-| GET | `/v1/progress` | `{spanglish_ratio: [{week, ratio}], confidence: [{scenario, before, after}], words: {met, kept, due}, level_estimate: {level 0–5, band, basis, current_setting}, reflection: {sentences, spanish_share, words_kept, scenes_rehearsed, best_spanish, line}}` |
+| GET | `/v1/progress` | `{spanglish_ratio: [{week, ratio}], confidence: [{scenario, before, after}], words: {met, kept, due}, level_estimate: {level 0–5, band, basis, current_setting}, reflection: {sentences, target_share, words_kept, scenes_rehearsed, best_target, line}}` |
+| GET | `/v1/languages` | No auth. `{default, languages: [{code, name, native_name, default_variety, varieties: [{code, label, tts, stt}], ui: {variety_note, example, try_saying}}]}`. Clients build pickers, voices and copy from this |
 | GET | `/v1/notifications/plan?days=7&tz=Area/City` | `{timezone, budget, notifications: [{id, kind, fire_at, local, title, body, why, scenario_id}], suppressed: [{id, kind, reason}]}`; kinds `scene_soon`, `scene_eve`, `review`, `reflection` |
 | GET | `/v1/lessons` | Lessons triggered by your sentences in the last 30 days: `{lessons: [{id, title, pattern, you_said}]}` |
-| GET | `/v1/lessons/{id}` | `{id, title, pattern, rule, examples: [{en, es}], check: {prompt, options[3], answer}}` (options shuffled) |
+| GET | `/v1/lessons/{id}` | `{id, title, pattern, rule, examples: [{en, target}], check: {prompt, options[3], answer}}` (options shuffled) |
 | GET | `/v1/today` | `{next_scenario, words_ready, recent: [utterance]}` |
+
+## Language-neutral field names
+
+Every field that holds target-language text is called `target` (`close_target`, `reply_target`, `best_target`,
+`target_share`), never after a particular language. `en` is the learner's own language (English for now).
+Translation directions are `to_target` and `to_native`. The learner's `dialect` setting is a variety code
+(`es-419`, later `fr-CA`, `pt-BR`); the language follows from its first part.

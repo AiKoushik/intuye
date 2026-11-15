@@ -1,9 +1,9 @@
 import { h } from "../dom.js";
 import { holdToTalk, readyDots, topicTint } from "../components.js";
-import { localeFor, speak } from "../speech.js";
+import { speak } from "../speech.js";
 import { Screen, navButton } from "./base.js";
 
-/** Voice role-play: the coach plays the other person in Spanish. Tap a coach line for its English. */
+/** Voice role-play: the coach plays the other person in the learner's target language. Tap a coach line for its English. */
 export class Rehearse extends Screen {
   ambient() { return ["sage", "sand"]; }
   constructor(app, scene) {
@@ -37,7 +37,7 @@ export class Rehearse extends Screen {
     this.langBtn = h("button", { class: "chip-btn", type: "button", onclick: () => { this.english = !this.english; this.langBtn.classList.toggle("on", this.english);
       this.langBtn.textContent = this.english ? "English" : "In English"; } }, "In English");
     this.mic = holdToTalk({
-      onBegin: () => this.app.holdBegin(localeFor(this.app.dialect, !this.english)).catch((e) => this.app.toast(e.message)),
+      onBegin: () => this.app.holdBegin(this.app.stt(!this.english)).catch((e) => this.app.toast(e.message)),
       onEnd: async () => { const t = await this.app.holdEnd(); if (t) this.say(t); },
     });
     return h("div", { style: "flex-direction:column;align-items:stretch;gap:8px" },
@@ -60,15 +60,15 @@ export class Rehearse extends Screen {
       b.native ? h("div", { class: "native" }, "A native would say ", h("em", {}, b.native)) : null);
   }
 
-  speak(t) { speak(t, this.app.dialect, this.difficulty === "gentle"); }
+  speak(t) { speak(t, this.app.tts, this.difficulty === "gentle"); }
 
   async start() {
     this.busy = true; this.bubbles = []; this.done = false; this.update();
     try {
       const r = await this.api.startRehearsal(this.scene.id, this.difficulty);
       this.id = r.rehearsal_id;
-      this.bubbles.push({ kind: "coach", text: r.coach.es, en: r.coach.en });
-      this.speak(r.coach.es);
+      this.bubbles.push({ kind: "coach", text: r.coach.target, en: r.coach.en });
+      this.speak(r.coach.target);
     } catch (e) { this.error = e.message; }
     this.busy = false; this.update();
   }
@@ -80,8 +80,8 @@ export class Rehearse extends Screen {
     try {
       const r = await this.api.rehearsalTurn(this.id, text);
       this.bubbles[this.bubbles.length - 1].native = r.native;
-      this.bubbles.push({ kind: "coach", text: r.coach.es, en: r.coach.en });
-      this.speak(r.coach.es);
+      this.bubbles.push({ kind: "coach", text: r.coach.target, en: r.coach.en });
+      this.speak(r.coach.target);
       this.done = r.done;
     } catch (e) { this.error = e.message; }
     this.busy = false; this.update(); this.scrollToBottom();
@@ -91,7 +91,7 @@ export class Rehearse extends Screen {
   hint() {
     const keys = this.scene.phrases?.key || [];
     if (!keys.length) return;
-    this.bubbles.push({ kind: "hint", text: keys[this.hintIndex++ % keys.length].es });
+    this.bubbles.push({ kind: "hint", text: keys[this.hintIndex++ % keys.length].target });
     this.update(); this.scrollToBottom();
   }
 
@@ -113,8 +113,8 @@ class RehearsalSummary extends Screen {
     return [
       h("p", { class: "body", style: "margin:8px 4px 0" }, this.end.summary),
       h("p", { class: "group-title" }, "Keep these"),
-      h("div", { class: "group" }, this.end.keep_phrases.map((p) => h("button", { class: "row", type: "button", onclick: () => speak(p.es, this.app.dialect) },
-        h("span", { class: "grow" }, h("span", { class: "es", style: "display:block;font-size:19px" }, p.es), h("span", { class: "meta" }, p.en))))),
+      h("div", { class: "group" }, this.end.keep_phrases.map((p) => h("button", { class: "row", type: "button", onclick: () => speak(p.target, this.app.tts) },
+        h("span", { class: "grow" }, h("span", { class: "tgt", style: "display:block;font-size:19px" }, p.target), h("span", { class: "meta" }, p.en))))),
       h("p", { class: "group-title" }, "How ready do you feel now?"),
       h("div", { class: "group" }, h("div", { class: "row" }, h("span", { class: "grow" }, this.rated ? `Saved: ${this.rated} of 5` : "Tap a dot"),
         readyDots(this.rated, async (v) => { this.rated = v; await this.api.rate(this.scene.id, v, "after"); this.update(); },

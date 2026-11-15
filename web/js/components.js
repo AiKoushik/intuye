@@ -2,12 +2,12 @@
 import { h, icon } from "./dom.js";
 
 /** The interlinear line: your words on top, the other language beneath; tap a group to pair it. */
-export function interlinear(pairs, { toEn = false } = {}) {
-  const el = h("div", { class: `il${toEn ? " to-en" : ""}`, role: "group" });
+export function interlinear(pairs, { toNative = false, language = "" } = {}) {
+  const el = h("div", { class: `il${toNative ? " to-native" : ""}`, role: "group" });
   pairs.forEach((p) => {
     const g = h("button", {
       class: `g${p.new ? " new" : ""}`, type: "button",
-      "aria-label": `${p.src}, ${toEn ? "English" : "Spanish"}: ${p.tgt}${p.new ? ", new word" : ""}`,
+      "aria-label": `${p.src}, ${toNative ? "English" : language}: ${p.tgt}${p.new ? ", new word" : ""}`,
     }, h("span", { class: "s" }, p.src), h("span", { class: "t" }, p.tgt));
     g.addEventListener("click", () => {
       const was = g.classList.contains("on");
@@ -100,7 +100,7 @@ export function holdToTalk({ onBegin, onEnd, label = "Hold to talk" }) {
   return btn;
 }
 
-export function chipDir(intent) {
-  const tint = intent === "to_en" ? "plum" : intent === "to_es" ? "sea" : "sand";
-  return h("span", { class: `chip-dir t-${tint}` }, intent === "to_en" ? "Spanish → English" : intent === "to_es" ? "English → Spanish" : "You asked");
+export function chipDir(intent, language) {
+  const tint = intent === "to_native" ? "plum" : intent === "to_target" ? "sea" : "sand";
+  return h("span", { class: `chip-dir t-${tint}` }, intent === "to_native" ? `${language} → English` : intent === "to_target" ? `English → ${language}` : "You asked");
 }

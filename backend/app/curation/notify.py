@@ -48,7 +48,7 @@ def in_quiet(local: datetime, start: time, end: time) -> bool:
 
 
 def plan(now: datetime, tz: str, budget: int, quiet_start: str, quiet_end: str, scenes: list[SceneIn],
-         due_by: callable, days: int = 7) -> tuple[list[Candidate], list[dict]]:
+         due_by: callable, days: int = 7, language: str = "Spanish") -> tuple[list[Candidate], list[dict]]:
     """Returns (scheduled, suppressed). `due_by(dt)` counts review cards due by that moment."""
     zone = ZoneInfo(tz)
     qs, qe = _hm(quiet_start), _hm(quiet_end)
@@ -80,7 +80,7 @@ def plan(now: datetime, tz: str, budget: int, quiet_start: str, quiet_end: str, 
                                    "Reviewing right before you'd forget is what makes words stick.", 2, extra={"count": n}))
         if day.weekday() == 0:
             cands.append(Candidate(f"reflection-{day.isoformat()}", "reflection", datetime.combine(day, REFLECT_AT, zone),
-                                   "Your week in Spanish", "One card: what stuck, what you said, what's next.",
+                                   f"Your week in {language}", "One card: what stuck, what you said, what's next.",
                                    "A Monday look back. No streaks, no guilt.", 3))
 
     scheduled: list[Candidate] = []

@@ -1,6 +1,7 @@
 import pytest
 
-from app.curation.phonemes import compare, word_phonemes
+from app.curation.pronunciation import compare
+from app.languages.es.phonemes import word_phonemes
 
 pytestmark = pytest.mark.anyio
 
@@ -13,9 +14,9 @@ def test_spanish_g2p_follows_spelling_rules():
 
 
 def test_compare_marks_the_missed_sounds_and_explains_one():
-    r = compare("Más despacio, por favor", "mas despacio por favor")
+    r = compare("Más despacio, por favor", "mas despacio por favor", "es-419")
     assert r["score"] == 1.0 and r["ok"]
-    r = compare("el perro", "el pero")
+    r = compare("el perro", "el pero", "es-419")
     assert not r["words"][1]["ok"] and r["words"][1]["phonemes"][2] == {"p": "r", "ok": False, "heard": "ɾ"}
     assert any("rr" in t for t in r["tips"])
 

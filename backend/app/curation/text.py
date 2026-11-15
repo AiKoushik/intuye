@@ -1,72 +1,63 @@
-"""Cheap, deterministic text helpers: tokenising, language guessing per token, normalising lexemes."""
+"""Cheap, deterministic text helpers: tokenising, telling target-language words from English, normalising entries.
+
+Language-neutral: everything specific to a language comes from its pack.
+"""
 from __future__ import annotations
 
 import re
 import unicodedata
+from functools import lru_cache
 
-TOKEN = re.compile(r"[A-Za-zÁÉÍÓÚÜÑáéíóúüñ']+")
-
-SPANISH_HINTS = {
-    "el", "la", "los", "las", "un", "una", "unos", "unas", "de", "del", "que", "y", "en", "es", "son", "está", "esta",
-    "este", "esto", "eso", "ese", "mi", "mis", "tu", "tus", "su", "sus", "me", "te", "se", "nos", "le", "les", "lo",
-    "por", "para", "con", "sin", "pero", "muy", "más", "como", "cómo", "qué", "quién", "cuando", "cuándo", "donde",
-    "dónde", "yo", "tú", "usted", "él", "ella", "nosotros", "ellos", "hola", "gracias", "bueno", "buenos", "buenas",
-    "días", "noches", "tardes", "sí", "no", "va", "voy", "vas", "estoy", "tengo", "tiene", "quiero", "puedo", "gusta",
-    "gusto", "hay", "hace", "hacer", "ser", "estar", "ir", "pues", "también", "ahora", "hoy", "mañana", "ayer", "aquí",
-    "allí", "mucho", "poco", "todo", "nada", "algo", "porque", "pero", "entonces", "vale", "claro", "escuchar", "hablar",
-    "comer", "duele", "desde", "cosa", "cosas", "casa", "trabajo", "amigo", "amiga",
-}
-ENGLISH_HINTS = {
-    "the", "a", "an", "of", "and", "is", "are", "was", "were", "be", "to", "in", "on", "at", "for", "with", "my", "your",
-    "his", "her", "our", "their", "i", "you", "he", "she", "we", "they", "it", "this", "that", "these", "those", "what",
-    "when", "where", "why", "how", "who", "do", "does", "did", "have", "has", "had", "will", "would", "can", "could",
-    "should", "want", "like", "love", "hear", "hearing", "mind", "think", "know", "go", "going", "get", "just", "about",
-    "from", "not", "but", "so", "if", "or", "because", "really", "very", "today", "tomorrow", "yesterday", "work",
-    "brain", "tooth", "food", "say", "said", "mean", "means", "it's", "i'm", "don't",
-}
-SPANISH_CHARS = set("áéíóúüñ¿¡")
+from app.languages import LanguagePack, native_en
 
 
-def tokens(text: str) -> list[str]:
-    return [t.lower() for t in TOKEN.findall(text)]
+@lru_cache(maxsize=16)
+def _token_re(letters: str) -> re.Pattern[str]:
+    return re.compile(rf"[{letters}']+")
 
 
-def is_spanish_token(tok: str) -> bool | None:
-    """True/False when confident, None when unknown."""
+def tokens(text: str, pack: LanguagePack) -> list[str]:
+    return [t.lower() for t in _token_re(pack.letters).findall(text)]
+
+
+def is_target_token(tok: str, pack: LanguagePack) -> bool | None:
+    """True when the token is clearly the target language, False when clearly English, None when unsure."""
     t = tok.lower()
-    if any(c in SPANISH_CHARS for c in t):
+    if any(c in pack.marks for c in t):
         return True
-    in_es, in_en = t in SPANISH_HINTS, t in ENGLISH_HINTS
-    if in_es and not in_en:
+    in_t, in_en = t in pack.hint_words, t in native_en.HINT_WORDS
+    if in_t and not in_en:
         return True
-    if in_en and not in_es:
+    if in_en and not in_t:
         return False
-    if t.endswith(("ción", "mente", "dad", "ito", "ita", "aba", "ando", "iendo")):
+    if t.endswith(pack.suffixes):
         return True
-    if t.endswith(("ing", "tion", "ly", "ness", "'s")):
+    if t.endswith(native_en.SUFFIXES):
         return False
     return None
 
 
-def english_share(text: str) -> float:
-    """Share of tokens we can classify that look English (0 = all Spanish, 1 = all English)."""
-    votes = [is_spanish_token(t) for t in tokens(text)]
+def english_share(text: str, pack: LanguagePack) -> float:
+    """Share of classifiable tokens that look English (0 = all target language, 1 = all English)."""
+    votes = [is_target_token(t, pack) for t in tokens(text, pack)]
     known = [v for v in votes if v is not None]
     if not known:
         return 1.0
     return round(sum(1 for v in known if v is False) / len(known), 3)
 
 
-def looks_spanish(text: str) -> bool:
-    if any(c in SPANISH_CHARS for c in text):
+def looks_target(text: str, pack: LanguagePack) -> bool:
+    if any(c in pack.marks for c in text):
         return True
-    return english_share(text) < 0.35
+    return english_share(text, pack) < 0.35
 
 
-def normalize_es(phrase: str) -> str:
+def normalize_entry(phrase: str, pack: LanguagePack) -> str:
+    """A phrase as a dictionary entry: lower case, outer punctuation and a leading article removed."""
     p = phrase.strip().lower()
-    p = re.sub(r"^[¿¡\"'(]+|[?!.,;:\"')]+$", "", p)
-    p = re.sub(r"^(el|la|los|las|un|una)\s+", "", p)
+    p = re.sub(r"^[¿¡\"'(«]+|[?!.,;:\"')»]+$", "", p)
+    if pack.articles:
+        p = re.sub(rf"^(?:{'|'.join(map(re.escape, pack.articles))})\s+", "", p)
     return re.sub(r"\s+", " ", p)[:120]
 
 

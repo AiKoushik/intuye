@@ -3,18 +3,19 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models as m
 from app.db import get_session
+from app.errors import APIError
+from app.languages import variety_codes
 from app.security.deps import current_user
 
 router = APIRouter(prefix="/v1", tags=["account"])
 
-DIALECTS = {"es-ES", "es-MX", "es-419"}
 HHMM = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 
 
@@ -36,13 +37,6 @@ class SettingsPatch(BaseModel):
     quiet_end: str | None = None
     moment_retention_days: int | None = Field(default=None, ge=1, le=3650)
     timezone: str | None = Field(default=None, max_length=64)
-
-    @field_validator("dialect")
-    @classmethod
-    def _dialect(cls, v: str | None) -> str | None:
-        if v is not None and v not in DIALECTS:
-            raise ValueError(f"must be one of {sorted(DIALECTS)}")
-        return v
 
     @field_validator("quiet_start", "quiet_end")
     @classmethod
@@ -69,8 +63,10 @@ async def me(user: m.User = Depends(current_user), db: AsyncSession = Depends(ge
 
 
 @router.patch("/me/settings", response_model=SettingsOut)
-async def patch_settings(body: SettingsPatch, user: m.User = Depends(current_user),
+async def patch_settings(body: SettingsPatch, request: Request, user: m.User = Depends(current_user),
                          db: AsyncSession = Depends(get_session)) -> SettingsOut:
+    if body.dialect is not None and body.dialect not in (offered := variety_codes(request.app.state.settings.languages)):
+        raise APIError(422, "invalid_variety", f"Pick one of: {', '.join(sorted(offered))}.")
     s = await _settings(db, user.id)
     for k, v in body.model_dump(exclude_none=True).items():
         setattr(s, k, v)

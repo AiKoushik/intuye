@@ -40,7 +40,7 @@ struct ScenesView: View {
                 }
             } else if let list {
                 if list.upcoming.isEmpty && list.recurring.isEmpty && list.mine.isEmpty {
-                    Text("Search for something coming up — a dentist visit, a meeting, dinner with friends — or build your own and get the Spanish for it.")
+                    Text("Search for something coming up — a dentist visit, a meeting, dinner with friends — or build your own and get the \(app.lang.name) for it.")
                         .foregroundStyle(LC.Color.textSecondary)
                 }
                 section("Coming up", list.upcoming)
@@ -194,7 +194,7 @@ struct NewSceneSheet: View {
                     TextField("e.g. Dentist, parent-teacher meeting", text: $title)
                 } header: { Text("What's coming up?") }
                 Section {
-                    TextField("Anything that changes what you'll say, e.g. the teacher only speaks Spanish", text: $details, axis: .vertical)
+                    TextField("Anything that changes what you'll say, e.g. the teacher only speaks \(app.lang.name)", text: $details, axis: .vertical)
                         .lineLimit(2...5)
                 } header: { Text("Details (optional, never shared)") }
                 Section {

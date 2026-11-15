@@ -58,7 +58,8 @@ backend/app/
                      coach.py, ingest.py (deterministic LangGraph pipelines that call agents)
                      scene_builder.py, rehearse.py, schemas.py
   library/           embeddings.py (hash | OpenAI-compatible), index.py (cosine search per variety)
-  curation/          fsrs.py, ranker.py, base_lexicon.py, grammar.py, text.py
+  curation/          fsrs.py, ranker.py, grammar.py, lessons.py, pronunciation.py, text.py (language-neutral)
+  languages/         base.py (LanguagePack), es/ (Spanish content), native_en.py; see 11-languages.md
   routers/           auth, attest, coach, utterances, batches, reviews, scenarios, rehearsals, progress, account
 ```
 

@@ -1,6 +1,6 @@
 import { h, icon, whenLabel } from "../dom.js";
 import { dots, interlinear, readyDots, spinner, tintChip, topicTile, topicTint } from "../components.js";
-import { localeFor, speak } from "../speech.js";
+import { speak } from "../speech.js";
 import { Screen, navButton } from "./base.js";
 import { Rehearse } from "./rehearse.js";
 import { Practice } from "./practice.js";
@@ -43,7 +43,7 @@ export class Scenes extends Screen {
     }
     try {
       this.listening = true; this.input.placeholder = "Listening…"; this.update();
-      await this.app.holdBegin(localeFor(this.app.dialect, false));
+      await this.app.holdBegin(this.app.stt(false));
       // Subscribe after the recognizer starts, so ambient capture stopping doesn't end this search.
       this.offRec = this.app.recognizer.on((r) => {
         if (!this.listening) return;
@@ -86,7 +86,7 @@ export class Scenes extends Screen {
     }
     const { upcoming, recurring, mine } = this.list;
     if (!upcoming.length && !recurring.length && !mine.length) {
-      out.push(h("p", { class: "empty", style: "margin:14px 4px 0" }, "Search for something coming up — a dentist visit, a meeting, dinner with friends — or build your own and get the Spanish for it."));
+      out.push(h("p", { class: "empty", style: "margin:14px 4px 0" }, `Search for something coming up — a dentist visit, a meeting, dinner with friends — or build your own and get the ${this.app.lang.name} for it.`));
     }
     for (const [label, items] of [["Coming up", upcoming], ["From your conversations", recurring], ["Yours", mine]]) {
       if (!items.length) continue;
@@ -133,14 +133,14 @@ export class SceneDetail extends Screen {
       h("p", { class: "section-label" }, "Key phrases"),
       h("div", { class: "card" }, p.key.map((ph) => h("div", { class: "phrase-row" },
         interlinear(ph.alignment.map((a) => ({ src: a.src, tgt: a.tgt }))),
-        h("button", { class: "iconbtn", type: "button", "aria-label": `Play ${ph.es}`, onclick: () => speak(ph.es, this.app.dialect) }, icon("speaker"))))),
+        h("button", { class: "iconbtn", type: "button", "aria-label": `Play ${ph.target}`, onclick: () => speak(ph.target, this.app.tts) }, icon("speaker"))))),
       h("button", { class: "btn quiet", type: "button", onclick: () => this.app.push(new Practice(this.app, s, "shadow")) }, icon("speaker"), "Shadow these: hear them, say them back"),
       h("p", { class: "section-label" }, "If you get stuck"),
-      h("div", { class: "card wash t-rose" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.es, this.app.dialect, true) }, r.es))),
+      h("div", { class: "card wash t-rose" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.target, this.app.tts, true) }, r.target))),
       h("button", { class: "btn quiet", type: "button", onclick: () => this.app.push(new Practice(this.app, s, "drill")) }, icon("bolt"), "Drill these until they're automatic"),
       h("p", { class: "section-label" }, "You might hear"),
       h("div", { class: "card wash t-sea" }, p.hear.map((x) => h("div", { style: "padding:6px 0" },
-        h("button", { class: "rescue", style: "padding:0", type: "button", onclick: () => speak(x.es, this.app.dialect, true) }, x.es),
+        h("button", { class: "rescue", style: "padding:0", type: "button", onclick: () => speak(x.target, this.app.tts, true) }, x.target),
         h("p", { class: "meta" }, x.en)))),
       h("button", { class: "btn", type: "button", onclick: () => this.app.push(new Rehearse(this.app, s)) }, "Rehearse"),
       h("button", { class: "btn quiet", type: "button", onclick: () => this.finish() }, icon("check"), "I'm done with this scene"),
@@ -182,10 +182,10 @@ export class LibraryScene extends Screen {
       h("p", { class: "section-label" }, "Key phrases"),
       h("div", { class: "card" }, p.key.map((ph) => h("div", { class: "phrase-row" },
         interlinear((ph.alignment || []).map((a) => ({ src: a.src, tgt: a.tgt }))),
-        h("button", { class: "iconbtn", type: "button", "aria-label": `Play ${ph.es}`, onclick: () => speak(ph.es, this.app.dialect) }, icon("speaker"))))),
+        h("button", { class: "iconbtn", type: "button", "aria-label": `Play ${ph.target}`, onclick: () => speak(ph.target, this.app.tts) }, icon("speaker"))))),
       h("button", { class: "btn quiet", type: "button", onclick: () => this.app.push(new Practice(this.app, s, "shadow")) }, icon("speaker"), "Shadow these: hear them, say them back"),
       h("p", { class: "section-label" }, "If you get stuck"),
-      h("div", { class: "card wash t-rose" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.es, this.app.dialect, true) }, r.es))),
+      h("div", { class: "card wash t-rose" }, p.rescue.map((r) => h("button", { class: "rescue", type: "button", onclick: () => speak(r.target, this.app.tts, true) }, r.target))),
       h("button", { class: "btn quiet", type: "button", onclick: () => this.app.present(new ReportSheet(this.app, t)) }, icon("flag"), "Report this scene"),
     ];
   }
@@ -204,7 +204,7 @@ class ReportSheet extends Screen {
   constructor(app, t) { super(app); this.t = t; this.title = "Report scene"; this.large = false; }
   navLeft() { return navButton("Cancel", () => this.app.dismiss(this)); }
   content() {
-    const reasons = [["personal", "It has someone's personal details"], ["offensive", "It's offensive or unsafe"], ["wrong", "The Spanish is wrong"], ["other", "Something else"]];
+    const reasons = [["personal", "It has someone's personal details"], ["offensive", "It's offensive or unsafe"], ["wrong", `The ${this.app.lang.name} is wrong`], ["other", "Something else"]];
     return [h("p", { class: "group-title" }, `What's wrong with “${this.t.title}”?`),
       h("div", { class: "group" }, reasons.map(([key, label]) => h("button", { class: "row", type: "button", onclick: () => this.send(key) }, h("span", { class: "grow" }, label)))),
       h("p", { class: "group-footer" }, "Scenes reported by three learners are hidden until we review them.")];
@@ -234,7 +234,7 @@ class NewSceneSheet extends Screen {
     const tomorrow = new Date(Date.now() + 86400000); tomorrow.setMinutes(0, 0, 0);
     const local = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     this.dateInput ??= h("input", { type: "datetime-local", class: "input", value: local, style: "text-align:right;width:auto" });
-    this.detailsInput ??= h("textarea", { class: "input", rows: "3", placeholder: "Anything that changes what you'll say, e.g. the teacher only speaks Spanish",
+    this.detailsInput ??= h("textarea", { class: "input", rows: "3", placeholder: `Anything that changes what you'll say, e.g. the teacher only speaks ${this.app.lang.name}`,
       maxlength: "600", oninput: (e) => { this.details = e.target.value; } });
     const toggle = (label, checked, onchange, disabled = false) => h("label", { class: "row" }, h("span", { class: "grow" }, label),
       h("input", { type: "checkbox", class: "switch", role: "switch", checked, disabled, onchange }));

@@ -2,21 +2,17 @@ import AuthenticationServices
 import IntuyeKit
 import SwiftUI
 
-/// Welcome → your Spanish → rough level → Sign in with Apple. Permissions are asked later, in context.
+/// Welcome → which variety → rough level → Sign in with Apple. Permissions are asked later, in context.
+/// The language, its varieties and the sample sentence come from the server's language pack.
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
     @State private var step = 0
-    @State private var dialect = "es-419"
+    @State private var dialect = ""
     @State private var level = 0
     @State private var nonce = Nonce.random()
     @State private var error: String?
     @State private var busy = false
 
-    private let example = [AlignedPair(src: "me gusta", tgt: "Me gusta", new: false),
-                           AlignedPair(src: "escuchar", tgt: "escuchar", new: false),
-                           AlignedPair(src: "this", tgt: "esto", new: false),
-                           AlignedPair(src: "in my", tgt: "en mi", new: false),
-                           AlignedPair(src: "mind", tgt: "mente", new: true)]
 
     var body: some View {
         VStack(alignment: .leading, spacing: Space.xl) {
@@ -39,16 +35,18 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: Space.l) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Intuye").font(.headline).foregroundStyle(LC.Color.accent)
-                Text("in-TOO-yeh: “sense it”. Spanish in your own words.").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+                Text("in-TOO-yeh: “sense it”. \(model.lang.name) in your own words.").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
             }
             .accessibilityElement(children: .combine)
             Text("Say it your way.").font(.lcDisplay)
-            Text("Speak English, Spanish or a mix. Get Spanish back that stays close to what you said.")
+            Text("Speak English, \(model.lang.name) or a mix. Get \(model.lang.name) back that stays close to what you said.")
                 .font(.lcBody).foregroundStyle(LC.Color.textSecondary)
-            InterlinearLine(pairs: example).lcCard()
-            Text("Tap a word to see its partner.").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            if let pairs = model.lang.ui?.examplePairs, !pairs.isEmpty {
+                InterlinearLine(pairs: pairs).lcCard()
+                Text("Tap a word to see its partner.").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+            }
             VStack(alignment: .leading, spacing: Space.m) {
-                promise(.sea, "text.bubble", "Say anything, in any mix", "English, Spanish or both at once")
+                promise(.sea, "text.bubble", "Say anything, in any mix", "English, \(model.lang.name) or both at once")
                 promise(.sage, "calendar", "Get ready for what's coming up", "The dentist, a meeting, dinner with friends")
                 promise(.sand, "rectangle.stack", "Keep 5 to 10 words a day", "Picked from what you actually say")
             }
@@ -59,10 +57,12 @@ struct OnboardingView: View {
 
     private var dialectStep: some View {
         VStack(alignment: .leading, spacing: Space.l) {
-            Text("Which Spanish?").font(.lcDisplay)
-            Text("Words differ by place: ordenador or computadora.").font(.lcBody).foregroundStyle(LC.Color.textSecondary)
-            ForEach([("es-419", "Latin America"), ("es-MX", "Mexico"), ("es-ES", "Spain")], id: \.0) { code, name in
-                choice(name, selected: dialect == code) { dialect = code }
+            Text("Which \(model.lang.name)?").font(.lcDisplay)
+            if let note = model.lang.ui?.varietyNote {
+                Text(note).font(.lcBody).foregroundStyle(LC.Color.textSecondary)
+            }
+            ForEach(model.lang.varieties) { v in
+                choice(v.label, selected: (dialect.isEmpty ? model.lang.defaultVariety : dialect) == v.code) { dialect = v.code }
             }
             Button("Continue") { step = 2 }.buttonStyle(.lcPrimary).padding(.top, Space.l)
         }
@@ -118,7 +118,7 @@ struct OnboardingView: View {
             let name = [cred.fullName?.givenName, cred.fullName?.familyName].compactMap { $0 }.joined(separator: " ")
             do {
                 try await model.api.signInWithApple(identityToken: token, rawNonce: nonce, displayName: name.isEmpty ? nil : name)
-                _ = try? await model.api.updateSettings(["dialect": dialect])
+                _ = try? await model.api.updateSettings(["dialect": dialect.isEmpty ? model.lang.defaultVariety : dialect])
                 _ = try? await model.api.updateLevel(level)
                 await model.didSignIn()
                 model.selectedTab = .say

@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// Two voices: SF Pro for the UI and your words, New York (serif) for Spanish. All map to Dynamic Type styles.
+/// Two voices: SF Pro for the UI and your words, New York (serif) for the language you're learning. All map to Dynamic Type styles.
 extension Font {
     static let lcDisplay = Font.largeTitle.weight(.bold)
-    static let lcSpanishXL = Font.system(.title, design: .serif)
-    static let lcSpanish = Font.system(.title3, design: .serif)
-    static let lcSpanishBody = Font.system(.body, design: .serif)
+    static let lcTargetXL = Font.system(.title, design: .serif)
+    static let lcTarget = Font.system(.title3, design: .serif)
+    static let lcTargetBody = Font.system(.body, design: .serif)
     static let lcHeadline = Font.headline
     static let lcBody = Font.body
     static let lcSource = Font.callout

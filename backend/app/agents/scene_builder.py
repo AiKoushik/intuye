@@ -10,25 +10,23 @@ from pydantic import ValidationError
 
 from app.agents.runtime import AgentContext, ask, make_agent, subagent
 from app.agents.schemas import PhraseOut, PrepPackOut, SceneCardOut
+from app.languages import LanguagePack
 from app.llm import prompts
 
 log = logging.getLogger("intuye.scene_builder")
-DEFAULT_RESCUE = [("Can you repeat that, please?", "¿Puede repetirlo, por favor?"), ("Slower, please", "Más despacio, por favor"),
-                  ("How do you say ...?", "¿Cómo se dice ...?")]
 
 
 def phrase_writer_prompt(ctx: AgentContext) -> str:
-    return prompts.PHRASE_WRITER.format(dialect=ctx.dialect_name, title=ctx.title.replace('"', "'"), level=ctx.level,
-                                        data_rule=prompts.DATA_RULE)
+    return ctx.prompt(prompts.PHRASE_WRITER, title=ctx.title.replace('"', "'"), level=ctx.level)
 
 
 def scene_builder_prompt(ctx: AgentContext) -> str:
-    return prompts.SCENE_BUILDER.format(dialect=ctx.dialect_name, level=ctx.level, data_rule=prompts.DATA_RULE)
+    return ctx.prompt(prompts.SCENE_BUILDER, level=ctx.level)
 
 
 @tool
 async def search_scene_library(query: str, runtime: ToolRuntime[AgentContext]) -> str:
-    """Search the shared scene library (other learners' scenes, same Spanish variety) by meaning.
+    """Search the shared scene library (other learners' scenes, same language variety) by meaning.
     Returns up to 3 scenes with a similarity from 0 to 1."""
     search = runtime.context.library_search if runtime.context else None
     hits = await search(query[:200]) if search else []
@@ -55,21 +53,21 @@ def validate_pack(pack: PrepPackOut) -> list[str]:
         problems.append("fewer than 3 rescue phrases")
     if len(pack.hear) < 3:
         problems.append("fewer than 3 likely-to-hear phrases")
-    if any(len(p.es) > 120 for p in pack.key + pack.rescue + pack.hear):
+    if any(len(p.target) > 120 for p in pack.key + pack.rescue + pack.hear):
         problems.append("some phrases are too long to say")
     return problems
 
 
-def finalise_pack(pack: PrepPackOut) -> PrepPackOut:
+def finalise_pack(pack: PrepPackOut, language: LanguagePack) -> PrepPackOut:
     pack = pack.model_copy(deep=True)
-    pack.key = [p for p in pack.key if len(p.es) <= 120][:12]
-    pack.hear = [p for p in pack.hear if len(p.es) <= 120][:6]
-    rescue = [p for p in pack.rescue if len(p.es) <= 120][:5]
-    for en, es in DEFAULT_RESCUE:
+    pack.key = [p for p in pack.key if len(p.target) <= 120][:12]
+    pack.hear = [p for p in pack.hear if len(p.target) <= 120][:6]
+    rescue = [p for p in pack.rescue if len(p.target) <= 120][:5]
+    for en, target in language.rescue_phrases:
         if len(rescue) >= 3:
             break
-        if all(r.es != es for r in rescue):
-            rescue.append(PhraseOut(en=en, es=es, alignment=[{"src": en, "tgt": es}]))
+        if all(r.target != target for r in rescue):
+            rescue.append(PhraseOut(en=en, target=target, alignment=[{"src": en, "tgt": target}]))
     pack.rescue = rescue
     return pack
 
@@ -103,4 +101,4 @@ async def build_scene(agents, ctx: AgentContext, title: str, details: str | None
                           scene_brief(title, details) + "\nThe previous draft had problems: " + "; ".join(problems), ctx)
         if len(validate_pack(retry)) <= len(problems):
             pack = retry
-    return finalise_pack(pack), card
+    return finalise_pack(pack, ctx.pack), card

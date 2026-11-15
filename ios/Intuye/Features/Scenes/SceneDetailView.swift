@@ -33,7 +33,7 @@ struct SceneDetailView: View {
                         .font(.lcCaption)
                         header("If you get stuck")
                         VStack(alignment: .leading, spacing: Space.s) {
-                            ForEach(p.rescue) { r in spanishButton(r.es) }
+                            ForEach(p.rescue) { r in targetButton(r.target) }
                         }
                         .lcCard(wash: .rose)
                         NavigationLink { PracticeView(scene: s, mode: .drill) } label: {
@@ -44,7 +44,7 @@ struct SceneDetailView: View {
                         VStack(alignment: .leading, spacing: Space.m) {
                             ForEach(p.hear) { h in
                                 VStack(alignment: .leading, spacing: 2) {
-                                    spanishButton(h.es)
+                                    targetButton(h.target)
                                     Text(h.en).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
                                 }
                             }
@@ -76,15 +76,15 @@ struct SceneDetailView: View {
         HStack(alignment: .top) {
             InterlinearLine(pairs: p.alignment.map { AlignedPair(src: $0.src, tgt: $0.tgt, new: false) })
             Spacer(minLength: Space.s)
-            Button { app.speaker.say(p.es, dialect: app.dialect) } label: { Image(systemName: "speaker.wave.2") }
-                .accessibilityLabel("Play \(p.es)")
+            Button { app.speaker.say(p.target, voice: app.tts) } label: { Image(systemName: "speaker.wave.2") }
+                .accessibilityLabel("Play \(p.target)")
         }
         .padding(.vertical, Space.m)
     }
 
-    private func spanishButton(_ es: String) -> some View {
-        Button { app.speaker.say(es, dialect: app.dialect, slow: true) } label: {
-            Text(es).font(.lcSpanish).foregroundStyle(LC.Color.textPrimary).frame(maxWidth: .infinity, alignment: .leading)
+    private func targetButton(_ text: String) -> some View {
+        Button { app.speaker.say(es, voice: app.tts, slow: true) } label: {
+            Text(es).font(.lcTarget).foregroundStyle(LC.Color.textPrimary).frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
         .accessibilityHint("Plays it slowly")

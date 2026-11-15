@@ -23,7 +23,19 @@ final class AppModel {
     var notifications = NotificationScheduler()
     let reviewQueue: ReviewQueue
 
-    var dialect: String { me?.settings.dialect ?? "es-419" }
+    /// The server's languages (cached for offline). Screens read the learner's language and variety from here.
+    var languages: LanguageCatalog? = LanguageCatalog.cached()
+    var dialect: String { me?.settings.dialect ?? lang.defaultVariety }
+    var lang: LanguageInfo { (languages ?? LanguageCatalog(default: "", languages: [])).language(forVariety: me?.settings.dialect) }
+    var variety: VarietyInfo { (languages ?? LanguageCatalog(default: "", languages: [])).variety(dialect) }
+    /// Voice for target-language speech, e.g. "es-MX".
+    var tts: String { variety.tts }
+    /// Speech recognition: the target language, or the learner's own (English) when `target` is false.
+    func sttLocale(target: Bool) -> Locale { Locale(identifier: target ? variety.stt : "en-US") }
+
+    func loadLanguages() async {
+        if let c = try? await api.languages() { languages = c; c.cache() }
+    }
     var firstName: String? { me?.user.displayName?.split(separator: " ").first.map(String.init) }
 
     init() {
@@ -53,6 +65,7 @@ final class AppModel {
 
     func boot() async {
         await api.onSignedOut { Task { @MainActor in self.signedOut() } }
+        await loadLanguages()
         guard await api.isSignedIn else { phase = .onboarding; return }
         phase = .signedIn
         await loadMe()

@@ -13,6 +13,7 @@ from app.models import SceneTemplate, User, UserSettings
 from app.security.deps import current_user
 from app.services import library
 from app.services.scenarios import serialise
+from app.languages import default_variety
 
 router = APIRouter(prefix="/v1/library", tags=["library"])
 
@@ -28,7 +29,7 @@ class ReportIn(BaseModel):
 
 async def _dialect(db: AsyncSession, user_id: str) -> str:
     s = await db.get(UserSettings, user_id)
-    return s.dialect if s else "es-419"
+    return s.dialect if s else default_variety()
 
 
 async def _published(db: AsyncSession, template_id: str) -> SceneTemplate:
@@ -47,7 +48,7 @@ async def search(request: Request, q: str = Query("", max_length=200), limit: in
 @router.get("/{template_id}")
 async def detail(template_id: str, user: User = Depends(current_user), db: AsyncSession = Depends(get_session)) -> dict:
     t = await _published(db, template_id)
-    return library.card(t) | {"level": t.level, "phrases": t.pack}
+    return library.card(t) | {"level": t.level, "phrases": library.phrases(t)}
 
 
 @router.post("/{template_id}/use")

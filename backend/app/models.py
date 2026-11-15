@@ -8,6 +8,7 @@ from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text,
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
+from app.languages import default_variety
 
 
 def new_id() -> str:
@@ -52,7 +53,7 @@ class User(Base):
 class UserSettings(Base):
     __tablename__ = "settings"
     user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    dialect: Mapped[str] = mapped_column(String(8), default="es-419")
+    dialect: Mapped[str] = mapped_column(String(16), default=default_variety)  # variety code; the language follows from it
     level: Mapped[int] = mapped_column(Integer, default=0)
     daily_notification_budget: Mapped[int] = mapped_column(Integer, default=3)
     quiet_start: Mapped[str] = mapped_column(String(5), default="22:00")
@@ -100,17 +101,20 @@ class Utterance(Base):
     lang_mix: Mapped[float] = mapped_column(Float, default=0.0)  # share of English tokens
     source: Mapped[str] = mapped_column(String(16))  # say | ambient | rehearsal
     topic: Mapped[str | None] = mapped_column(String(64), index=True)
-    close_es: Mapped[str | None] = mapped_column(Text)
+    lang: Mapped[str] = mapped_column(String(8), default="es", server_default="es")  # target language when spoken
+    # Database column names predate language packs ("es"); attributes are language-neutral.
+    close_target: Mapped[str | None] = mapped_column("close_es", Text)
     spoken_at: Mapped[datetime] = mapped_column(TZDateTime(), default=utcnow, index=True)
     created_at: Mapped[datetime] = mapped_column(TZDateTime(), default=utcnow)
 
 
 class Lexeme(Base):
     __tablename__ = "lexemes"
-    __table_args__ = (UniqueConstraint("user_id", "es"),)
+    __table_args__ = (UniqueConstraint("user_id", "lang", "es"),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     user_id: Mapped[str] = UserFK()
-    es: Mapped[str] = mapped_column(String(120))
+    lang: Mapped[str] = mapped_column(String(8), default="es", server_default="es", index=True)
+    target: Mapped[str] = mapped_column("es", String(120))
     en: Mapped[str] = mapped_column(String(120))
     origin: Mapped[str] = mapped_column(String(16))  # spoken | base | scenario | grammar
     topic: Mapped[str | None] = mapped_column(String(64))
@@ -123,7 +127,7 @@ class LexemeEvent(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     user_id: Mapped[str] = UserFK()
     lexeme_id: Mapped[str] = mapped_column(String(36), ForeignKey("lexemes.id", ondelete="CASCADE"), index=True)
-    kind: Mapped[str] = mapped_column(String(16))  # said_en | said_es | looked_up | mispronounced | forgot
+    kind: Mapped[str] = mapped_column(String(16))  # said_en | said_target | looked_up | mispronounced | forgot
     utterance_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("utterances.id", ondelete="SET NULL"))
     at: Mapped[datetime] = mapped_column(TZDateTime(), default=utcnow)
 
@@ -180,6 +184,7 @@ class Scenario(Base):
     details: Mapped[str | None] = mapped_column(Text)  # the learner's own description; never shared
     kind: Mapped[str] = mapped_column(String(12))  # upcoming | recurring | manual
     topic: Mapped[str | None] = mapped_column(String(64))
+    lang: Mapped[str] = mapped_column(String(8), default="es", server_default="es", index=True)
     starts_at: Mapped[datetime | None] = mapped_column(TZDateTime())
     status: Mapped[str] = mapped_column(String(12), default="active")  # suggested | active | done
     template_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("scene_templates.id", ondelete="SET NULL"))
@@ -196,7 +201,7 @@ class SceneTemplate(Base):
     topic: Mapped[str | None] = mapped_column(String(64))
     dialect: Mapped[str] = mapped_column(String(8), index=True)
     level: Mapped[int] = mapped_column(Integer, default=0)
-    pack: Mapped[dict] = mapped_column(JSON)  # {key, rescue, hear}: [{en, es, alignment}]
+    pack: Mapped[dict] = mapped_column(JSON)  # {key, rescue, hear}: [{en, target, alignment}] (older rows: "es")
     embedding: Mapped[list] = mapped_column(JSON)
     embed_model: Mapped[str] = mapped_column(String(80))
     creator_user_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id", ondelete="SET NULL"), index=True)
@@ -223,7 +228,7 @@ class ScenarioPhrase(Base):
     scenario_id: Mapped[str] = mapped_column(String(36), ForeignKey("scenarios.id", ondelete="CASCADE"), index=True)
     kind: Mapped[str] = mapped_column(String(8))  # key | rescue | hear
     en: Mapped[str] = mapped_column(String(300))
-    es: Mapped[str] = mapped_column(String(300))
+    target: Mapped[str] = mapped_column("es", String(300))
     alignment: Mapped[list] = mapped_column(JSON, default=list)
     position: Mapped[int] = mapped_column(Integer)
 

@@ -36,8 +36,8 @@ struct ProgressScreen: View {
     private func level(_ est: LevelEstimate) -> some View {
         let b = est.basis
         let why = ["\(b.wordsKept) \(b.wordsKept == 1 ? "word" : "words") kept",
-                   b.spanishShare.map { "\($0.formatted(.percent.precision(.fractionLength(0)))) Spanish in what you tried this month" },
-                   b.avgSpanishWords.map { "about \(Int($0.rounded())) words a sentence" }].compactMap { $0 }.joined(separator: ", ")
+                   b.targetShare.map { "\($0.formatted(.percent.precision(.fractionLength(0)))) \(app.lang.name) in what you tried this month" },
+                   b.avgTargetWords.map { "about \(Int($0.rounded())) words a sentence" }].compactMap { $0 }.joined(separator: ", ")
         return VStack(alignment: .leading, spacing: Space.xs) {
             Text("Your level, roughly").font(.lcHeadline)
             HStack(alignment: .firstTextBaseline) {
@@ -87,7 +87,7 @@ struct ProgressScreen: View {
 
     private func spanglish(_ weeks: [WeekRatio]) -> some View {
         VStack(alignment: .leading, spacing: Space.s) {
-            Text("English in your Spanish").font(.lcHeadline)
+            Text("English in your \(app.lang.name)").font(.lcHeadline)
             if let last = weeks.last {
                 HStack(alignment: .firstTextBaseline) {
                     Text(last.ratio, format: .percent.precision(.fractionLength(0)))
@@ -109,9 +109,9 @@ struct ProgressScreen: View {
                 .chartYScale(domain: 0...1)
                 .chartYAxis { AxisMarks(values: [0, 0.5, 1]) { v in AxisGridLine(); AxisValueLabel(format: .percent) } }
                 .frame(height: 120)
-                .accessibilityLabel("Weekly share of English in your Spanish sentences")
+                .accessibilityLabel("Weekly share of English in your \(app.lang.name) sentences")
             } else {
-                Text("Try saying things in Spanish, even mixed with English. This shows how much English is left in them, week by week.")
+                Text("Try saying things in \(app.lang.name), even mixed with English. This shows how much English is left in them, week by week.")
                     .font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
             }
         }
@@ -182,6 +182,8 @@ enum Levels {
 /// The weekly reflection: one calm card. On Progress always, on Today on Mondays.
 struct ReflectionCard: View {
     let reflection: Reflection
+    @Environment(AppModel.self) private var app
+    private var language: String { app.lang.name }
 
     var body: some View {
         let r = reflection
@@ -194,13 +196,13 @@ struct ReflectionCard: View {
                 }
             }
             Text(r.line).font(.lcBody)
-            if let best = r.bestSpanish {
-                TintChip(tint: .sage, text: "Your best Spanish this week")
+            if let best = r.bestTarget {
+                TintChip(tint: .sage, text: "Your best \(language) this week")
                 Text(best).font(.system(.title3, design: .serif))
             }
             HStack(alignment: .top) {
                 fact("\(r.sentences)", r.sentences == 1 ? "sentence" : "sentences")
-                fact(r.spanishShare.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? "–", "in Spanish")
+                fact(r.targetShare.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? "–", "in \(language)")
                 fact("\(r.wordsKept)", r.wordsKept == 1 ? "word stuck" : "words stuck")
                 fact("\(r.scenesRehearsed)", r.scenesRehearsed == 1 ? "scene rehearsed" : "scenes rehearsed")
             }

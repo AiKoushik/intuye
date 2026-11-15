@@ -22,8 +22,8 @@ final class RehearseModel {
         do {
             let r = try await api.startRehearsal(scenarioId: scene.id, difficulty: difficulty)
             rehearsalId = r.rehearsalId
-            bubbles.append(Bubble(coach: true, text: r.coach.es, en: r.coach.en, native: nil))
-            speak(r.coach.es)
+            bubbles.append(Bubble(coach: true, text: r.coach.target, en: r.coach.en, native: nil))
+            speak(r.coach.target)
         } catch { self.error = error.localizedDescription }
     }
 
@@ -33,8 +33,8 @@ final class RehearseModel {
         do {
             let r = try await api.rehearsalTurn(id, text: text)
             bubbles.append(Bubble(coach: false, text: text, en: nil, native: r.native))
-            bubbles.append(Bubble(coach: true, text: r.coach.es, en: r.coach.en, native: nil))
-            speak(r.coach.es)
+            bubbles.append(Bubble(coach: true, text: r.coach.target, en: r.coach.en, native: nil))
+            speak(r.coach.target)
             done = r.done
         } catch { self.error = error.localizedDescription }
     }
@@ -45,8 +45,8 @@ final class RehearseModel {
     }
 }
 
-/// Voice role-play: the coach plays the other person in Spanish. Tap a coach line for its English;
-/// say anything in English to get the Spanish back.
+/// Voice role-play: the coach plays the other person in the learner's target language. Tap a coach line for
+/// its English; say anything in English to get it back in the target language.
 struct RehearseView: View {
     @Environment(AppModel.self) private var app
     let scene: ScenarioDTO
@@ -95,12 +95,12 @@ struct RehearseView: View {
         HStack {
             if !b.coach { Spacer(minLength: 48) }
             VStack(alignment: .leading, spacing: 4) {
-                Text(b.text).font(b.coach ? .lcSpanish : .lcBody)
+                Text(b.text).font(b.coach ? .lcTarget : .lcBody)
                 if b.coach, shown.contains(b.id), let en = b.en {
                     Text(en).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
                 }
                 if let native = b.native {
-                    Text("A native would say \(Text(native).font(.lcSpanishBody).foregroundStyle(LC.Color.textPrimary))")
+                    Text("A native would say \(Text(native).font(.lcTargetBody).foregroundStyle(LC.Color.textPrimary))")
                         .font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
                 }
             }
@@ -119,7 +119,7 @@ struct RehearseView: View {
             Button("Hint") { hint() }.buttonStyle(.lcSubtle).frame(width: 96)
             HoldToTalkButton(isRecording: app.transcriber.isRunning, level: app.transcriber.level,
                              onBegin: { Task { await begin() } }, onEnd: { Task { await end() } })
-            Button(englishMode ? "Spanish" : "In English") { englishMode.toggle() }
+            Button(englishMode ? app.lang.name : "In English") { englishMode.toggle() }
                 .buttonStyle(.lcSubtle).frame(width: 96)
                 .accessibilityHint("Switches what language the mic listens for")
         }
@@ -132,15 +132,15 @@ struct RehearseView: View {
         guard let keys = scene.phrases?.key, !keys.isEmpty else { return }
         let p = keys[model.hintIndex % keys.count]
         model.hintIndex += 1
-        model.bubbles.append(.init(coach: false, text: "Try: \(p.es)", en: nil, native: nil))
+        model.bubbles.append(.init(coach: false, text: "Try: \(p.target)", en: nil, native: nil))
     }
 
-    private func speak(_ text: String) { app.speaker.say(text, dialect: app.dialect, slow: model.difficulty == "gentle") }
+    private func speak(_ text: String) { app.speaker.say(text, voice: app.tts, slow: model.difficulty == "gentle") }
 
     private func begin() async {
         await app.holdToTalkBegan()
-        let locale = englishMode ? "en-US" : (app.dialect == "es-ES" ? "es-ES" : "es-MX")
-        do { try await app.transcriber.start(locale: Locale(identifier: locale)) } catch {
+        let locale = app.sttLocale(target: !englishMode)
+        do { try await app.transcriber.start(locale: locale) } catch {
             model.error = error.localizedDescription; await app.holdToTalkEnded()
         }
     }
@@ -166,7 +166,7 @@ struct RehearsalSummary: View {
                 Text("Keep these").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
                 ForEach(end.keepPhrases, id: \.self) { p in
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(p.es).font(.lcSpanish)
+                        Text(p.target).font(.lcTarget)
                         Text(p.en).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
                     }
                 }

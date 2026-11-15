@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     env: Literal["development", "test", "production"] = "development"
     database_url: str = "sqlite+aiosqlite:///./intuye.db"
 
+    # Target languages offered, by pack code (app/languages). The first one is the default for new learners.
+    languages: str = "es"
+
     # Session tokens
     jwt_private_key_pem: str = ""
     jwt_issuer: str = "intuye"

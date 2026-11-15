@@ -9,8 +9,10 @@ from langgraph.graph import END, START, StateGraph
 from app.agents.runtime import AgentContext, ask, make_agent
 from app.agents.schemas import IngestOut
 from app.curation.text import english_share
+from app.languages import for_variety
 from app.llm import prompts
 from app.services.lexicon import candidates_from_alignment
+from app.languages import default_variety
 
 CHUNK = 25
 
@@ -20,7 +22,7 @@ class Item(TypedDict, total=False):
     spoken_at: datetime
     source: str
     lang_mix: float
-    close_es: str | None
+    close_target: str | None
     alignment: list[dict]
     topic: str | None
     candidates: list[tuple[str, str]]
@@ -32,7 +34,7 @@ class IngestState(TypedDict, total=False):
 
 
 def analyst_prompt(ctx: AgentContext) -> str:
-    return prompts.INGEST.format(dialect=ctx.dialect_name, data_rule=prompts.DATA_RULE)
+    return ctx.prompt(prompts.INGEST)
 
 
 def build_ingest_analyst(model):
@@ -41,6 +43,7 @@ def build_ingest_analyst(model):
 
 def build_ingest_graph(agents):
     async def normalise(state: IngestState) -> IngestState:
+        pack = for_variety(state.get("dialect"))
         seen, out = set(), []
         for it in state["items"]:
             text = " ".join(it["text"].split())[:500]
@@ -48,11 +51,11 @@ def build_ingest_graph(agents):
             if len(text) < 2 or key in seen:
                 continue
             seen.add(key)
-            out.append({**it, "text": text, "lang_mix": english_share(text)})
+            out.append({**it, "text": text, "lang_mix": english_share(text, pack)})
         return {"items": out}
 
     async def analyse(state: IngestState) -> IngestState:
-        ctx = AgentContext(dialect=state.get("dialect", "es-419"))
+        ctx = AgentContext(dialect=state.get("dialect") or default_variety())
         items = list(state["items"])
         for start in range(0, len(items), CHUNK):
             chunk = items[start:start + CHUNK]
@@ -62,12 +65,12 @@ def build_ingest_graph(agents):
                 if 0 <= r.index < len(chunk):
                     topic = (r.topic or "").strip().lower()[:64] or None
                     i = start + r.index
-                    items[i] = {**items[i], "close_es": r.close_es,
+                    items[i] = {**items[i], "close_target": r.close_target,
                                 "alignment": [p.model_dump() for p in r.alignment], "topic": topic}
         return {"items": items}
 
     async def extract(state: IngestState) -> IngestState:
-        return {"items": [{**it, "candidates": candidates_from_alignment(it.get("alignment") or [], to_es=True)}
+        return {"items": [{**it, "candidates": candidates_from_alignment(it.get("alignment") or [], True, for_variety(state.get("dialect")))}
                           for it in state["items"]]}
 
     g = StateGraph(IngestState)

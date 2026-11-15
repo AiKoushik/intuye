@@ -1,7 +1,7 @@
 import IntuyeKit
 import SwiftUI
 
-/// Rescue drill (see the English, say the Spanish) and shadowing (hear it, say it back), scored
+/// Rescue drill (see the English, say it in the target language) and shadowing (hear it, say it back), scored
 /// phoneme by phoneme from what on-device recognition heard.
 struct PracticeView: View {
     enum Mode { case drill, shadow }
@@ -59,13 +59,13 @@ struct PracticeView: View {
             Text("\(index + 1) of \(items.count)").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
             if mode == .drill {
                 Text(p.en).font(.title2.weight(.bold)).multilineTextAlignment(.center)
-                Text("Say it in Spanish").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
+                Text("Say it in \(app.lang.name)").font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
             } else {
-                Text(p.es).font(.system(.title, design: .serif)).multilineTextAlignment(.center)
+                Text(p.target).font(.system(.title, design: .serif)).multilineTextAlignment(.center)
                 Text(p.en).font(.lcCaption).foregroundStyle(LC.Color.textSecondary)
                 HStack {
-                    Button { app.speaker.say(p.es, dialect: app.dialect) } label: { Label("Listen", systemImage: "speaker.wave.2") }
-                    Button("Slowly") { app.speaker.say(p.es, dialect: app.dialect, slow: true) }
+                    Button { app.speaker.say(p.target, voice: app.tts) } label: { Label("Listen", systemImage: "speaker.wave.2") }
+                    Button("Slowly") { app.speaker.say(p.target, voice: app.tts, slow: true) }
                 }
                 .buttonStyle(.bordered)
             }
@@ -80,7 +80,7 @@ struct PracticeView: View {
             FlowLayout(spacing: 8, lineSpacing: 8) {
                 ForEach(Array(r.words.enumerated()), id: \.offset) { _, w in
                     VStack(spacing: 0) {
-                        Text(w.word).font(.lcSpanishBody)
+                        Text(w.word).font(.lcTargetBody)
                         Text(w.phonemes.map { $0.ok ? $0.p : "[\($0.p)]" }.joined()).font(.caption2).foregroundStyle(LC.Color.textSecondary)
                     }
                     .padding(.horizontal, 6).padding(.vertical, 2)
@@ -91,8 +91,8 @@ struct PracticeView: View {
             if !heard.isEmpty { Text("Heard: “\(heard)”").font(.lcCaption).foregroundStyle(LC.Color.textSecondary) }
             ForEach(r.tips, id: \.self) { Text($0).font(.lcCaption).foregroundStyle(LC.Color.textSecondary) }
             if mode == .drill {
-                Button { app.speaker.say(p.es, dialect: app.dialect, slow: true) } label: {
-                    Label(p.es, systemImage: "speaker.wave.2").font(.lcSpanish)
+                Button { app.speaker.say(p.target, voice: app.tts, slow: true) } label: {
+                    Label(p.target, systemImage: "speaker.wave.2").font(.lcTarget)
                 }
             }
         }
@@ -101,7 +101,7 @@ struct PracticeView: View {
 
     private func begin() async {
         await app.holdToTalkBegan()
-        do { try await app.transcriber.start(locale: Locale(identifier: app.dialect == "es-ES" ? "es-ES" : "es-MX")) }
+        do { try await app.transcriber.start(locale: app.sttLocale(target: true)) }
         catch { self.error = error.localizedDescription; await app.holdToTalkEnded() }
     }
 
@@ -116,7 +116,7 @@ struct PracticeView: View {
         guard !t.isEmpty, index < items.count else { return }
         heard = t
         do {
-            let r = try await app.api.practiceCompare(expected: items[index].es, heard: t)
+            let r = try await app.api.practiceCompare(expected: items[index].target, heard: t)
             result = r; typed = ""
             if r.ok { correct += 1 }
         } catch { self.error = error.localizedDescription }

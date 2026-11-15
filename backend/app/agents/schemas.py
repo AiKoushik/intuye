@@ -21,7 +21,7 @@ class AnswerOut(BaseModel):
 
 class IngestItem(BaseModel):
     index: int
-    close_es: str
+    close_target: str
     alignment: list[AlignPair]
     topic: str | None = Field(default=None, description="1-3 lowercase words, e.g. 'neuroscience', 'food'")
 
@@ -32,7 +32,7 @@ class IngestOut(BaseModel):
 
 class PhraseOut(BaseModel):
     en: str
-    es: str
+    target: str = Field(description="The phrase in the target language")
     alignment: list[AlignPair]
 
 
@@ -51,9 +51,9 @@ class SceneCardOut(BaseModel):
 
 
 class CoachTurnOut(BaseModel):
-    native: str | None = Field(default=None, description="How a native would say the learner's line, only if theirs was wrong or not Spanish")
-    reply_es: str = Field(description="The other person's next line, in Spanish, one or two short sentences")
-    reply_en: str = Field(description="Close English version of reply_es")
+    native: str | None = Field(default=None, description="How a native would say the learner's line, only if theirs was wrong or not in the target language")
+    reply_target: str = Field(description="The other person's next line, in the target language, one or two short sentences")
+    reply_en: str = Field(description="Close English version of reply_target")
     done: bool = Field(default=False, description="True when the scene has naturally ended")
 
 

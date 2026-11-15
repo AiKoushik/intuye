@@ -2,17 +2,13 @@ import { applyAmbient } from "./base.js";
 import { append, h, icon } from "../dom.js";
 import { errorBanner, interlinear, tile } from "../components.js";
 
-const EXAMPLE = [
-  { src: "me gusta", tgt: "Me gusta" }, { src: "escuchar", tgt: "escuchar" }, { src: "this", tgt: "esto" },
-  { src: "in my", tgt: "en mi" }, { src: "mind", tgt: "mente", new: true },
-];
-
-/** Welcome → which Spanish → level → sign in. The web build uses dev sign-in instead of Sign in with Apple. */
+/** Welcome → which variety → level → sign in. The web build uses dev sign-in instead of Sign in with Apple.
+ *  The language, its varieties and the sample sentence come from the server's language pack. */
 export class Onboarding {
   constructor(app) {
     this.app = app;
     this.step = 0;
-    this.dialect = "es-419";
+    this.dialect = app.lang.default_variety;
     this.level = 0;
     this.name = "";
     this.error = null;
@@ -31,16 +27,18 @@ export class Onboarding {
   }
 
   render() {
+    const lang = this.app.lang;
+    if (!this.dialect) this.dialect = lang.default_variety;
     const body = h("div", { class: "onboard" });
     const add = (...kids) => append(body, kids);  // skips nulls (Element.append would print "null")
     if (this.step === 0) {
       add(
-        h("div", { class: "brand" }, h("b", {}, "Intuye"), h("span", {}, "in-TOO-yeh: “sense it”. Spanish in your own words.")),
+        h("div", { class: "brand" }, h("b", {}, "Intuye"), h("span", {}, `in-TOO-yeh: “sense it”. ${lang.name} in your own words.`)),
         h("h1", {}, "Say it your way."),
-        h("p", { class: "body secondary" }, "Speak English, Spanish or a mix. Get Spanish back that stays close to what you said."),
-        h("div", { class: "card" }, interlinear(EXAMPLE)),
+        h("p", { class: "body secondary" }, `Speak English, ${lang.name} or a mix. Get ${lang.name} back that stays close to what you said.`),
+        (lang.ui?.example || []).length ? h("div", { class: "card" }, interlinear(lang.ui.example, { language: lang.name })) : null,
         h("p", { class: "fine" }, "Tap a word to see its partner."),
-        ...[["sea", "bubble", "Say anything, in any mix", "English, Spanish or both at once"],
+        ...[["sea", "bubble", "Say anything, in any mix", `English, ${lang.name} or both at once`],
             ["sage", "calendar", "Get ready for what's coming up", "The dentist, a meeting, dinner with friends"],
             ["sand", "cards", "Keep 5 to 10 words a day", "Picked from what you actually say"]].map(([t, ic, title, sub]) =>
           h("div", { class: "promise" }, tile(t, ic), h("div", {}, h("b", {}, title), h("span", { class: "sub" }, sub)))),
@@ -49,9 +47,9 @@ export class Onboarding {
       );
     } else if (this.step === 1) {
       add(
-        h("h1", {}, "Which Spanish?"),
-        h("p", { class: "body secondary" }, "Words differ by place: ordenador or computadora."),
-        ...[["es-419", "Latin America"], ["es-MX", "Mexico"], ["es-ES", "Spain"]].map(([code, label]) =>
+        h("h1", {}, `Which ${lang.name}?`),
+        lang.ui?.variety_note ? h("p", { class: "body secondary" }, lang.ui.variety_note) : null,
+        ...lang.varieties.map(({ code, label }) =>
           this.choice(label, this.dialect === code, () => { this.dialect = code; this.render(); })),
         h("div", { style: "flex:1" }),
         h("button", { class: "btn", type: "button", onclick: () => this.go(2) }, "Continue"),

@@ -12,8 +12,8 @@ def test_level_estimate_leans_on_words_kept():
 
 
 def test_reflection_line_is_specific_and_calm():
-    assert reflection_line(0, None, None, 0, 0).startswith("A quiet week")
-    assert reflection_line(12, 0.6, 0.4, 5, 1) == "More of your sentences were Spanish than the week before (60%), you rehearsed 1 scene and 5 words stuck."
+    assert reflection_line(0, None, None, 0, 0, "Spanish").startswith("A quiet week")
+    assert reflection_line(12, 0.6, 0.4, 5, 1, "Spanish") == "More of your sentences were Spanish than the week before (60%), you rehearsed 1 scene and 5 words stuck."
 
 
 async def test_lessons_follow_what_you_said(client, auth):

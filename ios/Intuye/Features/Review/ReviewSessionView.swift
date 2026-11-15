@@ -96,14 +96,14 @@ struct ReviewSessionView: View {
             Spacer()
             Text(card.en).font(.system(.largeTitle, weight: .bold)).multilineTextAlignment(.center)
             if let ctx = card.context {
-                Text(blanked(ctx, card.es)).font(.lcSource).foregroundStyle(LC.Color.textSecondary).multilineTextAlignment(.center)
+                Text(blanked(ctx, card.target)).font(.lcSource).foregroundStyle(LC.Color.textSecondary).multilineTextAlignment(.center)
             }
             if model.revealed {
                 VStack(spacing: Space.s) {
-                    Button { app.speaker.say(card.es, dialect: app.dialect) } label: {
-                        Text(card.es).font(.system(.largeTitle, design: .serif)).foregroundStyle(LC.Color.textPrimary)
+                    Button { app.speaker.say(card.target, voice: app.tts) } label: {
+                        Text(card.target).font(.system(.largeTitle, design: .serif)).foregroundStyle(LC.Color.textPrimary)
                     }
-                    .accessibilityHint("Plays the Spanish")
+                    .accessibilityHint("Plays the \(app.lang.name)")
                     if let reason = card.reason { TintChip(tint: Tint.reason(card.reasonKind), text: reason) }
                     if let id = card.lessonId {
                         Button("Why it's built this way") { lesson = LessonRef(id: id) }.font(.lcCaption.weight(.semibold))
@@ -169,13 +169,13 @@ struct ReviewSessionView: View {
 
     private func beginSpeaking() async {
         await app.holdToTalkBegan()
-        try? await app.transcriber.start(locale: Locale(identifier: app.dialect == "es-ES" ? "es-ES" : "es-MX"))
+        try? await app.transcriber.start(locale: app.sttLocale(target: true))
     }
 
     private func endSpeaking(_ card: DueCard) async {
         let heard = await app.transcriber.stop()
         await app.holdToTalkEnded()
         model.revealed = true
-        if !heard.isEmpty { model.pronunciation = try? await app.api.pronunciation(card.lexemeId, expected: card.es, heard: heard) }
+        if !heard.isEmpty { model.pronunciation = try? await app.api.pronunciation(card.lexemeId, expected: card.target, heard: heard) }
     }
 }

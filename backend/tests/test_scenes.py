@@ -2,15 +2,15 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from app.curation.pronunciation import score
+from app.curation.pronunciation import compare
 
 pytestmark = pytest.mark.anyio
 
 
 def test_pronunciation_ignores_spelling_that_sounds_the_same():
-    assert score("vaca", "baca") == 1.0
-    assert score("hola", "ola") == 1.0
-    assert score("muela", "mesa") < 0.7
+    assert compare("vaca", "baca", "es-419")["score"] == 1.0  # same sounds, different spelling
+    assert compare("hola", "ola", "es-419")["score"] == 1.0
+    assert compare("muela", "mesa", "es-419")["score"] < 0.7
 
 
 async def test_scene_prep_rehearse_and_confidence(client, auth):
@@ -27,9 +27,9 @@ async def test_scene_prep_rehearse_and_confidence(client, auth):
 
     start = (await client.post("/v1/rehearsals", json={"scenario_id": sid}, headers=auth)).json()
     rid = start["rehearsal_id"]
-    assert start["coach"]["es"] and start["coach"]["en"]
+    assert start["coach"]["target"] and start["coach"]["en"]
     t1 = (await client.post(f"/v1/rehearsals/{rid}/turns", json={"text": "Me duele esta muela"}, headers=auth)).json()
-    assert t1["native"] is None and t1["coach"]["es"]
+    assert t1["native"] is None and t1["coach"]["target"]
     t2 = (await client.post(f"/v1/rehearsals/{rid}/turns", json={"text": "since yesterday"}, headers=auth)).json()
     assert t2["native"]  # English escape hatch gives the Spanish back
     end = (await client.post(f"/v1/rehearsals/{rid}/end", headers=auth)).json()
@@ -58,7 +58,7 @@ async def test_calendar_import_creates_upcoming_scene(client, auth):
 async def test_pronunciation_attempt_feeds_struggle(client, auth):
     await client.post("/v1/coach", json={"text": "my tooth"}, headers=auth)
     batch = (await client.post("/v1/batches/next", json={"size": 5}, headers=auth)).json()
-    muela = next(i for i in batch["items"] if i["es"] == "muela")
+    muela = next(i for i in batch["items"] if i["target"] == "muela")
     r = (await client.post("/v1/pronunciation", json={"lexeme_id": muela["lexeme_id"], "expected": "muela", "heard": "mesa"},
                            headers=auth)).json()
     assert r["ok"] is False

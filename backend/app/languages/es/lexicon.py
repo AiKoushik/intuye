@@ -1,7 +1,7 @@
 """High-frequency Spanish backbone, ordered roughly by frequency in speech (after Davies, A Frequency
-Dictionary of Spanish, Routledge, 2006), plus survival phrases. (es, en). Rank = position + 1."""
+Dictionary of Spanish, Routledge, 2006), plus survival phrases. (target, en). Rank = position + 1."""
 
-BASE: list[tuple[str, str]] = [
+BASE: tuple[tuple[str, str], ...] = (
     # survival phrases first: they buy time and confidence
     ("por favor", "please"), ("gracias", "thank you"), ("perdón", "sorry / excuse me"), ("no entiendo", "I don't understand"),
     ("¿puede repetir?", "can you repeat?"), ("más despacio", "more slowly"), ("¿cómo se dice...?", "how do you say...?"),
@@ -46,11 +46,4 @@ BASE: list[tuple[str, str]] = [
     ("¿qué?", "what?"), ("¿cómo?", "how?"), ("¿dónde?", "where?"), ("¿cuándo?", "when?"), ("¿por qué?", "why?"),
     ("¿cuánto?", "how much?"), ("¿quién?", "who?"), ("porque", "because"), ("pero", "but"), ("entonces", "so / then"),
     ("aunque", "although"), ("si", "if"), ("cuando", "when"), ("mientras", "while"), ("sin embargo", "however"),
-]
-
-
-def rank_of(es: str) -> int | None:
-    for i, (word, _) in enumerate(BASE):
-        if word == es:
-            return i + 1
-    return None
+)

@@ -64,7 +64,7 @@ final class AmbientCapture {
         if shouldListen && !isListening {
             transcriber.onFinal = { [weak self] sentence in self?.capture(sentence) }
             do {
-                try await transcriber.start(locale: Locale(identifier: "en-US"), continuous: true)
+                try await transcriber.start(locale: Locale(identifier: "en-US"), continuous: true)  // ambient capture hears the learner's own language
                 isListening = true; lastError = nil
             } catch {
                 lastError = error.localizedDescription

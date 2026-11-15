@@ -57,7 +57,7 @@ export class Moments extends Screen {
         h("p", { style: "display:flex;gap:8px;align-items:center;margin-bottom:4px" }, tintChip(tint, label),
           h("span", { class: "meta", style: "margin:0" }, m.d ? timeLabel(m.d) : "")),
         h("p", { class: "secondary", style: "font-size:16px;line-height:21px" }, m.text),
-        m.close_es ? h("button", { class: "es moment-es", type: "button", "aria-label": `Play ${m.close_es}`, onclick: () => speak(m.close_es, this.app.dialect) }, m.close_es) : null),
+        m.close_target ? h("button", { class: "tgt moment-tgt", type: "button", "aria-label": `Play ${m.close_target}`, onclick: () => speak(m.close_target, this.app.tts) }, m.close_target) : null),
       h("button", { class: "iconbtn", type: "button", "aria-label": `Delete “${m.text}”`, onclick: () => this.remove(m) }, icon("x")));
   }
 

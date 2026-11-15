@@ -13,6 +13,7 @@ from app.curation.text import english_share
 from app.db import get_session
 from app.errors import APIError
 from app.models import Rehearsal, RehearsalTurn, Scenario, User, UserSettings, Utterance, utcnow
+from app.languages import default_variety, get as language
 from app.security.deps import current_user, limit
 
 router = APIRouter(prefix="/v1/rehearsals", tags=["rehearse"], dependencies=[limit("coach", "coach_rate_limit_per_minute")])
@@ -37,7 +38,7 @@ async def _owned(db: AsyncSession, user_id: str, rehearsal_id: str) -> tuple[Reh
 
 async def _dialect(db: AsyncSession, user_id: str) -> str:
     s = await db.get(UserSettings, user_id)
-    return s.dialect if s else "es-419"
+    return s.dialect if s else default_variety()
 
 
 async def _ctx(db: AsyncSession, user_id: str, title: str, difficulty: str) -> AgentContext:
@@ -53,9 +54,9 @@ async def start(body: StartIn, request: Request, user: User = Depends(current_us
     db.add(r)
     await db.flush()
     coach = await rehearse.opening(request.app.state.agents, r.id, await _ctx(db, user.id, scen.title, body.difficulty))
-    db.add(RehearsalTurn(rehearsal_id=r.id, role="coach", text=coach.reply_es, en=coach.reply_en))
+    db.add(RehearsalTurn(rehearsal_id=r.id, role="coach", text=coach.reply_target, en=coach.reply_en))
     await db.commit()
-    return {"rehearsal_id": r.id, "coach": {"es": coach.reply_es, "en": coach.reply_en}}
+    return {"rehearsal_id": r.id, "coach": {"target": coach.reply_target, "en": coach.reply_en}}
 
 
 @router.post("/{rehearsal_id}/turns")
@@ -69,11 +70,12 @@ async def turn(rehearsal_id: str, body: TurnIn, request: Request, user: User = D
     native, coach, done = await rehearse.turn(request.app.state.agents, r.id, await _ctx(db, user.id, scen.title, r.difficulty),
                                               body.text, history)
     db.add(RehearsalTurn(rehearsal_id=r.id, role="user", text=body.text, native=native))
-    db.add(RehearsalTurn(rehearsal_id=r.id, role="coach", text=coach.reply_es, en=coach.reply_en))
-    db.add(Utterance(user_id=user.id, text=body.text, source="rehearsal", lang_mix=english_share(body.text),
-                     close_es=native or body.text))
+    db.add(RehearsalTurn(rehearsal_id=r.id, role="coach", text=coach.reply_target, en=coach.reply_en))
+    db.add(Utterance(user_id=user.id, lang=scen.lang, text=body.text, source="rehearsal",
+                     lang_mix=english_share(body.text, language(scen.lang)),
+                     close_target=native or body.text))
     await db.commit()
-    return {"native": native, "coach": {"es": coach.reply_es, "en": coach.reply_en}, "done": done}
+    return {"native": native, "coach": {"target": coach.reply_target, "en": coach.reply_en}, "done": done}
 
 
 @router.post("/{rehearsal_id}/end")

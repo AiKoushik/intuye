@@ -1,4 +1,4 @@
-"""Lexeme bookkeeping shared by coach, capture, scenarios and curation. Every query is user-scoped."""
+"""Lexeme bookkeeping shared by coach, capture, scenarios and curation. Every query is user- and language-scoped."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -6,41 +6,49 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.curation.text import is_spanish_token, normalize_es, tokens
-from app.models import Card, Lexeme, LexemeEvent, utcnow
+from app.curation.text import is_target_token, normalize_entry, tokens
+from app.languages import LanguagePack, default_variety, for_variety
+from app.models import Card, Lexeme, LexemeEvent, UserSettings, utcnow
 
-STOP_ES = {"el", "la", "los", "las", "un", "una", "de", "y", "a", "en", "que", "yo", "mi", "me", "te", "se", "lo", "es"}
+
+async def learner_language(db: AsyncSession, user_id: str) -> tuple[LanguagePack, str]:
+    """The language pack and variety the learner is on now (from their variety setting)."""
+    s = await db.get(UserSettings, user_id)
+    variety = s.dialect if s else default_variety()
+    return for_variety(variety), variety
 
 
-def candidates_from_alignment(alignment: list[dict], to_es: bool) -> list[tuple[str, str]]:
-    """(es, en) pairs worth tracking: Spanish the learner needed but didn't produce themselves."""
+def candidates_from_alignment(alignment: list[dict], to_target: bool, pack: LanguagePack) -> list[tuple[str, str]]:
+    """(target, en) pairs worth tracking: target-language words the learner needed but didn't produce themselves."""
     out: list[tuple[str, str]] = []
     for p in alignment:
         src, tgt = p.get("src", ""), p.get("tgt", "")
-        if to_es:
-            src_toks = tokens(src)
-            if not src_toks or all(is_spanish_token(t) for t in src_toks):
-                continue  # already said in Spanish
-            es, en = normalize_es(tgt), src.strip().lower()
+        if to_target:
+            src_toks = tokens(src, pack)
+            if not src_toks or all(is_target_token(t, pack) for t in src_toks):
+                continue  # already said in the target language
+            target, en = normalize_entry(tgt, pack), src.strip().lower()
         else:
-            es, en = normalize_es(src), tgt.strip().lower().rstrip("?.!")
-        if es and es not in STOP_ES and len(es) <= 60:
-            out.append((es, en[:120]))
+            target, en = normalize_entry(src, pack), tgt.strip().lower().rstrip("?.!")
+        if target and target not in pack.stopwords and len(target) <= 60:
+            out.append((target, en[:120]))
     return out
 
 
-async def known_es(db: AsyncSession, user_id: str) -> set[str]:
-    rows = await db.execute(select(Lexeme.es).join(Card, Card.lexeme_id == Lexeme.id)
-                            .where(Lexeme.user_id == user_id, Card.reps > 0))
+async def known_target(db: AsyncSession, user_id: str, pack: LanguagePack) -> set[str]:
+    rows = await db.execute(select(Lexeme.target).join(Card, Card.lexeme_id == Lexeme.id)
+                            .where(Lexeme.user_id == user_id, Lexeme.lang == pack.code, Card.reps > 0))
     return set(rows.scalars())
 
 
-async def upsert_lexeme(db: AsyncSession, user_id: str, es: str, en: str, origin: str, topic: str | None = None,
-                        context: str | None = None) -> Lexeme:
-    es = normalize_es(es)
-    row = (await db.execute(select(Lexeme).where(Lexeme.user_id == user_id, Lexeme.es == es))).scalar_one_or_none()
+async def upsert_lexeme(db: AsyncSession, user_id: str, target: str, en: str, origin: str, *, pack: LanguagePack,
+                        topic: str | None = None, context: str | None = None) -> Lexeme:
+    target = normalize_entry(target, pack)
+    row = (await db.execute(select(Lexeme).where(Lexeme.user_id == user_id, Lexeme.lang == pack.code,
+                                                 Lexeme.target == target))).scalar_one_or_none()
     if row is None:
-        row = Lexeme(user_id=user_id, es=es, en=en[:120], origin=origin, topic=topic, context=(context or "")[:500] or None)
+        row = Lexeme(user_id=user_id, lang=pack.code, target=target, en=en[:120], origin=origin, topic=topic,
+                     context=(context or "")[:500] or None)
         db.add(row)
         await db.flush()
     else:

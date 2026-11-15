@@ -13,6 +13,7 @@ from app.errors import APIError
 from app.models import Readiness, Scenario, ScenarioPhrase, User, utcnow
 from app.security.deps import current_user, limit
 from app.services import library
+from app.services.lexicon import learner_language
 from app.services.scenarios import context_for, prepare, serialise
 
 router = APIRouter(prefix="/v1/scenarios", tags=["scenarios"])
@@ -51,7 +52,7 @@ class StatusIn(BaseModel):
 
 
 async def _build(request: Request, db: AsyncSession, s: Scenario):
-    """Scene builder with the library search tool wired to this learner's Spanish variety."""
+    """Scene builder with the library search tool wired to this learner's language variety."""
     ctx = await context_for(db, s.user_id, s.title)
     ctx.library_search = library.search_for_agent(request.app.state.db.sessionmaker, request.app.state.library, ctx.dialect)
     pack, card = await prepare(db, request.app.state.agents, s, ctx)
@@ -67,7 +68,8 @@ async def _owned(db: AsyncSession, user_id: str, scenario_id: str) -> Scenario:
 
 @router.get("")
 async def list_scenarios(user: User = Depends(current_user), db: AsyncSession = Depends(get_session)) -> dict:
-    rows = (await db.execute(select(Scenario).where(Scenario.user_id == user.id, Scenario.status != "done")
+    pack, _ = await learner_language(db, user.id)
+    rows = (await db.execute(select(Scenario).where(Scenario.user_id == user.id, Scenario.lang == pack.code, Scenario.status != "done")
                              .order_by(Scenario.starts_at.is_(None), Scenario.starts_at, Scenario.created_at.desc()))).scalars()
     out: dict[str, list] = {"upcoming": [], "recurring": [], "mine": []}
     for s in rows:
@@ -79,7 +81,9 @@ async def list_scenarios(user: User = Depends(current_user), db: AsyncSession = 
 async def create(body: ScenarioIn, request: Request, user: User = Depends(current_user),
                  db: AsyncSession = Depends(get_session)) -> dict:
     details = " ".join(body.details.split()) if body.details else None
-    s = Scenario(user_id=user.id, title=body.title.strip(), details=details or None, kind=body.kind, starts_at=_aware(body.starts_at))
+    pack, _ = await learner_language(db, user.id)
+    s = Scenario(user_id=user.id, lang=pack.code, title=body.title.strip(), details=details or None, kind=body.kind,
+                 starts_at=_aware(body.starts_at))
     db.add(s)
     await db.commit()
     pack, card, ctx = await _build(request, db, s)
@@ -92,6 +96,7 @@ async def create(body: ScenarioIn, request: Request, user: User = Depends(curren
 async def from_calendar(body: CalendarIn, request: Request, user: User = Depends(current_user),
                         db: AsyncSession = Depends(get_session)) -> dict:
     now = utcnow()
+    pack, _ = await learner_language(db, user.id)
     existing = {(s.title, s.starts_at) for s in (await db.execute(
         select(Scenario).where(Scenario.user_id == user.id, Scenario.kind == "upcoming"))).scalars()}
     created = []
@@ -99,7 +104,7 @@ async def from_calendar(body: CalendarIn, request: Request, user: User = Depends
         starts = _aware(e.starts_at)
         if not (now <= starts <= now + CALENDAR_HORIZON) or (e.title.strip(), starts) in existing:
             continue
-        s = Scenario(user_id=user.id, title=e.title.strip(), kind="upcoming", starts_at=starts)
+        s = Scenario(user_id=user.id, lang=pack.code, title=e.title.strip(), kind="upcoming", starts_at=starts)
         db.add(s)
         await db.commit()
         await _build(request, db, s)  # calendar scenes are never shared

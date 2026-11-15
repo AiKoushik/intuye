@@ -9,8 +9,8 @@ from datetime import datetime
 
 @dataclass
 class Candidate:
-    key: str  # lexeme id, or "base:<es>" / "grammar:<id>" for items not stored yet
-    es: str
+    key: str  # lexeme id, or "base:<target>" / "grammar:<id>" for items not stored yet
+    target: str  # the word or phrase in the target language
     en: str
     origin: str  # spoken | base | scenario | grammar
     topic: str | None = None
@@ -94,7 +94,7 @@ def select(cands: list[Candidate], now: datetime, level: int, topic_share: dict[
         s, kind, why = score(c, now, level, topic_share)
         if s > 0:
             scored.append(Pick(c, round(s, 4), kind, why))
-    scored.sort(key=lambda p: (-p.score, p.candidate.es))
+    scored.sort(key=lambda p: (-p.score, p.candidate.target))
 
     picks: list[Pick] = []
     per_topic: Counter[str] = Counter()
@@ -102,21 +102,21 @@ def select(cands: list[Candidate], now: datetime, level: int, topic_share: dict[
     seen: set[str] = set()
     for p in scored:
         c = p.candidate
-        if c.es in seen:
+        if c.target in seen:
             continue
         if c.topic and per_topic[c.topic] >= 3:
             continue
         if p.reason_kind == "grammar" and grammar >= 2:
             continue
         picks.append(p)
-        seen.add(c.es)
+        seen.add(c.target)
         per_topic[c.topic or ""] += 1 if c.topic else 0
         grammar += p.reason_kind == "grammar"
         if len(picks) == size:
             break
 
     if level <= 2 and picks and not any(p.candidate.base_rank for p in picks):
-        base = next((p for p in scored if p.candidate.base_rank and p.candidate.es not in seen), None)
+        base = next((p for p in scored if p.candidate.base_rank and p.candidate.target not in seen), None)
         if base:
             picks[-1] = base
     return picks

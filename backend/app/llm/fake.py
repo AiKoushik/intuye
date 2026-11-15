@@ -17,17 +17,12 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.utils.function_calling import convert_to_openai_tool
 from pydantic import BaseModel
 
+from app import languages
 from app.agents import schemas as s
 
 T = TypeVar("T", bound=BaseModel)
 
-EN_ES = {
-    "i like": "me gusta", "i": "yo", "like": "gusta", "hearing": "escuchar", "hear": "escuchar", "this": "esto",
-    "in": "en", "my": "mi", "mind": "mente", "brain": "cerebro", "tooth": "muela", "hurts": "duele", "since": "desde",
-    "yesterday": "ayer", "work": "trabajo", "food": "comida", "neuroscience": "neurociencia", "want": "quiero",
-    "that you": "que", "come": "vengas", "early": "temprano", "the": "el", "is": "es", "very": "muy",
-    "interesting": "interesante", "cook": "cocinar", "dinner": "cena", "son": "hijo", "school": "escuela",
-}
+EN_ES = languages.get("es").dev_dictionary  # the fake speaks only Spanish; it is a test double, not a language
 ES_EN_PHRASES = {"como te va": "How's it going?", "cómo te va": "How's it going?", "que tal": "How are things?"}
 ES_EN = {v: k for k, v in EN_ES.items()} | {"este": "this", "esto": "this", "me gusta": "I like", "te": "you", "va": "goes"}
 TOPICS = {"neuroscience": ("brain", "neuron", "neuroscience", "cerebro", "mind"), "food": ("food", "cook", "dinner", "eat"),
@@ -39,7 +34,7 @@ def _user_text(user: str) -> str:
     return (m.group(1) if m else user).strip()
 
 
-def _to_es(text: str) -> s.TranslationOut:
+def _to_target(text: str) -> s.TranslationOut:
     words = re.findall(r"[\w']+", text.lower())
     pairs, i = [], 0
     while i < len(words):
@@ -52,7 +47,7 @@ def _to_es(text: str) -> s.TranslationOut:
     return s.TranslationOut(close=close[:1].upper() + close[1:] + ".", alignment=pairs, natural=None)
 
 
-def _to_en(text: str) -> s.TranslationOut:
+def _to_native(text: str) -> s.TranslationOut:
     key = re.sub(r"[¿?¡!.]", "", text.lower()).strip()
     if key in ES_EN_PHRASES:
         parts = key.split(" ", 1)
@@ -69,8 +64,8 @@ def _topic(text: str) -> str | None:
     return next((t for t, keys in TOPICS.items() if any(k in low for k in keys)), None)
 
 
-def _phrase(en: str, es: str) -> s.PhraseOut:
-    return s.PhraseOut(en=en, es=es, alignment=[s.AlignPair(src=en, tgt=es)])
+def _phrase(en: str, target: str) -> s.PhraseOut:
+    return s.PhraseOut(en=en, target=target, alignment=[s.AlignPair(src=en, tgt=target)])
 
 
 def _card(text: str) -> s.SceneCardOut:
@@ -89,15 +84,15 @@ def fake_structured(schema: type[T], system: str, user: str) -> T:
 
 def _structured(schema: type[T], text: str, user: str) -> T:
     if schema is s.TranslationOut:
-        return _to_en(text) if "DIRECTION: to_en" in user else _to_es(text)  # type: ignore[return-value]
+        return _to_native(text) if "DIRECTION: to_native" in user else _to_target(text)  # type: ignore[return-value]
     if schema is s.AnswerOut:
         return s.AnswerOut(answer="Use usted with people you'd address formally, like strangers, officials or a "
                                   "landlord. Use tú with friends, family and people your age.")  # type: ignore[return-value]
     if schema is s.IngestOut:
         items = []
         for m in re.finditer(r"^\[(\d+)\] (.+)$", text, re.M):
-            t = _to_es(m.group(2))
-            items.append(s.IngestItem(index=int(m.group(1)), close_es=t.close, alignment=t.alignment, topic=_topic(m.group(2))))
+            t = _to_target(m.group(2))
+            items.append(s.IngestItem(index=int(m.group(1)), close_target=t.close, alignment=t.alignment, topic=_topic(m.group(2))))
         return s.IngestOut(items=items)  # type: ignore[return-value]
     if schema is s.PrepPackOut:
         key = [_phrase("This tooth hurts", "Me duele esta muela"), _phrase("since yesterday", "desde ayer"),
@@ -113,12 +108,12 @@ def _structured(schema: type[T], text: str, user: str) -> T:
         return s.PrepPackOut(key=key, rescue=rescue, hear=hear)  # type: ignore[return-value]
     if schema is s.CoachTurnOut:
         if "(scene starts" in user:
-            return s.CoachTurnOut(reply_es="Buenos días. ¿Qué le pasa?", reply_en="Good morning. What's wrong with you?")  # type: ignore[return-value]
+            return s.CoachTurnOut(reply_target="Buenos días. ¿Qué le pasa?", reply_en="Good morning. What's wrong with you?")  # type: ignore[return-value]
         turns = user.count("LEARNER:")
-        native = None if any(c in text for c in "áéíóúñ¿") or "duele" in text.lower() else _to_es(text).close
+        native = None if any(c in text for c in "áéíóúñ¿") or "duele" in text.lower() else _to_target(text).close
         if turns >= 4:
-            return s.CoachTurnOut(native=native, reply_es="Muy bien. Nos vemos el jueves.", reply_en="Very good. See you Thursday.", done=True)  # type: ignore[return-value]
-        return s.CoachTurnOut(native=native, reply_es="¿Desde cuándo le duele?", reply_en="Since when does it hurt you?")  # type: ignore[return-value]
+            return s.CoachTurnOut(native=native, reply_target="Muy bien. Nos vemos el jueves.", reply_en="Very good. See you Thursday.", done=True)  # type: ignore[return-value]
+        return s.CoachTurnOut(native=native, reply_target="¿Desde cuándo le duele?", reply_en="Since when does it hurt you?")  # type: ignore[return-value]
     if schema is s.RehearsalSummaryOut:
         return s.RehearsalSummaryOut(went_well="You described the pain and when it started without switching to English.",
                                      keep=[_phrase("This tooth hurts", "Me duele esta muela"),

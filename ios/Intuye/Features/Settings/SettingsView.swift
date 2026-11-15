@@ -1,7 +1,7 @@
 import IntuyeKit
 import SwiftUI
 
-/// Settings and privacy centre: your Spanish, notifications, capture, and your data.
+/// Settings and privacy centre: your language, notifications, capture, and your data.
 struct SettingsView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
@@ -15,9 +15,13 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 if let s = settings {
-                    Section("Your Spanish") {
+                    Section("Your \(app.lang.name)") {
                         Picker("Variety", selection: binding(s.dialect) { v in ["dialect": v] }) {
-                            Text("Latin America").tag("es-419"); Text("Mexico").tag("es-MX"); Text("Spain").tag("es-ES")
+                            ForEach(app.languages?.languages ?? [app.lang]) { lang in
+                                ForEach(lang.varieties) { v in
+                                    Text((app.languages?.languages.count ?? 1) > 1 ? "\(lang.name) (\(v.label))" : v.label).tag(v.code)
+                                }
+                            }
                         }
                         Picker("Level", selection: levelBinding(s.level)) {
                             ForEach(Levels.names.indices, id: \.self) { Text(Levels.names[$0]).tag($0) }

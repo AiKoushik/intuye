@@ -13,6 +13,7 @@ from app.agents.schemas import PrepPackOut, SceneCardOut
 from app.library.index import LibraryIndex, card_text
 from app.models import LibraryReport, Scenario, SceneTemplate, User
 from app.services.scenarios import store_pack
+from app.languages import for_variety
 
 MIN_SIMILARITY = 0.3
 HIDE_AFTER_REPORTS = 3
@@ -23,6 +24,12 @@ Credit = Literal["anonymous", "name"]
 
 def has_personal_details(texts: list[str]) -> bool:
     return any(PERSONAL.search(t or "") for t in texts)
+
+
+def phrases(t: SceneTemplate) -> dict:
+    """The template's pack with language-neutral keys (rows saved before language packs used "es")."""
+    return {kind: [{"en": p["en"], "target": p.get("target") or p.get("es", ""), "alignment": p.get("alignment") or []}
+                   for p in t.pack.get(kind, [])] for kind in ("key", "rescue", "hear")}
 
 
 def card(t: SceneTemplate, similarity: float | None = None) -> dict:
@@ -62,7 +69,7 @@ async def share(db: AsyncSession, index: LibraryIndex, user: User, scenario: Sce
         return {"status": "private", "reason": "not_shared"}
     phrases = [p for kind in (pack.key, pack.rescue, pack.hear) for p in kind]
     if not scene_card.shareable or has_personal_details([scene_card.title, scene_card.situation]
-                                                         + [p.es for p in phrases] + [p.en for p in phrases]):
+                                                         + [p.target for p in phrases] + [p.en for p in phrases]):
         return {"status": "private", "reason": "personal"}
     vector = await index.embed(card_text(scene_card.title, scene_card.situation))
     nearest = await index.nearest(db, dialect, vector, k=1)
@@ -86,7 +93,8 @@ async def share(db: AsyncSession, index: LibraryIndex, user: User, scenario: Sce
 
 
 async def use(db: AsyncSession, user: User, t: SceneTemplate, starts_at: datetime | None, kind: str) -> Scenario:
-    s = Scenario(user_id=user.id, title=t.title, kind=kind, starts_at=starts_at, topic=t.topic, template_id=t.id)
+    s = Scenario(user_id=user.id, lang=for_variety(t.dialect).code, title=t.title, kind=kind, starts_at=starts_at, topic=t.topic,
+                 template_id=t.id)
     db.add(s)
     await db.flush()
     t.uses += 1

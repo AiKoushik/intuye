@@ -1,18 +1,20 @@
 import { h, icon } from "../dom.js";
 import { chipDir, emptyCard, errorBanner, holdToTalk, interlinear } from "../components.js";
-import { localeFor, speak, speechSupported } from "../speech.js";
+import { speak, speechSupported } from "../speech.js";
 import { Screen, navButton } from "./base.js";
 
-// Phrasebook (H9): kept on device, like the iPhone app.
+// Phrasebook (H9): kept on device, like the iPhone app. Entries saved before language packs used "spanish".
 export const Phrasebook = {
   key: "lc.phrasebook",
-  all() { try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch { return []; } },
+  all() {
+    try { return (JSON.parse(localStorage.getItem(this.key)) || []).map((e) => ({ ...e, target: e.target ?? e.spanish })); } catch { return []; }
+  },
   has(id) { return this.all().some((e) => e.id === id); },
   toggle(r) {
     const all = this.all();
     const i = all.findIndex((e) => e.id === r.id);
     if (i >= 0) all.splice(i, 1);
-    else all.unshift({ id: r.id, spanish: r.intent === "to_es" ? r.close : r.source, english: r.intent === "to_es" ? r.source : r.close });
+    else all.unshift({ id: r.id, target: r.intent === "to_target" ? r.close : r.source, english: r.intent === "to_target" ? r.source : r.close });
     localStorage.setItem(this.key, JSON.stringify(all));
   },
 };
@@ -25,14 +27,17 @@ export class Say extends Screen {
     this.items = [];
     this.busy = false;
     this.pending = "";
-    this.listenSpanish = false;
+    this.listenTarget = false;
     this.err = null;
   }
 
   navRight() {
     return [
-      navButton("", () => { this.listenSpanish = !this.listenSpanish; this.app.toast(this.listenSpanish ? "Mic listens for Spanish" : "Mic listens for English or Spanglish"); this.renderNav(); },
-        { iconName: "globe", aria: this.listenSpanish ? "Speech language: Spanish" : "Speech language: English" }),
+      navButton("", () => {
+        this.listenTarget = !this.listenTarget;
+        this.app.toast(this.listenTarget ? `Mic listens for ${this.app.lang.name}` : `Mic listens for English, or English mixed with ${this.app.lang.name}`);
+        this.renderNav();
+      }, { iconName: "globe", aria: this.listenTarget ? `Speech language: ${this.app.lang.name}` : "Speech language: English" }),
       navButton("", () => this.app.push(new PhrasebookScreen(this.app)), { iconName: "star", aria: "Phrasebook" }),
     ];
   }
@@ -53,7 +58,8 @@ export class Say extends Screen {
   content() {
     const out = [];
     if (!this.items.length && !this.busy) {
-      out.push(emptyCard("Say anything in English, Spanish or a mix — like “me gusta escuchar esto en mi mind” or “what does cómo te va mean?”"));
+      const tries = (this.app.lang.ui?.try_saying || []).map((t) => `“${t}”`).join(" or ");
+      out.push(emptyCard(`Say anything in English, ${this.app.lang.name} or a mix${tries ? `, like ${tries}` : ""}.`));
       if (!speechSupported) out.push(h("p", { class: "fine", style: "margin:4px 4px 12px" }, "This browser can't do speech. Type instead, or use Chrome or Edge."));
     }
     for (const r of this.items) out.push(r.intent === "ask" ? this.answerCard(r) : this.resultCard(r));
@@ -65,19 +71,19 @@ export class Say extends Screen {
 
   resultCard(r) {
     const saved = Phrasebook.has(r.id);
-    const spanish = r.intent === "to_es" ? r.close : r.source;
+    const target = r.intent === "to_target" ? r.close : r.source;
     return h("div", { class: "card" },
-      h("div", { class: "split", style: "margin-bottom:10px" }, chipDir(r.intent),
+      h("div", { class: "split", style: "margin-bottom:10px" }, chipDir(r.intent, this.app.lang.name),
         h("span", {},
-          h("button", { class: "iconbtn", type: "button", "aria-label": "Play Spanish", onclick: () => speak(spanish, this.app.dialect) }, icon("speaker")),
+          h("button", { class: "iconbtn", type: "button", "aria-label": `Play the ${this.app.lang.name}`, onclick: () => speak(target, this.app.tts) }, icon("speaker")),
           h("button", { class: "iconbtn", type: "button", "aria-label": saved ? "Remove from phrasebook" : "Save to phrasebook",
             onclick: () => { Phrasebook.toggle(r); this.update(); } }, icon(saved ? "star-fill" : "star")))),
-      interlinear(r.alignment, { toEn: r.intent === "to_en" }),
+      interlinear(r.alignment, { toNative: r.intent === "to_native", language: this.app.lang.name }),
       r.natural ? h("details", { class: "natural" }, h("summary", {}, "More natural"), h("p", {}, r.natural)) : null);
   }
 
   answerCard(r) {
-    return h("div", { class: "card wash t-sand" }, h("p", { class: "answer-q", style: "display:flex;align-items:center;gap:8px" }, chipDir("ask"), r.source),
+    return h("div", { class: "card wash t-sand" }, h("p", { class: "answer-q", style: "display:flex;align-items:center;gap:8px" }, chipDir("ask", this.app.lang.name), r.source),
       h("p", { class: "body" }, r.answer));
   }
 
@@ -104,7 +110,7 @@ export class Say extends Screen {
     try {
       this.talking = true;
       this.field.placeholder = "Listening…";
-      await this.app.holdBegin(localeFor(this.app.dialect, this.listenSpanish));
+      await this.app.holdBegin(this.app.stt(this.listenTarget));
     } catch (e) {
       this.talking = false; this.mic.end?.();
       this.err = e.message; this.update();
@@ -123,12 +129,12 @@ export class Say extends Screen {
 class PhrasebookScreen extends Screen {
   constructor(app) { super(app); this.title = "Phrasebook"; this.large = false; this.q = ""; }
   content() {
-    const all = Phrasebook.all().filter((e) => !this.q || `${e.spanish} ${e.english}`.toLowerCase().includes(this.q.toLowerCase()));
+    const all = Phrasebook.all().filter((e) => !this.q || `${e.target} ${e.english}`.toLowerCase().includes(this.q.toLowerCase()));
     const search = h("input", { class: "text-input", placeholder: "Search", value: this.q, style: "margin:4px 0 12px",
       oninput: (e) => { this.q = e.target.value; clearTimeout(this.t); this.t = setTimeout(() => { this.update(); this.scrollEl.querySelector("input")?.focus(); }, 250); } });
     if (!Phrasebook.all().length) return [h("p", { class: "empty", style: "margin-top:12px" }, "Tap the star on any result to keep it here.")];
-    return [search, h("div", { class: "group" }, all.map((e) => h("button", { class: "row", type: "button", onclick: () => speak(e.spanish, this.app.dialect) },
-      h("span", { class: "grow" }, h("span", { class: "es", style: "display:block;font-size:18px" }, e.spanish), h("span", { class: "meta" }, e.english)),
+    return [search, h("div", { class: "group" }, all.map((e) => h("button", { class: "row", type: "button", onclick: () => speak(e.target, this.app.tts) },
+      h("span", { class: "grow" }, h("span", { class: "tgt", style: "display:block;font-size:18px" }, e.target), h("span", { class: "meta" }, e.english)),
       icon("speaker", "chev"))))];
   }
 }

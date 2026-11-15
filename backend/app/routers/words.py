@@ -14,6 +14,7 @@ from app.errors import APIError
 from app.models import Batch, BatchItem, Card, Lexeme, LexemeEvent, Review, User, utcnow
 from app.security.deps import current_user
 from app.services.curation import build_batch, to_state
+from app.services.lexicon import learner_language
 
 router = APIRouter(prefix="/v1", tags=["words"])
 
@@ -34,25 +35,27 @@ OFFLINE_WINDOW = timedelta(days=14)
 @router.post("/batches/next")
 async def next_batch(body: BatchIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_session)) -> dict:
     batch, picks = await build_batch(db, user.id, body.size)
+    pack, _ = await learner_language(db, user.id)
     return {"batch_id": batch.id, "items": [
-        {"lexeme_id": lx.id, "es": lx.es, "en": lx.en, "reason": p.reason, "reason_kind": p.reason_kind, "lesson_id": lesson_id_for(lx.es),
+        {"lexeme_id": lx.id, "target": lx.target, "en": lx.en, "reason": p.reason, "reason_kind": p.reason_kind, "lesson_id": lesson_id_for(lx.target, pack),
          "context": lx.context} for p, lx in picks]}
 
 
 @router.get("/reviews/due")
 async def due(user: User = Depends(current_user), db: AsyncSession = Depends(get_session)) -> dict:
     now = utcnow()
+    pack, _ = await learner_language(db, user.id)
     rows = (await db.execute(select(Card, Lexeme).join(Lexeme, Lexeme.id == Card.lexeme_id).where(
-        Card.user_id == user.id, Card.due_at <= now).order_by(Card.due_at).limit(50))).all()
+        Card.user_id == user.id, Lexeme.lang == pack.code, Card.due_at <= now).order_by(Card.due_at).limit(50))).all()
     reasons = {}
     if rows:
         ids = [lx.id for _, lx in rows]
         for item in (await db.execute(select(BatchItem).join(Batch).where(
                 Batch.user_id == user.id, BatchItem.lexeme_id.in_(ids)).order_by(Batch.created_at))).scalars():
             reasons[item.lexeme_id] = (item.reason, item.reason_kind)
-    return {"items": [{"lexeme_id": lx.id, "es": lx.es, "en": lx.en, "context": lx.context, "state": c.state,
+    return {"items": [{"lexeme_id": lx.id, "target": lx.target, "en": lx.en, "context": lx.context, "state": c.state,
                        "reason": reasons.get(lx.id, (None, None))[0], "reason_kind": reasons.get(lx.id, (None, lx.origin))[1],
-                       "lesson_id": lesson_id_for(lx.es)}
+                       "lesson_id": lesson_id_for(lx.target, pack)}
                       for c, lx in rows]}
 
 

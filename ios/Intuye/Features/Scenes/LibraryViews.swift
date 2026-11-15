@@ -105,10 +105,10 @@ struct LibrarySceneView: View {
                         ForEach(Array(t.phrases.key.enumerated()), id: \.offset) { i, p in
                             HStack(alignment: .top) {
                                 InterlinearLine(pairs: p.alignment.map { $0.map { AlignedPair(src: $0.src, tgt: $0.tgt, new: false) } }
-                                    ?? [AlignedPair(src: p.en, tgt: p.es, new: false)])
+                                    ?? [AlignedPair(src: p.en, tgt: p.target, new: false)])
                                 Spacer(minLength: Space.s)
-                                Button { app.speaker.say(p.es, dialect: app.dialect) } label: { Image(systemName: "speaker.wave.2") }
-                                    .accessibilityLabel("Play \(p.es)")
+                                Button { app.speaker.say(p.target, voice: app.tts) } label: { Image(systemName: "speaker.wave.2") }
+                                    .accessibilityLabel("Play \(p.target)")
                             }
                             .padding(.vertical, Space.m)
                             if i < t.phrases.key.count - 1 { Divider().overlay(LC.Color.hairline) }
@@ -117,9 +117,9 @@ struct LibrarySceneView: View {
                     .lcCard()
                     Text("If you get stuck").font(.lcCaption).foregroundStyle(LC.Color.textSecondary).padding(.top, Space.l)
                     VStack(alignment: .leading, spacing: Space.s) {
-                        ForEach(t.phrases.rescue, id: \.es) { r in
-                            Button { app.speaker.say(r.es, dialect: app.dialect, slow: true) } label: {
-                                Text(r.es).font(.lcSpanish).foregroundStyle(LC.Color.textPrimary).frame(maxWidth: .infinity, alignment: .leading)
+                        ForEach(t.phrases.rescue, id: \.target) { r in
+                            Button { app.speaker.say(r.target, voice: app.tts, slow: true) } label: {
+                                Text(r.target).font(.lcTarget).foregroundStyle(LC.Color.textPrimary).frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .buttonStyle(.plain)
                         }
@@ -142,7 +142,7 @@ struct LibrarySceneView: View {
         .navigationBarTitleDisplayMode(.inline)
         .confirmationDialog("What's wrong with this scene?", isPresented: $reporting, titleVisibility: .visible) {
             ForEach(LibraryReportReason.allCases, id: \.self) { reason in
-                Button(reason.label) { Task { await report(reason) } }
+                Button(reason.label(language: app.lang.name)) { Task { await report(reason) } }
             }
         } message: { Text("Scenes reported by three learners are hidden until we review them.") }
         .task { await load() }

@@ -19,15 +19,19 @@ struct CalendarService {
     }
 }
 
-/// Speaks Spanish lines in the learner's chosen variety.
+/// Speaks target-language lines with the variety's voice (from the server's language pack).
 @MainActor
 final class Speaker {
     private let synth = AVSpeechSynthesizer()
 
-    func say(_ text: String, dialect: String, slow: Bool = false) {
+    /// `voice` is a BCP-47 language like "es-MX"; falls back to any installed voice of that language.
+    func say(_ text: String, voice: String, slow: Bool = false) {
+        guard !voice.isEmpty else { return }
         synth.stopSpeaking(at: .immediate)
         let u = AVSpeechUtterance(string: text)
-        u.voice = AVSpeechSynthesisVoice(language: dialect == "es-ES" ? "es-ES" : "es-MX")
+        let base = voice.split(separator: "-").first.map(String.init) ?? voice
+        u.voice = AVSpeechSynthesisVoice(language: voice)
+            ?? AVSpeechSynthesisVoice.speechVoices().first { $0.language.hasPrefix(base) }
         u.rate = slow ? 0.38 : 0.47
         synth.speak(u)
     }

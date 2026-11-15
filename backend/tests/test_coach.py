@@ -1,16 +1,19 @@
 import pytest
 
 from app.agents.coach import route_input, trim_answer
+from app.languages import get
+
+ES = get("es")
 
 pytestmark = pytest.mark.anyio
 
 
 def test_router_intents():
-    assert route_input("me gusta escuchar este en mi mind", "auto")[0] == "to_es"
-    assert route_input("como te va", "auto")[0] == "to_en"
-    assert route_input("what does como te va mean?", "auto") == ("to_en", "como te va")
-    assert route_input("how do I say tooth in Spanish?", "auto") == ("to_es", "tooth")
-    assert route_input("when do I use usted?", "auto")[0] == "ask"
+    assert route_input("me gusta escuchar este en mi mind", "auto", ES)[0] == "to_target"
+    assert route_input("como te va", "auto", ES)[0] == "to_native"
+    assert route_input("what does como te va mean?", "auto", ES) == ("to_native", "como te va")
+    assert route_input("how do I say tooth in Spanish?", "auto", ES) == ("to_target", "tooth")
+    assert route_input("when do I use usted?", "auto", ES)[0] == "ask"
 
 
 def test_answer_is_trimmed_to_three_sentences():
@@ -22,7 +25,7 @@ async def test_spanglish_to_spanish_close_and_new_word(client, auth):
     r = await client.post("/v1/coach", json={"text": "me gusta escuchar este en mi mind"}, headers=auth)
     assert r.status_code == 200, r.text
     body = r.json()
-    assert body["intent"] == "to_es" and body["answer"] is None
+    assert body["intent"] == "to_target" and body["answer"] is None
     assert "\n" not in body["close"] and "mente" in body["close"].lower()
     new = {p["src"]: p["tgt"] for p in body["alignment"] if p["new"]}
     assert new == {"mind": "mente"}  # Spanish the learner already said isn't flagged
@@ -31,7 +34,7 @@ async def test_spanglish_to_spanish_close_and_new_word(client, auth):
 async def test_spanish_to_english_is_one_short_line(client, auth):
     r = await client.post("/v1/coach", json={"text": "como te va"}, headers=auth)
     body = r.json()
-    assert body["intent"] == "to_en" and body["close"] == "How's it going?" and body["natural"] is None
+    assert body["intent"] == "to_native" and body["close"] == "How's it going?" and body["natural"] is None
 
 
 async def test_explicit_question_gets_short_answer_only(client, auth):

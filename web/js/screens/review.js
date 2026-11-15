@@ -1,7 +1,7 @@
 import { applyAmbient } from "./base.js";
 import { h, icon, parseDate, relativeDay } from "../dom.js";
 import { errorBanner, holdToTalk, ratingButtons, reasonTint, spinner, tintChip } from "../components.js";
-import { localeFor, speak } from "../speech.js";
+import { speak } from "../speech.js";
 import { LessonScreen } from "./lesson.js";
 
 /** Full-screen review session (fullScreenCover on iPhone). */
@@ -57,14 +57,14 @@ export class ReviewCover {
   }
 
   card(c) {
-    const ctx = c.context ? c.context.replace(new RegExp(c.es.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "____") : null;
-    const el = h("div", { class: "rcard", role: "button", tabindex: "0", "aria-label": this.revealed ? c.es : "Tap to show the answer" },
+    const ctx = c.context ? c.context.replace(new RegExp(c.target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "____") : null;
+    const el = h("div", { class: "rcard", role: "button", tabindex: "0", "aria-label": this.revealed ? c.target : "Tap to show the answer" },
       h("div", { style: "flex:1" }),
       h("div", { class: "cue" }, c.en),
       ctx ? h("div", { class: "ctx" }, ctx) : null,
       this.revealed
         ? h("div", {},
-          h("button", { class: "es-xl", type: "button", onclick: (e) => { e.stopPropagation(); speak(c.es, this.app.dialect); }, "aria-label": `Play ${c.es}` }, c.es),
+          h("button", { class: "tgt-xl", type: "button", onclick: (e) => { e.stopPropagation(); speak(c.target, this.app.tts); }, "aria-label": `Play ${c.target}` }, c.target),
           c.reason ? h("p", { style: "margin-top:10px" }, tintChip(reasonTint(c.reason_kind), c.reason)) : null,
           c.lesson_id ? h("button", { class: "link", type: "button", style: "margin-top:10px",
             onclick: (e) => { e.stopPropagation(); this.app.present(new LessonScreen(this.app, c.lesson_id, { sheet: true })); } },
@@ -73,7 +73,7 @@ export class ReviewCover {
             this.pron.ok ? "Sounded right" : "Close — listen and try again") : null)
         : h("div", { class: "hint" }, "Tap to show, or hold the mic and say it"),
       h("div", { style: "flex:1" }),
-      this.revealed ? null : holdToTalk({ onBegin: () => this.app.holdBegin(localeFor(this.app.dialect, true)).catch(() => {}), onEnd: () => this.heard(c) }));
+      this.revealed ? null : holdToTalk({ onBegin: () => this.app.holdBegin(this.app.stt(true)).catch(() => {}), onEnd: () => this.heard(c) }));
     el.addEventListener("click", (e) => { if (!e.target.closest(".mic") && !this.revealed) { this.revealed = true; this.render(); } });
     el.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && !this.revealed) { e.preventDefault(); this.revealed = true; this.render(); } });
     return el;
@@ -82,7 +82,7 @@ export class ReviewCover {
   async heard(c) {
     const text = await this.app.holdEnd();
     this.revealed = true;
-    if (text) { try { this.pron = await this.api.pronunciation(c.lexeme_id, c.es, text); } catch {} }
+    if (text) { try { this.pron = await this.api.pronunciation(c.lexeme_id, c.target, text); } catch {} }
     this.render();
   }
 

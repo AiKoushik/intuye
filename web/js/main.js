@@ -1,7 +1,8 @@
 // Intuye web test build: the iPhone app's screens running against the local backend.
 import { API } from "./api.js";
 import { h, icon } from "./dom.js";
-import { Recognizer } from "./speech.js";
+import { Languages } from "./language.js";
+import { NATIVE_LOCALE, Recognizer } from "./speech.js";
 import { Onboarding } from "./screens/onboarding.js";
 import { Today } from "./screens/today.js";
 import { Say } from "./screens/say.js";
@@ -103,6 +104,7 @@ class App {
     this.api = new API("");
     this.recognizer = new Recognizer();
     this.capture = new Capture(this);
+    this.languages = new Languages();
     this.me = null;
     this.tab = "today";
     this.stacks = {};
@@ -110,10 +112,18 @@ class App {
     window.addEventListener("online", () => this.syncReviews());
   }
 
-  get dialect() { return this.me?.settings?.dialect ?? "es-419"; }
+  get dialect() { return this.me?.settings?.dialect ?? this.languages.data?.languages?.[0]?.default_variety ?? ""; }
+  /** The learner's target language (name, varieties, copy) and variety (voice and speech locales), from the server. */
+  get lang() { return this.languages.forVariety(this.dialect); }
+  get variety() { return this.languages.variety(this.dialect); }
+  get tts() { return this.variety.tts; }
+  /** Speech-recognition locale: the target language, or the learner's own (English) when `target` is false. */
+  stt(target) { return target ? this.variety.stt : NATIVE_LOCALE; }
   get firstName() { return this.me?.user?.display_name?.split(" ")[0] ?? null; }
 
   async boot() {
+    await this.languages.load(this.api);
+    document.title = `Intuye: ${this.lang.name} in your own words`;
     if (!this.api.session) return this.showOnboarding();
     await this.loadMe();
     this.showTabs();

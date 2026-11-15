@@ -37,7 +37,7 @@ struct TodayView: View {
                     ForEach(recent) { r in
                         VStack(alignment: .leading, spacing: 2) {
                             Text(r.text).font(.lcSource).foregroundStyle(LC.Color.textSecondary)
-                            if let es = r.closeEs { Text(es).font(.lcSpanish) }
+                            if let t = r.closeTarget { Text(t).font(.lcTarget) }
                         }
                         .lcCard()
                     }
@@ -96,7 +96,7 @@ struct TodayView: View {
             }
             if let items = today?.wordsReady.previewItems, !items.isEmpty {
                 FlowLayout(spacing: 8, lineSpacing: 8) {
-                    ForEach(items, id: \.es) { WordChip(text: $0.es, tint: Tint.reason($0.origin)) }
+                    ForEach(items, id: \.target) { WordChip(text: $0.target, tint: Tint.reason($0.origin)) }
                 }
             }
             Button(count > 0 ? "Start review" : "Get today's words") { showReview = true }.buttonStyle(.lcSubtle)

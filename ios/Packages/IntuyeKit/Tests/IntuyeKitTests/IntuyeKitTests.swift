@@ -4,12 +4,12 @@ import XCTest
 final class IntuyeKitTests: XCTestCase {
     func testDecodesCoachResultFromSnakeCase() throws {
         let json = """
-        {"intent":"to_es","source":"me gusta escuchar este en mi mind","close":"Me gusta escuchar esto en mi mente.",
+        {"intent":"to_target","source":"me gusta escuchar este en mi mind","close":"Me gusta escuchar esto en mi mente.",
          "natural":null,"alignment":[{"src":"mind","tgt":"mente","new":true}],"answer":null,"utterance_id":"u1"}
         """.data(using: .utf8)!
         let d = JSONDecoder(); d.keyDecodingStrategy = .convertFromSnakeCase
         let r = try d.decode(CoachResult.self, from: json)
-        XCTAssertEqual(r.intent, .toEs)
+        XCTAssertEqual(r.intent, .toTarget)
         XCTAssertEqual(r.alignment.first?.tgt, "mente")
         XCTAssertEqual(r.utteranceId, "u1")
     }

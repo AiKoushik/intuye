@@ -66,16 +66,17 @@ export class Recognizer {
   }
 }
 
-export function speak(text, dialect = "es-419", slow = false) {
-  if (!("speechSynthesis" in window)) return;
-  const lang = dialect === "es-ES" ? "es-ES" : "es-MX";
+/** Speaks target-language text. `lang` is the variety's voice language from the server (e.g. "es-MX"). */
+export function speak(text, lang, slow = false) {
+  if (!("speechSynthesis" in window) || !lang) return;
   const voices = speechSynthesis.getVoices();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = lang;
-  u.voice = voices.find((v) => v.lang.replace("_", "-") === lang) || voices.find((v) => v.lang.startsWith("es")) || null;
+  const base = lang.split("-")[0];
+  u.voice = voices.find((v) => v.lang.replace("_", "-") === lang) || voices.find((v) => v.lang.startsWith(base)) || null;
   u.rate = slow ? 0.8 : 0.95;
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
 
-export const localeFor = (dialect, spanish) => (spanish ? (dialect === "es-ES" ? "es-ES" : "es-MX") : "en-US");
+export const NATIVE_LOCALE = "en-US";
