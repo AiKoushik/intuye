@@ -4,5 +4,5 @@
   "description": "End-to-end test of the web test build",
   "license": "AGPL-3.0-or-later",
   "scripts": { "test": "node flow.js" },
-  "devDependencies": { "playwright": "1.63.0" }
+  "devDependencies": { "playwright": "1.65.0" }
 }
