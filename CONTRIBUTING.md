@@ -12,7 +12,7 @@ Thanks for helping. Here's how the repository works.
 | `fix/<short-name>` | A bug fix | Branch from `develop`, open a pull request into `develop` |
 | `docs/<short-name>`, `chore/<short-name>` | Docs, tooling, dependencies | Branch from `develop`, open a pull request into `develop` |
 | `release/<version>` | Getting a version ready, for example `release/0.2.0` | Branch from `develop`, open a pull request into `main`, then tag |
-| `hotfix/<short-name>` | An urgent fix to released code | Branch from `main`, open a pull request into `main`, then merge `main` back into `develop` |
+| `hotfix/<short-name>` | An urgent fix to released code | Branch from `main`, open a pull request into `main`, then a pull request from `main` into `develop` |
 
 Nobody pushes to `main` or `develop` directly, including the maintainer. Both are protected.
 
@@ -49,7 +49,9 @@ Commit messages and pull request titles follow [Conventional Commits](https://ww
 
 1. `git switch -c release/0.2.0 develop`, bump `MARKETING_VERSION` in `ios/project.yml` and `version` in `backend/pyproject.toml`.
 2. Open a pull request into `main`. When it's merged, tag the merge commit `v0.2.0` and push the tag.
-3. Merge `main` back into `develop` through a pull request so the two stay in step.
+3. Delete the release branch. `develop` already has everything `main` has, so nothing goes back.
+
+After a hotfix, open a pull request from `main` into `develop` so the fix isn't lost in the next release.
 
 ## How the code is meant to stay
 
