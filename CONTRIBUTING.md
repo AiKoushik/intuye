@@ -63,6 +63,6 @@ After a hotfix, open a pull request from `main` into `develop` so the fix isn't 
 
 ## Licence of contributions
 
-Intuye is licensed under the GNU AGPL v3 or later. By sending a pull request you agree that your contribution is licensed under the same terms, and that you have the right to contribute it.
+Intuye is licensed under the GNU AGPL v3 or later. Every contribution also needs the [Intuye Contributor License Agreement](CLA.md). You keep the copyright in your work, and the agreement lets the maintainer (Ahsan Iqbal) offer Intuye under other terms as well, such as builds in the App Store or a paid edition.
 
-The iPhone app is distributed through the App Store, whose terms sit awkwardly with copyleft licences, so contributions also give the maintainer (Ahsan Iqbal) permission to distribute builds that include them through app stores. Please say so in your first pull request if you can't agree to that.
+To agree, tick the agreement box in the pull request template. A check called **CLA** reads that box, and a pull request can't be merged until it passes. Please tell us in your pull request if you can't agree.

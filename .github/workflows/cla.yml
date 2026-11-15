@@ -1,0 +1,41 @@
+# Checks that the author of a pull request agreed to CLA.md by ticking
+# the box in the pull request template. It runs on "pull_request" (not
+# "pull_request_target"), never checks out the pull request's code and
+# only reads the pull request's description, so a fork gets no write
+# access. Ticking the box edits the description, which runs it again.
+name: CLA
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  cla:
+    name: CLA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the contributor agreement
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          python3 - <<'PY'
+          import os, re, sys
+          author = os.environ.get("AUTHOR", "")
+          body = os.environ.get("BODY") or ""
+          # The maintainer and trusted bots don't need to agree.
+          allow = {"AiKoushik", "dependabot[bot]", "github-actions[bot]"}
+          if author in allow:
+              print(f"{author} is on the allowlist.")
+              sys.exit(0)
+          box = re.compile(r"^\s*[-*]\s*\[[xX]\]\s*I have read \[?CLA\.md", re.M)
+          if box.search(body):
+              print(f"{author} agreed to CLA.md in this pull request.")
+              sys.exit(0)
+          print(f"::error::{author}, please read CLA.md and tick the "
+                "agreement box in the pull request description.")
+          sys.exit(1)
+          PY

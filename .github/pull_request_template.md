@@ -17,3 +17,7 @@
 - [ ] Nothing names a target language outside `backend/app/languages/` (see `docs/11-languages.md`)
 - [ ] Docs and `docs/02-feature-list.md` updated if behaviour changed
 - [ ] New text in the apps is short, specific and has no em dashes
+
+## Contributor agreement
+
+- [ ] I have read [CLA.md](../blob/develop/CLA.md) and I agree to it for this contribution

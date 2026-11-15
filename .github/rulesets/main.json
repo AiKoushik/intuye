@@ -55,6 +55,9 @@
           },
           {
             "context": "Web end to end"
+          },
+          {
+            "context": "CLA"
           }
         ]
       }
