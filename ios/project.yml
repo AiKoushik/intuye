@@ -42,9 +42,9 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIBackgroundModes: [audio]
-        NSMicrophoneUsageDescription: "Intuye listens while you hold the mic, or during capture windows you choose, to turn your sentences into Spanish. Audio stays on your iPhone."
+        NSMicrophoneUsageDescription: "Intuye listens while you hold the mic, or during capture windows you choose, to turn your sentences into the language you're learning. Audio stays on your iPhone."
         NSSpeechRecognitionUsageDescription: "Speech is transcribed on your iPhone so only text is sent to your coach."
-        NSCalendarsFullAccessUsageDescription: "Intuye reads upcoming event titles so it can prepare Spanish for them. Only titles and times are sent."
+        NSCalendarsFullAccessUsageDescription: "Intuye reads upcoming event titles so it can prepare phrases for them. Only titles and times are sent."
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     settings:

@@ -13,6 +13,10 @@ final class AppModel {
     var selectedTab: AppTab = .today
     /// Bumped when data other tabs show has changed (new batch, scene created...).
     var refreshToken = 0
+    /// Bumped by Siri, the Action Button or a control: Say starts listening hands-free.
+    var talkRequest = 0
+    /// Bumped by Siri or a control: the review session opens.
+    var reviewRequest = 0
 
     let api: APIClient
     let attest: AttestService

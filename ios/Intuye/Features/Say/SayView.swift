@@ -33,6 +33,8 @@ struct SayView: View {
     @Environment(AppModel.self) private var app
     @State private var model = SayModel()
     @FocusState private var focused: Bool
+    /// Listening started by Siri, the Action Button or a control: there's no button held, so a Done button ends it.
+    @State private var handsFree = false
 
     private var emptyMessage: String {
         let tries = (app.lang.ui?.trySaying ?? []).map { "“\($0)”" }.joined(separator: " or ")
@@ -66,6 +68,10 @@ struct SayView: View {
         }
         .background(AmbientBackground(.sea, .plum))
         .navigationTitle("Say")
+        .onChange(of: app.talkRequest) {
+            handsFree = true
+            Task { await beginTalking() }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -93,8 +99,14 @@ struct SayView: View {
                 .padding(.horizontal, Space.l).padding(.vertical, 13)
                 .background(LC.Color.surface, in: RoundedRectangle(cornerRadius: 25, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 25, style: .continuous).strokeBorder(LC.Color.borderStrong, lineWidth: 1))
-            HoldToTalkButton(isRecording: app.transcriber.isRunning, level: app.transcriber.level,
-                             onBegin: { Task { await beginTalking() } }, onEnd: { Task { await endTalking() } })
+            if handsFree {
+                Button("Done") { handsFree = false; Task { await endTalking() } }
+                    .buttonStyle(.lcPrimary).frame(width: 96)
+                    .accessibilityHint("Stops listening and translates")
+            } else {
+                HoldToTalkButton(isRecording: app.transcriber.isRunning, level: app.transcriber.level,
+                                 onBegin: { Task { await beginTalking() } }, onEnd: { Task { await endTalking() } })
+            }
         }
         .padding(.horizontal, Space.margin)
         .padding(.vertical, Space.s)

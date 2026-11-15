@@ -1,9 +1,16 @@
+import AppIntents
 import SwiftUI
 
 @main
 struct IntuyeApp: App {
-    @State private var model = AppModel()
+    @State private var model: AppModel
     @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        let model = AppModel()
+        _model = State(initialValue: model)
+        AppDependencyManager.shared.add(dependency: model)  // App Intents (Siri, controls) use the same model
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -37,6 +44,7 @@ struct RootView: View {
 struct MainTabView: View {
     @Environment(AppModel.self) private var model
     @State private var showCapture = false
+    @State private var showReview = false
 
     var body: some View {
         @Bindable var model = model
@@ -50,5 +58,7 @@ struct MainTabView: View {
             CapturePill { showCapture = true }
         }
         .sheet(isPresented: $showCapture) { CaptureSheet().presentationDetents([.medium]) }
+        .fullScreenCover(isPresented: $showReview) { ReviewSessionView() }
+        .onChange(of: model.reviewRequest) { showReview = true }
     }
 }
