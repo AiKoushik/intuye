@@ -1,118 +1,131 @@
 # Intuye
 
-**Sense it. Say it.** Spanish in your own words.
+**Sense it. Say it.**
 
-A Spanish confidence coach for iPhone. It listens to how *you* actually talk, says it back in
-Spanish close to your own phrasing (and Spanish back to English, just as briefly), and prepares you
-for the situations coming up in your life, not a fixed curriculum.
+Intuye is a language coach for iPhone that starts from how you actually talk. Say something in English, or in a mix of English and the language you're learning, and it comes back in that language as close to your own words as grammar allows, so you can see which word became which. It gets you ready for the situations coming up in your life, not a fixed curriculum, and it picks 5 to 10 words a day from what you said.
 
-*Intuye* is Spanish for "senses it", and "sense it!": the coach senses what you need for what's
-coming up, and you learn to sense what to say. Licensed under the GNU AGPL v3 or later (see [Licence](#licence)).
+Spanish is the first language. Everything specific to a language lives in a language pack, so more can be added without touching the app. *Intuye* (in-TOO-yeh) is Spanish for "senses it".
+
+<p align="center">
+  <img src="docs/images/say.png" width="19%" alt="Say. A mixed English and Spanish sentence shown word by word with its Spanish, and a short answer to a question about usted.">
+  <img src="docs/images/today.png" width="19%" alt="Today. The next scene to prepare, today's words and recent sentences.">
+  <img src="docs/images/scene.png" width="19%" alt="A scene. Key phrases with audio, a shadowing drill and phrases for when you get stuck.">
+  <img src="docs/images/progress.png" width="19%" alt="Progress. A weekly reflection, the share of English left in your Spanish and a rough level.">
+  <img src="docs/images/say-dark.png" width="19%" alt="Say in dark mode.">
+</p>
+
+## What it does
+
+| | |
+|---|---|
+| **Say it your way** | Type or speak English, the target language, or a mix of both. You get one short line back, aligned word by word, with new words marked. Questions about the language get an answer of three sentences at most. |
+| **Scenes** | Tell it what's coming up (the dentist on Thursday, a parent teacher meeting) or let it find events in your calendar. It prepares the phrases you'll want to say, the ones you'll hear, and rescue phrases for when you get stuck. |
+| **Shared scene library** | Scenes you create are shared with other learners, anonymously unless you choose otherwise, when nothing similar exists yet. The library is searchable by meaning, by text or by voice. |
+| **Rehearse** | Role play the scene with a partner who answers in the target language. Answer in English when you're stuck and get it back in the target language. |
+| **Words that matter to you** | Every day, 5 to 10 words picked from what you said and what's coming up, each with the reason it was picked, scheduled with FSRS. |
+| **Pronunciation** | Drills and shadowing scored sound by sound, with one tip for the sound you missed. |
+| **Grammar on demand** | When your own sentences need a pattern, a 60 second lesson with three examples and one check. |
+| **Capture** | Optional listening during windows you choose. Audio stays on the phone and only text is sent. Pause any time, forget the last 10 minutes, or delete any sentence. |
+| **Progress** | A calm weekly reflection, how much English is left in your target language week by week, confidence by scene, and a rough level you can adopt. No streaks. |
+| **Reminders** | At most a few a day, never in quiet hours or within an hour of each other, and each one says why it's there. |
+| **Siri and Shortcuts** | Ask "How do I say something in Intuye" and hear the answer without opening the app. |
+
+## How it's built
+
+| Part | Stack |
+|---|---|
+| iPhone app | SwiftUI for iOS 26, an `IntuyeKit` Swift package (models, API client, offline queues), App Intents. Speech is recognised on the device. |
+| Backend | Python 3.11+, FastAPI, SQLAlchemy (SQLite for development, Postgres for real use). Every model call runs through a [LangChain Deep Agents](https://github.com/langchain-ai/deepagents) agent on LangGraph. |
+| Web test build | A browser copy of the iPhone screens, served by the backend in development, for trying everything without a Mac. |
+| Design | An OKLCH colour system generated into Swift, CSS and an asset catalog, with every text and background pair checked for contrast. |
+
+The agents are a translator, an explainer, an ingest analyst for captured sentences, a scene builder that searches the shared library and delegates to a phrase writer, a rehearsal partner and a summariser. They work with any model that supports tool calling, local or hosted. Security covers Sign in with Apple, rotating sessions, App Attest on every call, rate limits, and prompts that treat learner text as data. The details are in [`docs/`](docs/).
 
 ## Status
 
 | Part | State |
 |---|---|
-| Plan, UX, design system | Done: see `docs/` and the clickable prototype |
-| Backend (FastAPI + LangChain Deep Agents) | Built; happy-path tests pass (`pytest`) |
-| iOS app (SwiftUI, iOS 26) | All screens written; **not yet compiled**: first build on a Mac will need a round of fixes |
+| Backend | Built. The tests pass (`pytest`). |
+| Web test build | Complete for testing. An end to end browser test covers every screen. |
+| iPhone app | All screens written. Not compiled yet, so expect a round of build fixes on the first build in Xcode. |
 
-Feature-by-feature status is in [`docs/02-feature-list.md`](docs/02-feature-list.md).
+The feature by feature status is in [`docs/02-feature-list.md`](docs/02-feature-list.md).
 
-## What's here
+## Try it
 
-| Path | What it is |
-|---|---|
-| `docs/` | Vision, feature list, UX, design system, architecture, security, data model, API, curation, roadmap |
-| `design/` | OKLCH colour source + generator (asset catalog, Swift, CSS, contrast report) and the HTML prototype |
-| `backend/` | API: Sign in with Apple, rotating sessions, App Attest, Deep Agents (translator, explainer, ingest analyst, scene builder + phrase writer, rehearsal partner, summariser), shared scene library, FSRS, curation |
-| `ios/` | XcodeGen project, `IntuyeKit` Swift package (models, API client, offline queue), SwiftUI app |
-
-## Run it (conda)
-
-One command sets up the `intuye` conda env on first run, installs dependencies, creates
-`backend/.env` from `backend/.env.development`, starts the API, and opens the **web test build**:
+You need [conda](https://docs.conda.io/en/latest/miniconda.html). One command creates the `intuye` environment on the first run, installs dependencies, writes `backend/.env` from `backend/.env.development`, starts the API and opens the web test build.
 
 ```powershell
-# Windows (PowerShell, or double-click scripts\run-backend.bat)
-.\scripts\run-backend.ps1                    # http://localhost:8000/web/  (API docs at /docs)
-.\scripts\run-backend.ps1 -Model local       # use Hearth / Ollama / vLLM from backend\.env
-.\scripts\run-backend.ps1 -Model anthropic   # use Claude (ANTHROPIC_API_KEY in backend\.env)
+# Windows (PowerShell, or double click scripts\run-backend.bat)
+.\scripts\run-backend.ps1                    # http://localhost:8000/web/   API docs at /docs
+.\scripts\run-backend.ps1 -Model local       # your own model server, from backend\.env
+.\scripts\run-backend.ps1 -Model anthropic   # Claude, with ANTHROPIC_API_KEY in backend\.env
 .\scripts\run-backend.ps1 -Test              # run the tests first
-.\scripts\run-backend.ps1 -Update            # reinstall dependencies
-.\scripts\run-backend.ps1 -BindHost 0.0.0.0  # reachable from your iPhone on the same Wi-Fi
+.\scripts\run-backend.ps1 -BindHost 0.0.0.0  # reachable from an iPhone on the same Wi-Fi
 ```
 
 ```bash
-# macOS / Linux / WSL
+# macOS, Linux, WSL
 scripts/run-backend.sh [--model local|anthropic|fake] [--test] [--update] [--host 0.0.0.0] [--port 8000]
 ```
 
-Out of the box `LLM_PROVIDER=fake` (a tiny offline dictionary) so you can click through every screen
-without a model server. For real Spanish, set `LLM_BASE_URL`, `LLM_FAST_MODEL` and `LLM_SMART_MODEL`
-in `backend/.env` to your Hearth endpoint and run with `-Model local`.
+Out of the box the backend uses `LLM_PROVIDER=fake`, a tiny offline model that knows a few Spanish phrases, so you can click through every screen without a model server. The web build signs you in with just a name, and speech works in Chrome and Edge. Open a private window and sign in with another name to see shared scenes from a second learner's side.
 
-### The web test build
-
-`web/` mirrors the iPhone screens (same colour tokens, layout and flows) against the real API, served by
-the backend at `/web` in development. Sign-in is a dev-only name field (`DEV_LOGIN_ENABLED`), App Attest
-is off locally, speech uses the browser (Chrome or Edge), and the Capture sheet has a
-"pretend capture heard these" box for testing curation without a mic.
-
-Everything the backend does can be tried from it: Say (both directions and questions), capture and
-Moments (sentences by hour, delete, forget the last 10 minutes), word batches and review with spoken
-answers, scenes (build, library search by text or voice, use, share, report, rehearse, archive),
-Progress, and Settings (variety, level, notifications, quiet hours, retention, export, delete). The
-side panel has a short "Try this" list. Open a private window and sign in with another name to see
-shared library scenes from a second learner's side.
-
-### Manual setup (without the scripts)
+Without the scripts
 
 ```bash
 conda env create -f backend/environment.yml && conda activate intuye
 cd backend && pip install -e ".[dev]" && cp .env.development .env
-pytest                                                   # happy-path tests, no model server needed
-uvicorn app.main:app --reload                            # http://localhost:8000/web/
+pytest
+uvicorn app.main:app --reload
 ```
 
-**Models.** `LLM_PROVIDER=openai_compatible` points every Deep Agent at any OpenAI-style endpoint
-(Hearth, vLLM, llama.cpp, Ollama) via `LLM_BASE_URL` and `LLM_FAST_MODEL` / `LLM_SMART_MODEL`. The
-model must support tool calling, because agents use tools for structured output and subagents.
-`anthropic` uses `ANTHROPIC_API_KEY`. `fake` is a tiny offline tool-calling model for tests only.
-Python 3.11+ is required (Deep Agents).
+### Models
 
-**Database.** SQLite by default for development; set `DATABASE_URL` to Postgres
-(`postgresql+asyncpg://…`) for real use.
+| `LLM_PROVIDER` | What it uses |
+|---|---|
+| `openai_compatible` | Any OpenAI style endpoint (Ollama, vLLM, llama.cpp, your own server) through `LLM_BASE_URL`, `LLM_FAST_MODEL` and `LLM_SMART_MODEL` |
+| `anthropic` | Claude, with `ANTHROPIC_API_KEY` |
+| `fake` | The offline test model |
 
-## Build the iPhone app (Mac with Xcode 26+)
+The model needs tool calling, since the agents use tools for structured output and subagents. Scene library search uses `EMBED_PROVIDER`, either `hash` (offline) or `openai_compatible` with an embedding model such as `bge-m3`.
+
+## Build the iPhone app
+
+You need a Mac with Xcode 26 or later.
 
 ```bash
 brew install xcodegen
 cd ios && xcodegen generate && open Intuye.xcodeproj
 ```
 
-1. Set your Team ID in `ios/project.yml` (`DEVELOPMENT_TEAM`) and a real bundle id (also set
-   `APPLE_BUNDLE_ID` / `APPLE_TEAM_ID` in the backend `.env` to match).
-2. In the Apple Developer portal, enable **Sign in with Apple** and **App Attest** for the App ID.
-3. **Simulator:** App Attest isn't available, so run the backend with `APP_ATTEST_MODE=report` (or `off`).
-   **Device:** set `LC_API_BASE_URL` (Debug) in `project.yml` to your machine's LAN address, e.g.
-   `http://192.168.1.20:8000`, and keep `APP_ATTEST_MODE=report` until the first registration succeeds,
-   then switch to `enforce`.
+1. Set your Team ID in `ios/project.yml` (`DEVELOPMENT_TEAM`) and a real bundle id, and set `APPLE_TEAM_ID` and `APPLE_BUNDLE_ID` in `backend/.env` to match.
+2. Turn on Sign in with Apple and App Attest for the App ID in the Apple Developer portal.
+3. The Simulator can't attest, so run the backend with `APP_ATTEST_MODE=report` or `off`. On a device, point `LC_API_BASE_URL` in `project.yml` at your computer's address on the network, for example `http://192.168.1.20:8000`, and switch to `enforce` once the first registration succeeds.
 
-## Regenerate design tokens
+## Languages
 
-```bash
-python design/tokens/generate.py --check   # rebuilds Swift, CSS, JSON, asset catalog; fails on any contrast miss
-```
+`LANGUAGES=es` in `backend/.env` lists the languages offered. A language pack holds the grammar triggers and lessons, pronunciation rules, starter vocabulary, regional varieties with their voices and speech locales, prompt examples, and the copy the apps show. The apps read all of it from `GET /v1/languages` and never name a language themselves. Adding one is a new folder under `backend/app/languages/` plus one line in the registry, as described in [`docs/11-languages.md`](docs/11-languages.md).
 
-Open `design/prototype/index.html` in a browser for the clickable screens.
+## Repository
+
+| Path | What's in it |
+|---|---|
+| [`backend/`](backend/) | API, agents, language packs, curation, tests |
+| [`web/`](web/) | The web test build |
+| [`ios/`](ios/) | XcodeGen project, `IntuyeKit` package and the SwiftUI app |
+| [`design/`](design/) | Colour source, token generator and the clickable prototype |
+| [`docs/`](docs/) | Vision, features, UX, design system, architecture, security, data model, API, curation, roadmap, languages |
+| [`scripts/`](scripts/) | Run scripts for Windows, macOS and Linux |
+
+Design tokens are rebuilt with `python design/tokens/generate.py --check`, which fails if any colour pair misses its contrast target.
+
+## Contributing
+
+Issues and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first. Contributions are accepted under the same licence as the project.
 
 ## Licence
 
-Intuye is free software, licensed under the **GNU Affero General Public License v3.0 or later**
-(`AGPL-3.0-or-later`); see [LICENSE](LICENSE). If you run a modified version of the backend for other
-people over a network, the AGPL asks you to offer them its source. The app and the web build link to
-the source from Settings, and the API serves it at `GET /about`. Contributions are welcome under the
-same licence; see [CONTRIBUTING.md](CONTRIBUTING.md).
+Intuye is free software under the [GNU Affero General Public License v3.0 or later](LICENSE). If you run a modified version of the backend for other people over a network, the licence asks you to offer them its source. The apps link to the source from Settings, and the API serves the link at `GET /about`.
 
 Copyright © 2026 Ahsan Iqbal.
