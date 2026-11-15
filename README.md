@@ -1,5 +1,8 @@
 # Intuye
 
+[![CI](https://github.com/AiKoushik/intuye/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/AiKoushik/intuye/actions/workflows/ci.yml)
+[![Licence AGPL-3.0-or-later](https://img.shields.io/badge/licence-AGPL--3.0--or--later-3A55B1)](LICENSE)
+
 **Sense it. Say it.**
 
 Intuye is a language coach for iPhone that starts from how you actually talk. Say something in English, or in a mix of English and the language you're learning, and it comes back in that language as close to your own words as grammar allows, so you can see which word became which. It gets you ready for the situations coming up in your life, not a fixed curriculum, and it picks 5 to 10 words a day from what you said.
@@ -45,8 +48,8 @@ The agents are a translator, an explainer, an ingest analyst for captured senten
 
 | Part | State |
 |---|---|
-| Backend | Built. The tests pass (`pytest`). |
-| Web test build | Complete for testing. An end to end browser test covers every screen. |
+| Backend | Built. The tests pass (`pytest`) and run in CI on every pull request. |
+| Web test build | Complete for testing. An end to end browser test (`scripts/e2e.sh`) covers every screen and runs in CI. |
 | iPhone app | All screens written. Not compiled yet, so expect a round of build fixes on the first build in Xcode. |
 
 The feature by feature status is in [`docs/02-feature-list.md`](docs/02-feature-list.md).
@@ -116,13 +119,26 @@ cd ios && xcodegen generate && open Intuye.xcodeproj
 | [`ios/`](ios/) | XcodeGen project, `IntuyeKit` package and the SwiftUI app |
 | [`design/`](design/) | Colour source, token generator and the clickable prototype |
 | [`docs/`](docs/) | Vision, features, UX, design system, architecture, security, data model, API, curation, roadmap, languages |
-| [`scripts/`](scripts/) | Run scripts for Windows, macOS and Linux |
+| [`scripts/`](scripts/) | Run scripts for Windows, macOS and Linux, the end to end test runner and the GitHub setup script |
+| [`.github/`](.github/) | CI, Dependabot, branch rulesets, code owners, and pull request and issue templates |
 
 Design tokens are rebuilt with `python design/tokens/generate.py --check`, which fails if any colour pair misses its contrast target.
 
 ## Contributing
 
-Issues and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first. Contributions are accepted under the same licence as the project.
+Issues and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+| Branch | Role |
+|---|---|
+| `main` | Released code. Changes arrive only from `release/*` and `hotfix/*` pull requests. |
+| `develop` | Where work lands. Open your pull request here. |
+| `feature/*`, `fix/*`, `docs/*`, `chore/*` | Your branch, made from `develop` |
+
+Both `main` and `develop` are protected. Every change goes through a pull request, CI has to pass (backend tests, web build and design tokens, plus the end to end test for `main`), review conversations have to be resolved, and force pushes are blocked. Pull requests into `develop` are squash merged, so the pull request title becomes the commit message and follows [Conventional Commits](https://www.conventionalcommits.org/). How the repository is configured is in [`docs/12-repository.md`](docs/12-repository.md).
+
+Found a security problem? Please report it privately as described in [SECURITY.md](SECURITY.md), not in an issue.
+
+Contributions are accepted under the same licence as the project.
 
 ## Licence
 
