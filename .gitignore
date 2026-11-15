@@ -40,3 +40,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Node (web end-to-end test)
+node_modules/
+e2e-shots/
