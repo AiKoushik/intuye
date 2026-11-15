@@ -13,6 +13,7 @@
 
 ## Checklist
 
+- [ ] I have signed the [Contributor Licence Agreement](https://github.com/AiKoushik/intuye/blob/develop/CLA.md), or will when the bot asks
 - [ ] No secrets, keys or personal data in the diff
 - [ ] Nothing names a target language outside `backend/app/languages/` (see `docs/11-languages.md`)
 - [ ] Docs and `docs/02-feature-list.md` updated if behaviour changed

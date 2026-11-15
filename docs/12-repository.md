@@ -60,3 +60,11 @@ rulesets with the same name.
 4. Code security. Turn on private vulnerability reporting, Dependabot alerts and security updates, and
    secret scanning with push protection.
 5. Actions, General. Leave workflow permissions at read-only.
+
+## Contributor Licence Agreement
+
+`.github/workflows/cla.yml` runs on every pull request. It asks anyone who hasn't signed [`CLA.md`](../CLA.md) to sign by replying with one sentence, and it records signatures in `signatures/version1/cla.json` on the `cla-signatures` branch. That branch must stay outside the `develop` and `main` rulesets, because the bot commits to it directly. The maintainer, Claude and Dependabot are on the allowlist and are never asked.
+
+To make the check block merging, add `CLA` to the required status checks in the `develop` and `main` rulesets once the workflow has run on a pull request at least once.
+
+If `CLA.md` changes in a way that matters, raise its version, point `path-to-signatures` at a new file such as `signatures/version2/cla.json`, and contributors will be asked to sign the new version.

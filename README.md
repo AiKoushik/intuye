@@ -138,10 +138,12 @@ Both `main` and `develop` are protected. Every change goes through a pull reques
 
 Found a security problem? Please report it privately as described in [SECURITY.md](SECURITY.md), not in an issue.
 
-Contributions are accepted under the same licence as the project.
+Contributions are welcome under the [Contributor Licence Agreement](CLA.md), which you sign once on your first pull request.
 
 ## Licence
 
 Intuye is free software under the [GNU Affero General Public License v3.0 or later](LICENSE). If you run a modified version of the backend for other people over a network, the licence asks you to offer them its source. The apps link to the source from Settings, and the API serves the link at `GET /about`.
+
+The maintainer can also offer Intuye under other terms, such as a commercial licence or a paid edition, which is why contributors sign the [Contributor Licence Agreement](CLA.md). The name and logo are not part of the licence. See [TRADEMARKS.md](TRADEMARKS.md).
 
 Copyright © 2026 Ahsan Iqbal.
