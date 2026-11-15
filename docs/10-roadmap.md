@@ -44,6 +44,32 @@ Goal: the founder uses it every day for Say-it-my-way and word batches.
 | OWASP MASVS v2 audit + external pen test | — |
 | Privacy labels, App Review, launch | — |
 
+## Later: generative UI (to do, evaluate first)
+
+**Idea.** Let the model compose some screens from the app's own native components instead of every layout being fixed. The model returns a description of which components to show, in what order and with what content, and the app renders it with SwiftUI and the web build's components. No code is downloaded or run.
+
+**Check Apple's rules before starting.**
+
+* Guideline 2.5.2 says apps must be self-contained and may not download, install or execute code that introduces or changes features or functionality. Model output that only fills and arranges components the reviewed app already has should count as content, but anything that adds functionality after review has to go through review. Apple has been enforcing this against AI app builders since March 2026.
+* Guideline 2.5.19 bars hidden, dormant or undocumented features. Every layout a learner can get should be reachable by App Review in the review build.
+* To stay inside both, keep a fixed catalogue of components in the binary, validate every generated description against a schema, fall back to the fixed layout when one fails, describe the renderer in the Review Notes, and ask App Review if anything is unclear.
+
+**Decide which screens go first.** Score each candidate on how much it gains from adapting to the moment, how risky a wrong layout would be, and how content-driven it already is.
+
+| Candidate | Why it might gain |
+|---|---|
+| Answers on Say | A question could come back as a short table, a conjugation grid or a side-by-side comparison instead of plain text |
+| Grammar lessons | Each pattern may explain better with a different shape (a table, a timeline, paired examples) |
+| Scene prep | A phone call, a meeting and a doctor's visit need different emphasis |
+| Today | What to show first could follow the time of day and what's coming up |
+| Rehearsal summary and weekly reflection | The highlights differ a lot from one session or week to the next |
+
+Keep these fixed regardless: onboarding, sign-in, settings, capture and privacy controls, permissions, export and deletion, and the review session.
+
+**Constraints.** Design tokens only, accessibility labels and Dynamic Type for everything generated, the brevity contract still applies, language comes from the language pack, and the web build renders the same descriptions.
+
+**Status.** Not started. Evaluate after the remaining iPhone features.
+
 ## Top risks and mitigations
 
 | Risk | Impact | Mitigation |
