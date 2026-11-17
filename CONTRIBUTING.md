@@ -66,3 +66,5 @@ After a hotfix, open a pull request from `main` into `develop` so the fix isn't 
 Intuye is licensed under the GNU AGPL v3 or later. Every contribution also needs the [Intuye Contributor License Agreement](CLA.md). You keep the copyright in your work, and the agreement lets the maintainer (Ahsan Iqbal) offer Intuye under other terms as well, such as builds in the App Store or a paid edition.
 
 To agree, tick the agreement box in the pull request template. A check called **CLA** reads that box, and a pull request can't be merged until it passes. Please tell us in your pull request if you can't agree.
+
+The Intuye name and logo are covered separately in [TRADEMARKS.md](TRADEMARKS.md). If you publish a fork, give it a new name and icon.
