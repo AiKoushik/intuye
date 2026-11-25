@@ -22,6 +22,7 @@ final class AppModel {
     let attest: AttestService
     let transcriber = LiveTranscriber()
     let capture: AmbientCapture
+    let neverRecord = NeverRecordPlaces()
     let speaker = Speaker()
     let calendar = CalendarService()
     var notifications = NotificationScheduler()
@@ -51,6 +52,10 @@ final class AppModel {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
         reviewQueue = ReviewQueue(fileURL: support.appendingPathComponent("review-queue.json"))
+        // Capture never listens inside a never-record place, and re-checks when you enter or leave one.
+        let places = self.neverRecord, capture = self.capture
+        capture.placeCheck = { [weak places] in places?.current }
+        places.onChange = { [weak capture] in Task { await capture?.reconcile() } }
     }
 
     /// On launch and whenever the app comes back: replay offline reviews, then refresh the notification plan.
@@ -73,6 +78,7 @@ final class AppModel {
         guard await api.isSignedIn else { phase = .onboarding; return }
         phase = .signedIn
         await loadMe()
+        await neverRecord.start()
         capture.startTicker()
         await syncOffline()
     }
@@ -86,6 +92,7 @@ final class AppModel {
     func didSignIn() async {
         phase = .signedIn
         await loadMe()
+        await neverRecord.start()
         capture.startTicker()
         await syncOffline()
     }

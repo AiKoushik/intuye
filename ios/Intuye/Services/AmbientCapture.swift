@@ -2,6 +2,7 @@ import Foundation
 import IntuyeKit
 
 /// Ambient capture: transcribes your sentences on-device during the windows you choose and queues the text.
+/// It never listens inside a never-record place (H7).
 /// P2 hardening still to do: own-voice filtering (speaker enrolment) and long-run background survival checks.
 @MainActor
 @Observable
@@ -21,6 +22,8 @@ final class AmbientCapture {
     private(set) var isListening = false
     private(set) var lastError: String?
     var isPausedForHoldToTalk = false
+    /// Set by the app: the never-record place the phone is in right now, if any.
+    var placeCheck: (@MainActor () -> NeverRecordPlace?)?
 
     private let transcriber: LiveTranscriber
     private let queue: OfflineQueue
@@ -50,7 +53,7 @@ final class AmbientCapture {
     }
 
     var shouldListen: Bool {
-        guard !isPausedForHoldToTalk else { return false }
+        guard !isPausedForHoldToTalk, placeCheck?() == nil else { return false }
         switch mode {
         case .off: return false
         case .always: return true
