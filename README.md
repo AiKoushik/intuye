@@ -28,7 +28,7 @@ Spanish is the first language. Everything specific to a language lives in a lang
 | **Words that matter to you** | Every day, 5 to 10 words picked from what you said and what's coming up, each with the reason it was picked, scheduled with FSRS. |
 | **Pronunciation** | Drills and shadowing scored sound by sound, with one tip for the sound you missed. |
 | **Grammar on demand** | When your own sentences need a pattern, a 60 second lesson with three examples and one check. |
-| **Capture** | Optional listening during windows you choose. Audio stays on the phone and only text is sent. Pause any time, forget the last 10 minutes, or delete any sentence. |
+| **Capture** | Optional listening during windows you choose. Audio stays on the phone and only text is sent. Pause any time, mark places where it never listens, forget the last 10 minutes, or delete any sentence. |
 | **Progress** | A calm weekly reflection, how much English is left in your target language week by week, confidence by scene, and a rough level you can adopt. No streaks. |
 | **Reminders** | At most a few a day, never in quiet hours or within an hour of each other, and each one says why it's there. |
 | **Siri and Shortcuts** | Ask "How do I say something in Intuye" and hear the answer without opening the app. |

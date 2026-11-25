@@ -44,6 +44,8 @@ targets:
         UIBackgroundModes: [audio]
         NSMicrophoneUsageDescription: "Intuye listens while you hold the mic, or during capture windows you choose, to turn your sentences into the language you're learning. Audio stays on your iPhone."
         NSSpeechRecognitionUsageDescription: "Speech is transcribed on your iPhone so only text is sent to your coach."
+        NSLocationWhenInUseUsageDescription: "Intuye uses your location only to pause capture at places you've marked as never record. Places stay on your iPhone."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "So capture can pause at places you've marked as never record, even when Intuye isn't open. Your location and places stay on your iPhone."
         NSCalendarsFullAccessUsageDescription: "Intuye reads upcoming event titles so it can prepare phrases for them. Only titles and times are sent."
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true

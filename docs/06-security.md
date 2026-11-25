@@ -15,6 +15,7 @@ device), carries the minimum data, and can only touch that user's rows. Audit ta
 | Replay | Captured request re-sent | Assertion counter must strictly increase; client data includes method, path, body hash, timestamp (±5 min) |
 | Data exposure | Logs leaking transcripts | No request bodies in logs; request IDs only; transcripts encrypted at rest by the database volume |
 | Privacy overreach | Audio uploaded | Architecture: audio never leaves the phone; only text is sent |
+| Capture in sensitive places | Sentences captured at a clinic or office | Never-record places: on-device geofences (CLMonitor) pause capture; the places and the phone's location never leave the device |
 
 ## Step by step
 
